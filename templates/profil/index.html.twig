@@ -1,0 +1,32 @@
+{% extends 'layout_ag.html.twig' %}
+{% block title %}<title>Profil - {{app.user.appli}}</title>{% endblock %}
+{% block body %}<body  class="page not-home">{% endblock %}
+{% block header %}
+    <div class="title_app" id="title">
+        <h1 class="title">{{ app.user.appli }}</h1>
+        <h2 class="desc">{{ app.user.libappli }}</h2>
+    </div>
+    <div class="title_image">
+        <span>Rectorat</span>
+    </div>
+    <h3 class="page-title">Profil utilisateur</h3>  
+    {{ include("./profil/pagemenu.html.twig") }}
+{% endblock %}
+{% block main %}
+<main class="row">
+    <h4>Vos informations</h4>
+    <address>
+        <span id="vcard" class="vcard">
+            <figure class="photo"><img src="{{ asset('css/images/avatar/avatar.png','interfaceappli') }}"></figure>
+            <h2 class="fn">{{app.user.codecivilite}} {{app.user.cn}}</h2>
+            {% if app.user.codecivilite== "M." %}
+                <h5> né le : {{app.user.datenaissance}}</h5>
+            {% else %}
+                <h5> née le : {{app.user.datenaissance}}</h5>
+            {% endif %}
+            <span class="email"> <span class="type"><b>Courriel</b></span>: <span class="value">{{app.user.mail}}</span> </span></br>
+            <span class="adr"><em>Localisation proxy: {{app.user.urlproxy }}</em></span>
+        </span>
+    </address>
+</main>
+{% endblock %}

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+	<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    {% block home %}{% endblock %}
+    {% block title %}{% endblock %}
+    <!-- tooltipster CSS -->
+    <link rel="stylesheet" type="text/css" href="{{ asset('js/tooltipster/dist/css/tooltipster.bundle.min.css','interfaceappli') }}" />
+    <link rel="stylesheet" type="text/css" href="{{ asset('js/tooltipster/dist/css/plugins/tooltipster/sideTip/themes/tooltipster-sideTip-shadow.min.css','interfaceappli') }}" />
+    <!-- Jquery core JS -->
+    <script type="text/javascript" src="{{ asset('bower_components/jquery/dist/jquery.min.js','interfaceappli') }}"></script>
+    <!-- tooltipster JS -->
+    <script type="text/javascript" src="{{ asset('js/tooltipster/dist/js/tooltipster.bundle.min.js','interfaceappli') }}"></script>
+    <!-- Jquery cookie -->
+    <script type="text/javascript" src="{{ asset('js/jquery.cookie.js','interfaceappli') }}"></script>
+
+    <!-- Bootstrap core JS -->
+    <script type="text/javascript" src="{{ asset('bootstrap/js/bootstrap.bundle.min.js','interfaceappli') }}"></script>
+    <script type="text/javascript" src="{{ asset('bootstrap/js/bootstrap.min.js','interfaceappli') }}"></script>
+
+    <!-- Bootstrap core CSS -->
+    <link href="{{ asset('bootstrap/css/bootstrap.css','interfaceappli') }}" rel="stylesheet" type="text/css">
+    <!-- Fontawesome core CSS -->
+    <link href="{{ asset('fontawesome/css/all.css','interfaceappli') }}" rel="stylesheet" type="text/css">
+
+    <!-- FORCAGE THEME PAR DEFAUT/CLEAR MODE
+    <!-- My SCSS -->
+    {# <link id="my-css" href="{{ asset('css/' ~ app.user.theme ~ '.css','interfaceappli') }}" rel="stylesheet"> #}
+    <link id="my-css" href="{{ asset('css/theme7.css','interfaceappli') }}" rel="stylesheet">
+    <link id="my-mode" href="{{ asset('css/clear_ie.css','interfaceappli') }}" rel="stylesheet">
+    <link rel="shortcut icon" href="favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />  
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <style>
+      .tooltipster-base .tooltipster-content{
+          /*padding:0;*/
+          text-align:center;
+          color:#007bff;
+      }
+      #valid-choice_content{
+          color:#007bff;
+      }
+    </style>
+    <script>
+      $("document").ready(function (){
+        var my_css = localStorage.getItem('#theme');
+        if( $('.title').length &&  $('.desc').length)         
+        {
+          var title_length = $('.title').text().length;
+          var desc_length = $('.desc').text().length;
+          var tot_length = title_length+desc_length;
+        
+          var title_size = $('.title').css('font-size').slice(0, -2);
+          var desc_size = $('.desc').css('font-size').slice(0, -2);
+    
+        
+          if (tot_length > 50){
+            var tot_title = (title_size -8)+"px";
+            $('.title').css('font-size',tot_title);
+            $('.title').css('margin-bottom','0px');
+            var tot_desc = (desc_size -3)+"px";
+            $('.desc').css('font-size',tot_desc);
+          }
+        }        
+        if ( my_css == "accessibilite")
+        {
+          $("head #my-css").attr("href","{{ asset('css/accessibilite.css','interfaceappli') }}");
+        }
+        else
+        {
+          
+          $("head #my-css").attr("href","{{ asset('css/theme7.css','interfaceappli') }}");
+        }
+        //récupère le storage du mode de background
+        var my_mode = localStorage.getItem('#mode');
+        if ( my_mode == "dark")
+        {
+          $("head #my-mode").attr("href","{{ asset('css/dark_ie.css','interfaceappli') }}");
+        }
+        else
+        {
+          $("head #my-mode").attr("href","{{ asset('css/clear_ie.css','interfaceappli') }}");
+        }
+
+        // animation accueil
+        $(function() {
+          $('#title').addClass('move_right');
+          $('#logo').addClass('move_left');
+        });
+
+
+        $('#info').tooltipster({
+          side: 'left',
+          theme: 'tooltipster-shadow'
+        });
+        $('.tooltipster.btn').tooltipster({
+          trigger:'click',
+          side: 'right',
+          contentAsHTML: true,
+          interactive: true,
+          theme: 'tooltipster-shadow'
+        });
+
+        $(".simple .my_menu_button").click(function (){
+        // animation menu gene
+          $(".menu_gene").toggleClass("open simple");
+          $(".logo_central").toggleClass("pad1");
+          $("body").toggleClass("pad");
+        });
+        
+        // vide le champ recherche
+        $(".search").focusin(function(){
+          $(this).val('');
+        });
+
+
+
+        //Bouton de validation de la sortie à la déconnexion
+        
+        $(".valid-choice").each(function( index ) { //boucle sur les éléments ayant comme class valid-choice
+        //console.log($(this).data( "options" ).question);
+        
+        // Ajout d'une étiquette au click avec deux boutons inclus
+        $(this).append("<div class='tooltip_templates valid-choice_content'><span id='"+$(this).attr('id')+"_content'><form><label style='clear: both; display: block; text-align: center;'></label><input class='choix1 btn btn-primary' type='button' name='valid-choice' value=''><input class='choix2 btn btn-outline-primary' type='button' name='valid-choice' value=''></form></span></div>");
+
+        // Définition de la tooltip à ouvrir
+        let myElementId="#"+$(this).attr('id');
+        $(myElementId).attr("data-tooltip-content",myElementId+"_content");
+        // récupère l'attribut data-options et renseigne les valeurs dans le tooltip 
+        $(myElementId+"_content label").html($(this).data( "options" ).question);
+        $(myElementId+"_content .choix1").attr("value",$(this).data( "options" ).choix1);
+        $(myElementId+"_content .choix2").attr("value",$(this).data( "options" ).choix2);
+
+        // Click sur choix1
+        $(myElementId+"_content .choix1").on("click", function () {
+
+          // Vérifie dans data-options si action1 a été renségné
+          let monjson = $(myElementId).data( "options" ).action1;
+          if(typeof monjson !== 'undefined'){
+            window.location.replace($(myElementId).data( "options" ).action1);
+          }
+          else{ // sinon récupère le href du lien et redirige
+            window.location.replace($(myElementId).attr('href'));
+          }
+
+        });
+
+        //Click sur choix2
+        $(myElementId+"_content .choix2").on("click", function () {
+          // Vérifie dans data-options si action1 a été renségné
+          let monjson = $(myElementId).data( "options" ).action2;
+          if(typeof monjson !== 'undefined'){
+            //Au click ferme la fenêtre
+            if ($(myElementId).data( "options" ).action2 == "close"){ // vérifie si action2 est à close
+              $('.valid-choice').tooltipster('close');
+            }
+            else {
+              // sinon on redirige vers une autre adresse renseignée dans action2
+              window.location.replace($(myElementId).data( "options" ).action2);
+            }
+          }
+          else{
+            $('.valid-choice').tooltipster('close');
+          }
+        });
+        });
+        $('.valid-choice').tooltipster({
+          trigger:'click',
+          side: 'right',
+          contentAsHTML: true,
+          interactive: true,
+          theme: 'tooltipster-shadow'
+        });       
+
+        {% block script %}{% endblock %}
+      });
+    </script>
+    
+    {% block head_gene %}{% endblock %}
+	</head>
+  {% block body %}<body  class="page not-home">{% endblock %}
+        <a href="#navbarSupportedContent" style="display:none">Aller au menu principal</a>
+      <nav class="navbar navbar-expand-lg navbar-dark flex-column menu_gene simple">
+        <button class="my_menu_button" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="icon-bar"></span> 
+              <span class="icon-bar"></span> 
+              <span class="icon-bar"></span> 
+            </button>
+      
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav flex-column">
+            <li class="nav-item active">
+              <a class="nav-link" href="{{ path('home') }}" alt="Accueil" title="Accueil"><i class="fas fa-home"></i><span>Accueil</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ path('profil') }}" alt="Accès à votre profil utilisateur" title="Accès à votre profil utilisateur"><i class="fas fa-user"></i><span>Profil utilisateur</span></a>
+            </li>
+            <li class="nav-item">
+              {# <a class="nav-link valid-choice" id="id_choice_1" href="#" onClick="return false;" alt="Accès à l'index des applications" title="Accès à l'index des applications" data-options='{"question":"Voulez-vous retourner au portail ?","choix1":"Oui","choix2":"Non","action1":"{{ app.user.urlportail }}","action2":"close"}'><i class="fas fa-th"></i><span>Applications</span></a> #}
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ path('aide')}}" alt="Accès à l'aide en ligne" alt="Accès à l'aide en ligne" title="Accès à l'aide en ligne"><i class="fas fa-info"></i><span>Aide</span></a>
+            </li>
+            <li class="nav-item">
+              {# <a class="nav-link valid-choice" id="id_choice_2" href="#" onClick="return false;" alt="Déconnexion" title="Déconnexion" data-options='{"question":"Voulez-vous vous déconnecter ?","choix1":"Oui","choix2":"Non","action1":"{{ app.user.urllogout }}","action2":"close"}'><i class="fas fas fa-power-off"></i><span>Deconnexion</span></a> #}
+            </li>
+          </ul>
+        </div>
+      </nav>
+  <div class="container">
+    <div class="site-wrapper">
+          <!-- fil d'arianne -->
+          <nav aria-label="breadcrumb">
+          <!-- Encart Utilisateur -->
+          <span class="current-user"><a href="{{ path('profil') }}"><i class="fas fa-user"></i> <span class="ident">Bienvenue !</span></a></span>
+          <ol class="breadcrumb">
+            {# <li class="breadcrumb-item"><i class="fas fa-th"></i><a href="#">{{app.user.typeappli}}</a></li>
+            <li class="breadcrumb-item"><i class="fas fa-th"></i><a href="#">{{app.user.domain}}</a></li>
+            <li class="breadcrumb-item"><i class="fas fa-home"></i><a href="#">{{app.user.appli}}</a></li> #}
+            <li class="breadcrumb-item active" aria-current="page">Page actuelle</li>
+          </ol>
+          </nav>
+          <!-- fin fil d'arianne -->
+        <header>
+          {%block header %}{% endblock %}
+        </header>
+        {% block main %}{% endblock %}
+    </div>
+  </div>
+    <footer><img src="{{ asset('css/images/logo_app_mini.png','interfaceappli') }}">Académie de la Guadeloupe - Réalisation DSI-DQDI - Tous droits réservés © Rectorat de la Guadeloupe - <a href="{{ path('mention') }}">Mentions légales et crédits</a><span class="app-version"></span></footer>
+	</body>
+</html>

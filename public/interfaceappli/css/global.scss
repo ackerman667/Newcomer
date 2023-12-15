@@ -1,0 +1,1254 @@
+/** POLICES DE CARACTERE **/
+@font-face {
+    font-family: 'oswald_regularregular';
+    src: url('./fonts/oswald-regular-webfont.woff2') format('woff2'),
+         url('./fonts/oswald-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+@font-face {
+    font-family: 'poiret_oneregular';
+    src: url('./fonts/poiretone-regular-webfont.woff2') format('woff2'),
+            url('./fonts/poiretone-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+html, body {
+    height: 100%;
+  }
+body{
+    background: #{$background}; 
+    overflow:auto;
+    color:#{$background-invert};
+}
+main {
+    padding-bottom:100px;
+    & h1{
+        font-size:1.8em;
+        margin-bottom:2rem;
+    }
+    & h2{
+        border-left:5px solid #{$background-invert};
+        padding-left:10px;
+        font-size:1.6em;
+        margin-bottom:0.9rem;
+        margin-top:0.9rem;
+        display: inline-block;
+    }
+    & h3{
+        font-size:1.3em;
+        margin-bottom:0.8rem;
+        margin-top:0.8rem;
+        font-style: italic;
+    }
+    & h4{
+        font-size:1.2em;
+        margin-bottom:0.7rem;
+    }
+}
+/**  NAVIGATION **/
+.navbar-toggler{
+    clear:both;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+}
+.navbar-nav .fas{
+    background-color:#fff;
+    border-radius:15px;
+    width:30px;
+    height:30px;
+    line-height:30px;
+    color: #{$couleur1};
+    text-align:center;
+    margin-right:10px;
+    float:left;
+}
+.navbar-nav .fas:hover{
+    background-color:transparent;
+    border:2px solid #fff;
+    color:#fff;
+    line-height: 25px;
+}
+.navbar .navbar-toggle .icon-bar{
+    background-color: #fff;
+}
+
+/** EFFET FADE IN **/
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/** OPTIONS D'AFFICHAGE GENERALE DU LOGO **/
+.logo_app{
+    z-index:3;
+    position:absolute;
+    transition: all 1s ease-in-out;
+    padding:10px;
+    float:left;
+    transition: opacity 5; background: linear-gradient(90deg,  #{$couleur1},  #{$couleur2});
+    img{
+        background-color:#fff;
+    }
+}
+/* DESCRIPTION */
+.desc{
+    display:block;
+    font-family: "poiret_oneregular";
+    text-transform: uppercase;
+    color:#fff;
+}
+/* PAGE D'ACCUEIL */
+.home {
+    .title_app{
+        padding:10px 10px 10px 0;
+    }
+    
+}
+
+/* PAGE PLEINE */
+
+
+/* AUTRES PAGE QUE L'ACCUEIL */
+.no-home .title_app{
+    padding:10px;
+}
+
+
+/* BREADCRUMB - FIL D'ARIANNE */
+.breadcrumb{
+    background-color:transparent;
+    margin-top:5px;
+    font-size:x-small;
+    padding:5px 10px;
+    border:1px solid rgba(0,0,0,0.1);
+    margin-right: 166px;
+    margin-bottom:5px;
+    &:hover{
+        background-color:rgba(0,0,0,0.1);
+    }
+    .fas{
+        color:#{$couleur1};
+        margin-right:5px;
+    }
+    
+}
+.breadcrumb-item + .breadcrumb-item::before{
+    content: ">";
+}
+.breadcrumb-item a{
+    color:#{$couleur1};
+
+    &:hover{
+        color:#{$couleur2};
+    }
+    &:visited{
+        color:#{$couleur2};
+    }
+}
+.current-user{
+    background-color:#{$couleur3};
+    padding:5px 10px;
+    float:right;
+    border-radius:0.25rem;
+    font-size:x-small !important;
+    margin-left:5px;
+    &:hover{
+        background-color:#{$couleur1};
+    }
+    &:hover .ident{
+        display:inline-block;
+        width:initial;
+    }
+    & a, & .fas{
+        color:#{$background} !important;
+        font-size:x-small !important;
+    }
+    & .ident{
+        display:none;
+    }
+}
+.not-home .current-user{
+    margin-right: 134px;
+}
+.index .current-user{
+    margin-right: 0px;
+}
+
+
+/* NAVIGATION */
+.navbar-expand-lg .navbar-nav .nav-link{
+    padding-right:0;
+    padding-left: 10px;
+}
+nav.open {
+    .my_menu_button .icon-bar:nth-child(1){
+        transform: rotate(45deg);
+        position: absolute;
+        top: 23px;
+        left:10px;
+    }
+    .my_menu_button .icon-bar:nth-child(2){
+        opacity: 0;
+    }
+    .my_menu_button .icon-bar:nth-child(3){
+        transform: rotate(-45deg);
+        position: absolute;
+        top: 23px;
+        left:10px;
+    }
+    .navbar-collapse{
+        width:100%
+    }
+    ul{
+        width:100%
+    }
+    .nav-item a{
+        line-height:30px;
+    }
+
+    .nav-item{
+        margin-bottom:3px;
+    }
+    .nav-item:hover{
+        border:1px solid #fff;
+        border-radius:30px;
+    }
+    .my_menu_button{
+        right:0;
+        margin-right: 0px;
+    }
+}
+nav.simple .nav-item{
+    line-height:30px;
+    margin-bottom:3px;
+}
+
+/** MENU GENERAL **/
+.menu_gene{
+    transition: opacity 5; background: linear-gradient(90deg,  #{$couleur1},  #{$couleur2}); /* couler 1 et couleur 2 */
+    position:fixed;
+    top:0;
+    left:0px;
+    width:50px;
+    height:100%;
+    font-family: oswald_regularregular;
+    overflow:hidden;
+    z-index:5;
+
+    &.simple{
+        transition: all 0.5s ease-in-out;
+        width:50px;
+    }
+    &.simple .nav-item{
+        opacity: 0;
+    }
+    &.simple .nav-item span{
+        display:none;
+    }
+    &.open{
+        top:0;
+        width:250px;
+        height:100%;
+        transition: all 0.5s ease-in-out;
+    }
+    &.open .nav-item span{
+        opacity: 0;
+        animation: fadeIn 0.5s;
+        animation-delay: 0.5s;
+        animation-fill-mode: forwards;
+    }
+    &.open .nav-item i{
+        opacity: 0;
+        animation: fadeIn 0.5s;
+        animation-delay: 0.5s;
+        animation-fill-mode: forwards;
+    }
+    .nav-item{
+        opacity: 0;
+        animation: fadeIn 0.8s;
+        animation-timing-function: ease-in-out;
+        animation-fill-mode: forwards;
+    }
+    .navbar-collapse{
+        flex-grow:0;
+        margin-top:50px;
+    }
+}
+
+/* MENU SECONDAIRE */
+.menu_sec{
+    padding:0;
+    margin-top:64px;
+    background: transparent !important;
+    padding-left:25px;
+    &.nav-tabs{
+        border-bottom: 1px solid #F4F4F4;
+    }
+    &.nav-tabs .nav-item a{
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
+        padding: 2px 10px;
+        margin-right:5px;
+        color:inherit;
+        background-color: #F4F4F4;
+        border-color: 0px solid transparent;
+        transition: all 0.2s ease-in-out;
+    }
+    &.nav-tabs .nav-item a.active{
+        background:  #{$couleur4};
+        color:#fff;
+        border-color: 0px solid transparent;
+    }
+    &.nav-tabs .nav-item a.active:hover{
+        border-color: inherit;
+    }
+    &.nav-tabs .nav-item a:hover{
+        background-color:  #{$couleur4};
+        color:#fff;
+        border-color: 0px solid transparent;
+        padding-bottom:-5px;
+    }
+    &.nav-tabs .dropdown-menu{
+        padding:0;
+    }
+    &.nav-tabs .dropdown-divider{
+        margin:0;
+    }
+    & li:hover > ul.dropdown-menu {
+        display: block;
+    }
+    & .dropdown-submenu {
+        position:relative;
+    }
+    & .dropdown-submenu > .dropdown-menu {
+        top:0;
+        left:100%;
+        margin-top:-6px;
+    }
+    & .dropdown-submenu > a::after {
+        display: inline-block;
+        width: 0;
+        height: 0;
+        margin-left: 10px;
+        vertical-align: middle;
+        border-left: 5px solid;
+        border-bottom: 5px solid transparent;
+        border-top: 5px solid transparent;
+        margin-bottom:3px;
+    }
+}
+.dropdown-item{
+border-top-left-radius: 0rem !important;
+border-top-right-radius: 0rem !important;
+background-color:#fff;
+}
+/* TITRES */
+h3{
+    &.page-title{
+    font-family: "oswald_regularregular";
+    color: #{$couleur1};
+    display:block;
+    float:left;
+    padding-left: 20px;
+    text-align: left;
+    }
+}
+h4{
+    color: #{$couleur4};
+    margin:15px;
+}
+/* MOTEUR DE RECHERCHE */
+.search{
+    font-family: "oswald_regularregular";
+    background: url("images/loupe_search.png") no-repeat  #{$couleur1} 7px 5px;
+    border:0px solid;
+    border-radius:17px;
+    font-size:1em;
+    line-height:2em;
+    padding:2px 15px 2px 35px;
+    margin-left:15px;
+    max-width:39%;
+    color:#fff;
+}
+.search:hover,.search:focus{
+    background: linear-gradient(90deg, #{$couleur1}, #{$couleur2});
+}
+/* page d'index des applis */
+.index {
+    padding-top:0;
+    .container{
+        min-width:100%;
+        background: url(images/thumb/_dsc7567acdem.jpg); 
+        background-size:cover;
+       
+        padding-right: 0px;
+        margin-left: 0px;
+        }
+    .site-wrapper{
+        background: linear-gradient(90deg,  #{$background} 10%, transparent 80%, #{$background} 100%);
+        height:100%;
+        width:100%;
+        padding: 10px; 
+        padding-bottom: 50px;   
+    }
+    main{
+        padding-bottom: 15px;
+    }
+    .breadcrumb{
+        margin-right:28px;
+    }
+    footer{
+        padding-left: 200px;
+        img{
+            max-width: max-content;
+            bottom: 50px;
+        }
+    }
+}
+.tooltip_templates { 
+    display: none; 
+}
+/* page d'index card */
+.card{
+    padding:0px;
+    border:none;
+    padding-left:13px;
+    transition: all 0.2s ease-in-out;
+    margin-bottom:15px;
+    h3{
+        font-size: 1.2em;
+
+    }
+    &:hover{
+        padding-left:20px;
+    }
+    .card-body{
+        background-color: #{$background};
+        //background-color: rgba(255, 255, 255, 0.9);
+        border-top-right-radius:3px;
+        border-bottom-right-radius:3px;
+    }
+    
+    a{
+        font-size:small;
+    }
+    .btn{
+        font-size:x-small;
+    }
+    ul, ul li{
+        padding:0;
+        margin:0;
+        background-color: transparent;
+    }
+    
+    .detail{
+        float: right;
+        cursor: context-menu;
+        padding:2px 5px;
+    }
+    
+    // fonction pour la définition des couleurs des blocks card
+    @mixin back($selecteur,$color1:#fff,$color2:#CECECE){
+        
+
+        &.card-#{$selecteur} .btn{
+            border:1px solid $color1;
+            color:$color1;
+        }
+        &.card-#{$selecteur} h3, &.card-#{$selecteur} .fas{
+            color:$color1; /* hack ie */
+            background: -webkit-linear-gradient( $color1, $color2);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        &.card-#{$selecteur}{
+            background: linear-gradient($color1, $color2);
+            color:#{$background};
+        }
+        
+        &.card-#{$selecteur} li{
+            padding-top:2px;
+            border-bottom:0px solid $color2; 
+            transition: all 0.3s ease-in-out;
+            color:$color1;
+            padding:2px 5px 2px 10px;
+            border-radius:3px;
+            margin-left:-6px;
+            list-style: none;
+            font-size:small;
+        }
+      
+        &.card-#{$selecteur} li:hover{
+            color:#{$background};
+            background-color:$color1;
+            margin-left:-12px;
+            text-decoration: none;
+            
+        }
+        &.card-#{$selecteur} li:hover .btn{
+            color:$color1;
+            background-color:#{$background};
+            border:none;
+        }
+        &.card-#{$selecteur} li:hover a{
+            color:#{$background};
+            text-decoration: none;
+        }
+        &.card-#{$selecteur} li:hover ul li{
+            color:#{$background};
+            text-decoration: none;
+        }
+        &.card-#{$selecteur} a{
+            color:$color1;
+         }
+         &.card-#{$selecteur} h3, &.card-#{$selecteur} .fas{
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        &.card-#{$selecteur} .fas{
+            margin-right:5px;
+        }
+    }
+    //couleur pour le block Administration
+    @include back(theme1,#ED1E79,#F15A24);
+
+    //couleur pour le block RH
+    @include back(theme4,#00afaf,#19b949);
+
+    //couleur pour le block finances
+    @include back(theme7,#a57919, #ecbb1a);
+    
+    //couleur pour le block formation
+    @include back(theme3,#f230c1,#F23535);
+   
+    //couleur pour le block scolarité et concours
+    @include back(theme8,#ec1aa6, #841f88);
+    
+    //couleur pour le block informatique
+    @include back(theme2,#049DD9,#05C7F2);
+    
+    //couleur pour le block pédagogie
+    @include back(theme6,#19a599, #1aecc9);
+    
+    //couleur pour le block divers
+    @include back(theme5,#5379E0, #9F40D6);
+    
+
+    
+    
+    
+}
+/* documentation */
+.documentation, article{
+    padding-top:15px;
+    text-align: justify;
+    
+}
+.page-sous-menu{
+    max-width:30%;
+    border-radius: 3px;
+    float:right;
+    margin:15px;
+    padding:0px;
+    text-align:center;
+    overflow:auto;
+    border:1px solid #cecece;
+    & .sommaire{
+        cursor:pointer;
+        background-color: #{$couleur1};
+        color: #{$background};
+        padding:3px 10px;
+    }
+    
+    & .fas{
+        font-size: 15px;
+        width:15px !important;
+        height:15px !important;
+        line-height:15px !important;
+        margin-right:5px;
+    }
+    & li ul li .fas{
+       color:#cecece;
+    }
+    & ul{
+        padding:0;
+    }
+    & li{
+        list-style: none;
+        text-align:left;
+        padding:2px 15px;
+    }
+    & li ul li{
+        text-align:left;
+        padding:2px 15px 2px 20px;
+    }
+}
+
+.page-sous-menu-fixed{
+    z-index: 999999;
+    position: fixed;
+    right: 0px;
+    top: 0px;
+    background-color: #{$background};
+}
+
+/* TABLEAUX DE DONNEES */
+table.donnees{
+    margin-top:25px;
+    margin-bottom: 65px;
+    @extend %my_shadow;
+    border-collapse:separate;
+    border:solid #c3c3c3 1px;
+    border-radius:8px;
+    -moz-border-radius:8px;
+    border-spacing: 0px;
+    a:hover{
+        text-decoration:none !important;
+    }
+    th{
+        background: rgba(241, 241, 241, 0.75);
+        padding:10px;
+    }
+    tr:first-child th:first-child{
+        border-radius:8px 0 0 0;
+        -moz-border-radius:8px 0 0 0;
+    }
+    tr:first-child th:last-child{
+        border-radius:0 8px 0 0;
+        -moz-border-radius:0 8px 0 0;
+    }
+    tr:last-child td:first-child{
+        border-radius:0 0 0 8px;
+        -moz-border-radius:0 0 0 8px;
+    }
+    tr:last-child td:last-child{
+        border-radius:0 0 8px 0;
+        -moz-border-radius:0 0 8px 0;
+    }
+    tr:hover th{
+        background: rgb(75, 75, 75);
+        color:#fff;
+    }
+    tr:hover td{
+        background-color: #{$couleur4};
+        color:#fff;
+    }
+    tr:hover .fas{
+        color:#fff;
+    }
+    td{
+        font-size: smaller;
+        padding:0.5rem 0.5rem;
+        border-bottom:solid #c3c3c3 1px;
+    }
+
+}
+/* ICONES DE CONTENUS */
+.row{
+    margin:0;
+    i.fas{
+        display:inline-block;
+        width:25px;
+        height:25px;
+        color: #{$couleur4};
+        line-height:25px;
+        text-align:center;
+        font-size:15px;
+    }
+    i.fas:hover{
+        text-decoration: none;
+        color:#fff;
+        background-color: #{$couleur4};
+        border-radius:15px;
+    }
+}
+/* ADRESSES */
+address{
+    width: 100%;
+    .vcard{
+        display:inline-block;
+        padding:10px;
+        margin:auto;
+        text-align:center;
+        width: 100%;
+    }
+}
+/* PHOTO */
+.photo{
+    width:250px;
+    height:250px;
+    border-radius:125px;
+    overflow:hidden;
+    background-color: #cecece;
+    margin:15px auto;
+    transition: all 0.2s ease-in-out;
+    img{
+        max-width:250px;
+        height:auto;
+        transition: all 0.2s ease-in-out;
+        text-align:center;
+        margin:auto;
+        vertical-align: middle;
+    }
+    img:hover{
+        transform: scale(1.3);
+        height:auto;
+    }
+    &:hover{
+        @extend %my_shadow;
+        transform: scale(0.9);
+    }
+}
+
+
+/* CLASS DE TRANSITION DU MENU */
+.collapsing{
+    margin-top:50px;
+    flex-grow:0;
+    height:auto;
+}
+.my_menu_button{
+    position:absolute;
+    display: block;
+    height:50px;
+    width:50px;
+    border:0px solid black;
+    background-color:transparent;
+    top:0;
+}
+/* PIED DE PAGE */
+footer{
+    position: relative;
+    display:block;
+    clear:both;
+    height:100px;
+    text-align:center;
+    background-color: #{$couleur3}; /* couleur 3 */
+    color:#fff;
+    width:100%;
+    padding:30px 10px 10px 60px;
+    font-family: sans-serif;
+    font-size: 0.8em;
+    font-weight:lighter;
+    margin-top: -100px;
+    & a{
+        color:#fff;
+    }
+    img{
+        max-width: 80px;
+        position: absolute;
+        bottom: 75px;
+        left: 85px;
+      
+    }
+    & .app-version{
+        float:right;
+    }
+}
+/* ENTETE */
+header{
+    text-align:center;
+    .logo_acad_home{
+        background:url(images/10_logoAC_GUADELOUPE_web.png) center no-repeat;
+        display:block;
+        background-size:contain;
+        animation: fadeIn 1.8s;
+        margin:auto;
+    }
+}
+/* FORMULAIRES DE DONNEES */
+main form{
+    max-width:800px !important;
+    margin-bottom:100px;
+    margin-top:10px;
+    padding-bottom: 10px;
+    font-family: sans-serif;
+    font-weight: lighter;
+    border-radius:10px;
+    padding-left:10px;
+    padding-right:10px;
+    .form-control{
+        background-color:rgba(255, 255, 255, 0.7)
+    }
+    input, select, .input-group-text{
+        border:1px solid #cecece;
+        border-radius:17px!important;
+        font-size:1em;
+        line-height:2em;
+        padding:2px 15px 2px 15px;
+    }
+    input:hover, select:hover, .input-group-text:hover{
+        border:1px solid #c3c3c3;
+        @extend %my_shadow;
+    }
+    textarea{
+        width: 100%;
+        background: #f5f5f5;
+        border-radius:10px;
+        border:1px solid #cecece;
+    }
+    textarea:hover{
+        border:1px solid #c3c3c3;
+        @extend %my_shadow;
+    }
+    .form-row{
+        margin:15px 0;
+    }
+    label{
+        font-size:small;
+    }
+
+}
+/* AFFICHAGE Intermédiaire */
+@media only screen and (min-width:993px){
+    /* index des applis */
+    .index {
+            
+        .container{
+            min-height: 100%;
+            height: 100%;
+        }
+    }
+}
+    
+  /* AFFICHAGE Intermédiaire */
+@media only screen and (max-width:992px){
+    
+    .index main{
+        margin-top:15px;
+        .row .col-xs-1-12{
+            margin-top:15px;
+        }
+    }
+}
+
+/* AFFICHAGE MOBILE */
+@media only screen and (max-width:500px){
+    $mywidth:100%;
+    $myheight:calc(#{$mywidth});
+    $taille:calc(#{$mywidth}/2);
+    %my_shadow1{
+        box-shadow:0px 3px 5px 3px rgba(0,0,0,0.1);
+    }
+    /* page documentation */
+    .documentation img{
+        width: 100%;
+        height:auto;
+    }
+    .page-sous-menu {
+        max-width: 100%;
+    }
+    /* page d'index */
+    .index .container{
+        padding-bottom: 150px;
+    }
+    .index main{
+        margin-top:15px;
+        .row .col-xs-1-12{
+            margin-top:15px;
+        }
+    }
+    /* FOND D'ECRAN */
+    body.not-home{
+        background: url("images/10_logoAC_GUADELOUPE_web.png") no-repeat center 350px ; /* clear mode */
+       height:100%;
+       background-size: 70%;
+    }
+    .container{
+        min-height:100%;
+        padding-bottom:100px;
+    }
+    .collapsing .nav-item{
+       display:none;
+    }
+    .logo_acad_home{
+        max-width: 200px;
+    }
+    .menu_gene{
+        z-index: 5;
+        background-color: transparent;
+    }
+
+    /* BREADCRUMB */
+    .breadcrumb{
+        margin-left:36px;
+        margin-right:0px;
+    }
+    .index .breadcrumb{
+        margin-left:26px;
+    }
+    .current-user, .not-home .current-user{
+        margin-right:0px;
+    }
+
+    /* ENTETE */
+    header{
+        
+        .logo_acad_home{
+            max-width:70%;
+            height:200px;
+            margin:auto;
+        }
+    }
+    
+    /* ICONES DE MENU */
+    .simple .icon-bar{
+        background-color: #{$couleur3};
+        display: block !important;
+        height:3px;
+        width:30px;
+        margin:auto;
+        margin-bottom:3px;
+    }
+    .open .icon-bar{
+        background-color:#fff;
+        display: block !important;
+        height:3px;
+        width:30px;
+        margin:auto;
+        margin-bottom:3px;
+    }
+    
+    /* LOGO APPLI HORS ACCUEIL*/
+    .not-home .logo_central{
+        margin:auto;
+        position: relative;
+        top:0;
+        width:100%;
+        
+    }
+    /* LOGO APPLI */
+    .logo_app{
+        z-index:3;
+        position:absolute;
+        transition: all 1s ease-in-out;
+        padding:10px;
+        float:left;
+        transition: opacity 5; background: linear-gradient(90deg,  #{$couleur1},  #{$couleur2});
+            width:$taille;
+            margin-left:25%;
+           
+        img{
+            padding:calc(#{$mywidth}/9) calc(#{$mywidth}/7);
+            height:134px;
+        }
+        img:hover{
+            @extend %my_shadow1;
+        }
+        
+    }
+    /* RECHERCHE */
+    .search {
+        max-width: 90%;
+    }
+    /* LOGO ACCUEIL */
+    .home {
+        .logo_central{
+            margin:auto;
+            position:absolute;
+            top:58%;
+            left:50%;
+            width:80%;
+            margin-left:calc(80%/-2);
+            margin-top:-125px;
+        }
+        /* TITRE APPLI */
+        .title_app{
+            z-index:2;
+            position:absolute;
+            width:calc(#{$mywidth}/2);
+            height:154px;
+            margin-left:25%;
+            float:left;
+            display:block;
+            background: linear-gradient(90deg,  #{$couleur2},  #{$couleur1});
+            transition: all 1s ease-in-out;
+        }
+    }
+    /* TITRE APPLI HORS ACCUEIL */
+    .not-home .title_app{
+        padding:10px;
+        width: 150px;
+        height: 150px;
+        display:block;
+        background: linear-gradient(90deg,  #{$couleur2},  #{$couleur1});
+        transition: all 1s ease-in-out;
+    }
+    /* ILLUSTRATION */
+    .title_image{
+        display:none;
+    }
+    /* TITRE DE PAGE */
+    h1.title{
+        font-family: "oswald_regularregular";
+        font-size:2em;
+        text-transform:uppercase;
+        font-weight:bold;
+        color:#fff;
+        margin-bottom:0px;
+    }
+    h3.page-title{
+        text-align:center;
+        padding-top:15px;
+        float: none;
+    }
+    /* DESCRIPTION */
+    .desc{
+        font-size:1.2em;
+    }
+    /* EFFET DE MOUVEMENT */
+    .home .move_right{
+        margin-left:50%;
+    
+    }
+    .not-home .move_right{
+        margin:auto;
+    }
+    .move_left{
+        margin-left:0;
+    }
+    /* MENU SIMPLE */
+    .simple{
+        background:transparent;
+    }
+    /* FOOTER */
+    footer img {
+        max-width: 80px;
+        position: absolute;
+        bottom: 70px;
+        left: 50%;
+        margin-left: -40px;
+    }
+}
+/* AFFICHAGE NON MOBILE petite hauteur */
+@media only screen and (min-width:501px) and (max-height:700px){
+    .index .container{
+        min-height: 100%;
+        height:auto;
+        
+    }
+
+}
+ /* AFFICHAGE NON MOBILE petite hauteur */
+@media only screen and (min-width:501px) and (min-height:701px){
+   
+    .index .container{
+        
+        height:auto;
+        
+    }
+
+}
+   
+    
+/* AFFICHAGE NON MOBILE */
+@media only screen and (min-width:501px){
+    /* EFFET D'OMBRE */
+    %my_shadow{
+        box-shadow:0px 3px 5px 3px rgba(0,0,0,0.1);
+    }
+    body{
+        min-height: 100vh;
+    }
+    header, .row{
+        width:100%;
+        margin-top:15px;
+    }
+    
+
+    /* FOND D'ECRAN */
+    body.not-home{
+        /*background: url("images/10_logoAC_GUADELOUPE_mid.png") no-repeat #{$background} center 300px ; */
+        background: url("images/10_logoAC_GUADELOUPE_mid.png") no-repeat center 300px;
+       height:100%;
+       background-size: 40%;
+       background-attachment: fixed;
+    }
+    /* ENTETE DE PAGE */
+    .not-home header{
+        text-align:left;
+        padding:20px 0px;
+    }
+    /* ENTETE ACCUEIL */
+    header{
+        
+        .logo_acad_home{
+            max-width:35%;
+            height:200px;
+            margin:auto;
+        }
+    }
+    /* PARAMETRES DES EFFETS */
+    header img,body,.logo_central{
+        transition: all 0.5s ease-in-out;
+    }
+    .container{
+        padding-left:50px;
+        min-width:100%;
+        min-height:100%;
+        padding-bottom:100px;
+    }
+    
+    
+    .pad .container{
+        padding-left:0px;
+    }
+    
+    
+    .site-wrapper{
+        padding: 10px;
+    }
+    .icon-bar{
+        background-color:white;
+        display: block !important;
+        height:3px;
+        width:30px;
+        margin:auto;
+        margin-bottom:3px;
+    }
+    /* LOGO A L'ACCUEIL */
+    .home .logo_central{
+        margin:auto;
+        position:absolute;
+        top:50%;
+        left:50%;
+        width:500px;
+        margin-left:-250px;
+        margin-top:-125px;
+    }
+    
+    .logo_app{
+        z-index:3;
+        margin-left:125px;
+        width:251px;
+        height:250px;
+
+      
+        img{
+            background-color:#fff;
+            width:230px;
+            height:230px;
+            padding:20px 30px;
+        }
+        img:hover{
+            box-shadow:3px 3px 15px 3px rgba(0,0,0,0.2);
+        }
+    }
+    /* TITRE A L'ACCUEIL */
+    .home {
+        .title_app{
+            z-index:2;
+            position:absolute;
+            width:250px;
+            height:250px;
+            margin-left:125px;
+            float:left;
+            display:block;
+            transition: opacity 5; background: linear-gradient(90deg,  #{$couleur2},  #{$couleur1});
+            transition: all 1s ease-in-out;
+        }
+        h1.title{
+            font-family: "oswald_regularregular";
+            font-size:3em;
+            text-transform:uppercase;
+            color:#fff;
+            font-weight: bold;
+        }
+        .desc{
+            display:block;
+            font-size:2em;
+        
+        }
+        .breadcrumb{
+            margin-right:0px;
+        }
+    }
+    /* TITRE HORS ACCUEIL */
+    .not-home{ 
+        .title_app{
+            z-index:2;
+            position:absolute;
+            width:150px;
+            height:150px;
+            right:0;
+            top:0px;
+            opacity:0;
+            padding:10px;
+            animation: fadeIn 2s;
+            animation-timing-function: ease-in-out;
+            animation-fill-mode: forwards;
+            display:block;
+            transition: opacity 5; background: linear-gradient(90deg,  #{$couleur2},  #{$couleur1});
+            transition: all 1s ease-in-out;
+        }
+        /* ILLUSTRATION DE PAGE */
+        .title_image{
+            z-index:3;
+            position:absolute;
+            width:150px;
+            height:249px;
+            right:0;
+            top:150px;
+            background: url("images/rectorat1.jpg") no-repeat;
+            background-size: cover;
+            opacity:0;
+            animation: fadeIn 2s;
+            animation-timing-function: ease-in-out;
+            animation-fill-mode: forwards;
+            display:block;
+            transition: opacity 5;
+            transition: all 1s ease-in-out;
+            @extend %my_shadow;
+        }
+        /* COMMENTAIRE DE L'ILLUSTRATION */
+        .title_image span{
+            display:none;
+        }
+        /* AFFICHAGE DU COMMENTAIRE AU SURVOL */
+        .title_image:hover span{
+            display:block;
+            background: rgba(0,0,0,0.5);
+            color:#fff;
+            padding:2px 10px ;
+            text-align:center;
+            bottom:0px;
+            position: absolute;
+            width:100%;
+            font-size:x-small
+        }
+        /* TITRE DE PAGE */
+        h1.title{
+            font-family: "oswald_regularregular";
+            font-size:1.2em;
+            text-transform:uppercase;
+            color:#fff;
+            font-weight: bold;
+        }
+        .desc{
+            display:block;
+            font-size:1em;
+        }
+    }
+    /* EFFET DE DEPLACEMENT DU LOGO EN PAGE D'ACCUEIL */
+    .move_right{
+        margin-left:250px!important;
+    }
+    .move_left{
+        margin-left:0px;
+    }
+    /* EFFET DE DEPLACEMENT DU CONTAINER */
+    .pad{
+        margin-left:250px;
+    }
+    .pad1{
+        margin-left:-125px !important;
+    }
+}

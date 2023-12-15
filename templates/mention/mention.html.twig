@@ -1,0 +1,43 @@
+{% extends 'layout_ag.html.twig' %}
+{% block title %}<title>Mentions légales - {{app.user.appli}}</title>{% endblock %}
+{% block body %}<body  class="page not-home">{% endblock %}
+{% block header %}
+    <div class="title_app" id="title">
+        <h1 class="title">{{ app.user.appli }}</h1>
+        <h2 class="desc">{{ app.user.libappli }}</h2>
+    </div>
+    <div class="title_image">
+        <span>Rectorat</span>
+    </div>
+    <h3 class="page-title">Mentions légales</h3>  
+{% endblock %}
+{% block main %}
+    <main class="row justify-content-md-left">
+        <div class="col-md-12 col-sm-12 col-lg-9">
+            <article>
+                <h2>Editeur de l'application</h2>
+                <p>Rectorat de la Guadeloupe&nbsp;<br>BP 480 <br>97183 ABYMES CEDEX <br><br><strong>Téléphone : </strong>05 90 47 81 00</p>
+                <h2>Directrice de publication</h2>
+                <h3>Christine GANGLOFF-ZIEGLER</h3>
+                <p>Recteur de l'Académie de Guadeloupe</p>
+                <h2>Responsable SI</h2>
+                <h3>Christophe GOUINAUD</h3>
+                <p>Directeur des Systèmes d'Information</p>
+                <h2>Fournisseur de l'hébergement</h2>
+                <p>Rectorat de la Guadeloupe&nbsp;<br>BP 480 <br>97183 ABYMES CEDEX</p>
+                <h2>Conception et développement</h2>
+                <h3><i class="fas fa-users"></i> Chef de projet </h3>
+                Olivier MAUREAUX (DSI-DQDI)
+                <h3><i class="fas fa-cogs"></i> Développement</h3>
+                Bertrant DRECOURT (DSI-DQDI)
+                <h3><i class="fas fa-paint-brush"></i> Interface et design</h3>
+                Didier FABIUS (DSI-DQDI)
+                <h3><i class="fas fa-chalkboard-teacher"></i> Documentation</h3>
+                Fabrice BEAUZOR (DSI-DQDI)
+                <h2>Droits d'auteur</h2>
+                <p>Tous droits du ou des propriétaires du site sont réservés. Vous disposez d'un droit d'accès, de modification, de rectification et de suppression des données qui vous concernent ( art.26, 34 à 38 de la loi "Informatique et Libertés" n° 78-17 du 6 janvier 1978 ).<br><br>Pour exercer ce droit, adressez-vous à: <a href="mailto:dsi-dqdi@ac-guadeloupe.fr?subject=Signalement relatif aux traitement de données">dsi-dqdi@ac-guadeloupe.fr</a></p>
+                <p>Signaler un contenu illicite: <a href="mailto:dsi-dqdi@ac-guadeloupe.fr?subject=Signalement de contenu illicite">dsi-dqdi@ac-guadeloupe.fr</a></p>
+            </article>
+        </div>
+    </main>
+{% endblock %}

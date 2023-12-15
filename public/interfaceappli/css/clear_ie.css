@@ -1,0 +1,23 @@
+/** CLEAR MODE **/
+
+body{
+    background-color:#fff !important;
+    color: #343656;
+}
+.menu_sec.nav-tabs .nav-item a{
+    background-color: transparent;
+}
+main {
+    background-color: rgba(255, 255, 255, 0.8);
+}
+main form{
+    background-color: rgba(255, 255, 255, 0.1);
+}
+@media only screen and (max-width:500px){
+    .index main{
+        background-color:transparent !important;
+    }
+    .index .site-wrapper{
+        background:transparent !important;
+    }
+}

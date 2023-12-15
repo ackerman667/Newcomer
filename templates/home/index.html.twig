@@ -1,0 +1,18 @@
+{% extends 'layout_ag.html.twig' %}
+{# {% block home %}<meta http-equiv="refresh" content="2; url={{ path('1erpage') }}">{% endblock %} #}
+{% block title %}<title>Home - New Comer</title>{% endblock %}
+{% block body %}<body class="page home plainpage">{% endblock %}
+{% block header %}<span class="logo_acad_home"></span>{% endblock %}
+{% block main %}
+    <div class="site-wrapper-inner">
+        <div class="logo_central">
+            <div class="logo_app" id="logo">
+                <img src="{{ asset('css/images/logo_app_big.png','interfaceappli') }}" alt='Nouveaux arrivants'>
+            </div>
+            <div class="title_app" id="title">
+                <h1 class="title">New Comer</h1>
+                <h2 class="desc">Nouvel arrivant</h2>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,7 @@
+/** COLOR SCHEME 7 **/
+:root{
+    --couleur1: #a57919; /*première couleur du dégradé. */
+    --couleur2: #ecbb1a; /*Deuxième couleur du dégradé. */
+    --couleur3: rgb(214, 64, 176); /*couleur du footer.  */
+    --couleur4: rgb(214, 64, 176); /*couleur du footer.  */
+}

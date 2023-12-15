@@ -1,0 +1,17 @@
+/** CLEAR MODE **/
+:root{
+    --main-bg-color: #343656;/* thème clair: #fff; thème sombre:  #343656 */
+    --main-color: #fff;/* couleur inversée */
+}
+body{
+    background-color: var(--main-bg-color) !important;
+}
+.menu_sec.nav-tabs .nav-item a{
+    background-color: transparent;
+}
+main {
+    background-color: rgba(52, 54, 86, 0.8);
+}
+main form{
+    background-color: rgba(255,255,255, 0.1);
+}

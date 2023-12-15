@@ -1,0 +1,57 @@
+{% extends 'layout_ag.html.twig' %}
+{% block title %}<title>Aide - {{app.user.appli}}</title>{% endblock %}
+{% block head_gene %}
+    <script type="text/javascript" src="{{ asset('js/documentation.js','interfaceappli') }}" defer></script>
+{% endblock %}
+{% block body %}<body  class="page not-home">{% endblock %}
+{% block header %}
+    <div class="title_app" id="title">
+        <h1 class="title">{{ app.user.appli }}</h1>
+        <h2 class="desc">{{ app.user.libappli }}</h2>
+    </div>
+    <div class="title_image">
+        <span>Rectorat</span>
+    </div>
+    <h3 class="page-title">Aide</h3>  
+{% endblock %}
+{% block main %}
+<main class="row justify-content-md-left">
+<div class="documentation col-md-12  col-sm-12  col-lg-9">
+<div class="page-sous-menu"></div>
+<h1>A - Pour commencer</h1>
+<p>Votre application <b>Café</b> vous permet de visualiser les versements que vous avez effectué et la cagnotte en cours.</p>
+<h1>B - Les menus de l'application</h1>
+<h2>B1- Vue personnel</h2>
+<p>Cette vue vous permet de voir l'affichage de 2 tableaux.</p>
+<ul>
+    <li>La liste de vos versements.</li>
+    <li>La liste des appels de fonds auxquels vous n'avez pas participé.</li>
+</ul>
+<h2>B2- Cagnotte</h2>
+<p>Cette page vous permet d'avoir à tout moment un bilan financier des dépenses et de recettes.</p>
+<p>Pour un maximum de transparence la liste des dépenses est visualisable.</p>
+{% if is_granted('ROLE_ADMIN') %}
+<h2>B3- Administration</h2>
+<h3>B3_1- Gestion des appels de fonds</h3>
+<p>Ce module vous permet de gérer vos appels de fonds. Dès lors qu'il y a eu un versement par un utilisateur, l'appel ne peut ni être modifié ou supprimé.</p>
+<h3>B3_2- Gestion des recettes</h3>
+<p>Ce module vous permet de créer des recettes. Par exemple pour créer la cagnotte de début d'année.</p>
+<h3>B3_3- Gestion des dépenses</h3>
+<p>Comme l'intitulé l'indique ce module vous permettra d'indiquer toutes les dépenses qui ont été réalisés.</p>
+<h3>B3_4- Gestion des utilisateurs</h3>
+<p>Par ce module vous pourrez gérer vos utilisateurs.</p>
+<p>Ainsi vous pourrez indiquer les dates de validités des utilisateurs. Cela permettra à chacun de pouvoir participer au café dès qu'il le souhaite.</p>
+<p>Si par exemple vous avez réalisé un appel un 1er septembre et que vous souhaiter créer un utilisateur le 2 septembre. Si vous désirez qu'il participe à cet appel il faudra mettre sa date de validité au 1er.</p>
+<p>Comme indiqué dans les versements effectués par les utilisateurs certaines alertes sont indiquées. Il faudra absolument corriger les triangles en rouge.</p>
+<p>S'il existe des périodes de validités ou des versements pour un utilisateur la suppression sera impossible.</p>
+<h3>B3_5- Bilan des versements des utilisateurs valides</h3>
+<p>Ce module vous donne accès à 2 listes.</p>
+<ul>
+    <li>La liste des appels avec les utilsiateurs qui potentiellement devraient participer, avec la somme des versements. Des icons peuvent apparaitre l'explication est donnée au dessus. La loupe permet d'avoir le détail des versements pour l'utilisateur concerné.</li>
+    <li>La liste des utilisateurs avec la somme des appels auxquels il devraient participer et les sommes qui ont été versées. Les mêmes icons sont également présent permettant d'attirer votre attention. La loupe permet d'avoir un détail.</li>
+</ul>
+<h3>B3_6- Bilan des versements des appels de fonds pour les utilisateurs non valides <i class="fa fa-exclamation-triangle" style="color:red;"></i></h3>
+<p>Ce module vous permet de retrouver tous les versements qui ont été fait pour des utilisateurs qui étaient normalement non valides. Cette erreur erreur doit être corrigé obligatoirement. On pourra par exemple créer une période de validité de l'utilsiateur pour la date de l'appel.
+{% endif %}
+</main>
+{% endblock %}

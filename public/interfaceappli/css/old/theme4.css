@@ -1,0 +1,7 @@
+/** COLOR SCHEME 4 **/
+:root{
+    --couleur1: #00afaf; /*première couleur du dégradé.  */
+    --couleur2: #19b949; /*Deuxième couleur du dégradé.  */
+    --couleur3: #EE554C; /*couleur du footer.  */
+    --couleur4: #EE554C; /*couleur du footer.  */
+}

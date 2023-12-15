@@ -2,7 +2,7 @@
 framework:
     secret: '%env(APP_SECRET)%'
     #csrf_protection: true
-    annotations: false
+    annotations: true
     http_method_override: false
     handle_all_throwables: true
 
@@ -17,6 +17,12 @@ framework:
     #fragments: true
     php_errors:
         log: true
+
+    #Liens assets vers les css
+    assets:
+        packages:
+            interfaceappli:
+                base_path: '/interfaceappli'
 
 when@test:
     framework:

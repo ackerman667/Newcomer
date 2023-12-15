@@ -1,0 +1,23 @@
+<ul class="nav nav-tabs menu_sec">
+  <li class="nav-item">
+    {% if page=="profil" %}
+      <a class="nav-link active" href="{{ path('profil') }}">Vos informations<span class="sr-only">(current)</span></a>
+    {% else %}
+      <a class="nav-link" href="{{ path('profil') }}">Vos informations</a>
+    {% endif %}
+  </li>
+  <li class="nav-item">
+  {% if page=="preferences" %}
+    <a class="nav-link active" href="{{ path('preferences') }}">Vos préférences<span class="sr-only">(current)</span></a>
+  {% else %}
+    <a class="nav-link" href="{{ path('preferences') }}">Vos préférences</a>
+  {% endif %}
+  </li>
+  <li class="nav-item">
+    {% if page=="roles" %}
+      <a class="nav-link active" href="{{ path('roles') }}">Vos rôles<span class="sr-only">(current)</span></a>
+    {% else %}
+      <a class="nav-link" href="{{ path('roles') }}">Vos rôles</a>
+    {% endif %}
+  </li>
+</ul>

@@ -1,0 +1,7 @@
+/** COLOR SCHEME 5 **/
+:root{
+    --couleur1: #5379E0; /*première couleur du dégradé.  */
+    --couleur2: #9F40D6; /*Deuxième couleur du dégradé. */
+    --couleur3: #eb8b3d; /*couleur du footer.  */
+    --couleur4: #ec791a; /*couleur du footer.  */
+}

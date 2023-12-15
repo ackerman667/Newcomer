@@ -1,0 +1,42 @@
+/** DEFAULT COLOR SCHEME **/
+$background: #fff; //thème clair: #fff; thème sombre:  #343656
+$background-invert: #343656;//couleur inversée
+$couleur1:#ED1E79; //première couleur du dégradé. couleur par défault:#ED1E79
+$couleur2:#F15A24; //Deuxième couleur du dégradé. couleur par défault:#F15A24
+$couleur3:#0C33F6; //couleur du footer. couleur par défault #0C33F6
+$couleur4:#50CCC4; //couleur du footer. couleur par défault #50CCC4
+
+
+/** COLOR SCHEME 2 **/
+$background: #fff; //thème clair: #fff; thème sombre:  #343656
+$background-invert: #343656;//couleur inversée
+$couleur1:#049DD9; //première couleur du dégradé. couleur par défault:#049DD9
+$couleur2:#05C7F2; //Deuxième couleur du dégradé. couleur par défault:#05C7F2
+$couleur3:#f2356e; //couleur du footer. couleur par défault #f2356e
+$couleur4:#f23554; //couleur du footer. couleur par défault #f23554
+
+/** COLOR SCHEME 3 **/
+$background: #fff; //thème clair: #fff; thème sombre:  #343656
+$background-invert: #343656;//couleur inversée
+$couleur1:#ab30f2; //première couleur du dégradé. couleur par défault:#ab30f2
+$couleur2:#F23535; //Deuxième couleur du dégradé. couleur par défault:#F23535
+$couleur3:#32BAD9; //couleur du footer. couleur par défault #32BAD9
+$couleur4:#32BAD9; //couleur du footer. couleur par défault #32BAD9
+
+
+/** COLOR SCHEME 5 **/
+$background: #fff; //thème clair: #fff; thème sombre:  #343656
+$background-invert: #343656;//couleur inversée
+$couleur1:#5379E0; //première couleur du dégradé. couleur par défault:#00afaf
+$couleur2:#9F40D6; //Deuxième couleur du dégradé. couleur par défault:#19b949
+$couleur3:#eb8b3d; //couleur du footer. couleur par défault #EE554C
+$couleur4:#ec791a; //couleur du footer. couleur par défault #EE554C
+
+
+/** COLOR SCHEME 4 **/
+$background: #fff; //thème clair: #fff; thème sombre:  #343656
+$background-invert: #343656;//couleur inversée
+$couleur1:#00afaf; //première couleur du dégradé. couleur par défault:#00afaf
+$couleur2:#19b949; //Deuxième couleur du dégradé. couleur par défault:#19b949
+$couleur3:#EE554C; //couleur du footer. couleur par défault #EE554C
+$couleur4:#EE554C; //couleur du footer. couleur par défault #EE554C

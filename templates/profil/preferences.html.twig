@@ -1,0 +1,112 @@
+{% extends 'layout_ag.html.twig' %}
+{% block title %}<title>Accueil - {{app.user.appli}}</title>{% endblock %}
+{% block theme %}<link id="my-css" href="{{ asset('css/' ~ app.user.theme ~ '.css') }}" rel="stylesheet">{% endblock %}
+{% block script %}
+		$(".theme li:nth-child(1)").click(function (){
+            localStorage.setItem('#theme',"normal");
+			$.cookie("theme", "normal");
+			window.parent.location.reload();
+		});
+        $(".theme li:nth-child(2)").click(function (){
+            localStorage.setItem('#theme',"accessibilite");
+            $.cookie("theme", "accessibilite");
+            window.parent.location.reload();
+        });
+        $(".mode li:nth-child(1)").click(function (){
+            localStorage.setItem('#mode',"clear");
+            $.cookie("mode", "clear");
+            window.parent.location.reload();
+        });
+        $(".mode li:nth-child(2)").click(function (){
+            localStorage.setItem('#mode',"dark");
+            $.cookie("mode", "dark");
+            window.parent.location.reload();
+        });
+{% endblock %}
+{% block head_gene %}
+    <style>
+        td,th {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size:small;
+        }
+        ul.theme > li, ul.mode > li{
+            list-style: none;
+            float:left;
+            display:block;
+            width:25px;
+            height:25px;
+            color:#fff;
+            font-weight: bolder;
+
+            text-align:center;
+            line-height:25px;
+        }
+        ul.theme > li:hover,ul.mode > li:hover{
+            cursor:pointer;
+            box-shadow:0px 0px 1px 2px #000; 
+            color:#000;
+        }
+        ul.theme > li:nth-child(1){
+	        background:linear-gradient(90deg, #ED1E79, #F15A24);
+        }
+        ul.theme > li:nth-child(2){
+            background:linear-gradient(90deg, #000, gray);
+            padding-top: 0px;
+            height: 25px;
+        }     
+        ul.theme > li:nth-child(2):hover{
+            background:#fff !important;
+            color:#000;
+        }
+        ul.mode > li:nth-child(1){
+            background:#cecece;
+        }
+        ul.mode > li:nth-child(2){
+            background:#000;
+        }
+    </style>
+{% endblock %}
+{% block body %}<body  class="page not-home">{% endblock %}
+{% block Accueil %}<a class="nav-link" href="{{ path('home') }}" alt="Accueil" title="Accueil"><i class="fas fa-home"></i><span>Accueil</span></a>{% endblock %}
+{% block Profil %}<a class="nav-link" href="{{ path('profil') }}" alt="Accès à votre profil utilisateur" title="Accès à votre profil utilisateur"><i class="fas fa-user"></i><span>Profil utilisateur</span></a>{% endblock %}
+{% block IndexApplis %}
+    <a class="nav-link valid-choice" id="id_choice_1" href="{{ app.user.urlportail }}" onClick="return false;" alt="Accès à l'index des applications" title="Accès à l'index des applications" data-options='{"question":"Voulez-vous retourner au portail ?","choix1":"Oui","choix2":"Non","action1":"{{ app.user.urlportail }}","action2":"close"}'><i class="fas fa-th"></i><span>Applications</span></a>
+{% endblock %}
+{% block Aide %}<a class="nav-link" href="" alt="Accès à l'aide en ligne" title="Accès à l'aide en ligne"><i class="fas fa-info"></i><span>Aide</span></a>{% endblock %}
+{% block Deconnexion %}
+  <a class="nav-link valid-choice" id="id_choice_2" href="{{ app.user.urllogout }}" onClick="return false;" alt="Déconnexion" title="Déconnexion" data-options='{"question":"Voulez-vous vous déconnecter ?","choix1":"Oui","choix2":"Non","action1":"{{ app.user.urllogout }}","action2":"close"}'><i class="fas fas fa-power-off"></i><span>Deconnexion</span></a>
+{% endblock %}
+{% block header %}
+    <div class="title_app" id="title">
+        <h1 class="title">{{ app.user.appli }}</h1>
+        <h2 class="desc">{{ app.user.libappli }}</h2>
+    </div>
+    <div class="title_image">
+        <span>Rectorat</span>
+    </div>
+    <h3 class="page-title">Profil utilisateur</h3>  
+    {{ include("./profil/pagemenu.html.twig") }}
+{% endblock %}
+{% block main %}
+<main class="row">
+<h4>Vos préférences</h4>
+    <table>
+    <tr><th>Couleur de fond</th>
+    <td>
+    <ul class="mode">
+    <li title="clear mode"></li>
+    <li title="dark mode"></li>
+    </ul>
+    </td>
+    </tr>
+    <tr><th>Choisir un thème</th>
+    <td>
+    <ul class="theme">
+    <li title="normal theme"></li>
+    <li title="accessibilite theme"><i class="fa fa-wheelchair"></i></li>
+    </ul>
+    </td>
+    </tr>
+    </table>
+</main>
+{% endblock %}
