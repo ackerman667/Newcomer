@@ -30,7 +30,7 @@
     <!-- FORCAGE THEME PAR DEFAUT/CLEAR MODE
     <!-- My SCSS -->
     {# <link id="my-css" href="{{ asset('css/' ~ app.user.theme ~ '.css','interfaceappli') }}" rel="stylesheet"> #}
-    <link id="my-css" href="{{ asset('css/theme7.css','interfaceappli') }}" rel="stylesheet">
+    <link id="my-css" href="{{ asset('css/theme2.css','interfaceappli') }}" rel="stylesheet">
     <link id="my-mode" href="{{ asset('css/clear_ie.css','interfaceappli') }}" rel="stylesheet">
     <link rel="shortcut icon" href="favicon.ico" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />  
@@ -73,7 +73,7 @@
         else
         {
           
-          $("head #my-css").attr("href","{{ asset('css/theme7.css','interfaceappli') }}");
+          $("head #my-css").attr("href","{{ asset('css/theme2.css','interfaceappli') }}");
         }
         //récupère le storage du mode de background
         var my_mode = localStorage.getItem('#mode');
@@ -218,9 +218,9 @@
           <!-- Encart Utilisateur -->
           <span class="current-user"><a href="{{ path('profil') }}"><i class="fas fa-user"></i> <span class="ident">Bienvenue !</span></a></span>
           <ol class="breadcrumb">
-            {# <li class="breadcrumb-item"><i class="fas fa-th"></i><a href="#">{{app.user.typeappli}}</a></li>
-            <li class="breadcrumb-item"><i class="fas fa-th"></i><a href="#">{{app.user.domain}}</a></li>
-            <li class="breadcrumb-item"><i class="fas fa-home"></i><a href="#">{{app.user.appli}}</a></li> #}
+            <li class="breadcrumb-item"><i class="fas fa-th"></i><a href="#">{{monApplication.TypeAppli}}</a></li>
+            <li class="breadcrumb-item"><i class="fas fa-th"></i><a href="#">{{monApplication.DomaineAppli}}</a></li>
+            <li class="breadcrumb-item"><i class="fas fa-home"></i><a href="#">{{monApplication.Appli}}</a></li>
             <li class="breadcrumb-item active" aria-current="page">Page actuelle</li>
           </ol>
           </nav>
@@ -231,6 +231,6 @@
         {% block main %}{% endblock %}
     </div>
   </div>
-    <footer><img src="{{ asset('css/images/logo_app_mini.png','interfaceappli') }}">Académie de la Guadeloupe - Réalisation DSI-DQDI - Tous droits réservés © Rectorat de la Guadeloupe - <a href="{{ path('mention') }}">Mentions légales et crédits</a><span class="app-version"></span></footer>
+    <footer><img src="{{ asset('css/images/logo_app_mini.png','interfaceappli') }}">Académie de la Guadeloupe - Réalisation DSI-DQDI - Tous droits réservés © Rectorat de la Guadeloupe - <a href="{{ path('mention') }}">Mentions légales et crédits</a><span class="app-version">{{monApplication.VerAppli}}</span></footer>
 	</body>
 </html>
