@@ -8,6 +8,7 @@
 namespace App\Controller;
 
 use App\Classe\MonApplication;
+use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -16,7 +17,7 @@ class MentionController extends AbstractController
     /**
      * @Route("/mention", name="mention")
      */
-    public function index()
+    public function index(MonApplication $monApplication)
     {
         // Créer une instance du client HTTP Symfony
         $client = HttpClient::create();
@@ -49,7 +50,8 @@ class MentionController extends AbstractController
         }
 
         return $this->render('mention/mention.html.twig', [
-            "data" =>$data
+            "data" =>$data,
+            "monApplication" => $monApplication
         ]);
     }
 }
