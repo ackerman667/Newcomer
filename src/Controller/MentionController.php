@@ -24,7 +24,7 @@ class MentionController extends AbstractController
         // Définir l'URL de l'API que vous souhaitez interroger
         $url = $_SERVER["URLAPI"];
 
-        // Définir le token API de type Bearer
+        // Définir le token API
         $token = $_SERVER["TOKENAPI"];
 
         // Envoyer la requête à l'API avec le token dans l'en-tête Authorization
