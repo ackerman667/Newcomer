@@ -1,0 +1,25 @@
+{% extends 'layout_ag.html.twig' %}
+{% block title %}<title>Aide - {{monApplication.Appli}}</title>{% endblock %}
+{% block head_gene %}
+    <script type="text/javascript" src="{{ asset('js/documentation.js','interfaceappli') }}" defer></script>
+{% endblock %}
+{% block body %}<body  class="page not-home">{% endblock %}
+{% block header %}
+    <div class="title_app" id="title">
+        <h1 class="title">{{monApplication.Appli}}</h1>
+        <h2 class="desc">{{monApplication.LibAppli}}</h2>
+    </div>
+    <div class="title_image">
+        <span>Rectorat</span>
+    </div>
+    <h3 class="page-title">Connexion</h3>  
+{% endblock %}
+{% block main %}
+    <main class="row justify-content-md-left">
+        <div class="col-md-12 col-sm-12 col-lg-9">
+            <h4><a href="{{ path('app_login') }}">Je dispose déjà d'un compte académique</a></h4>
+            <h4 style="margin-top: 90px;"><a href="{{ path('app_login') }}">Je n'ai pas de compte académique</a></h4>
+        </div>
+    </div>
+</main>
+{% endblock %}

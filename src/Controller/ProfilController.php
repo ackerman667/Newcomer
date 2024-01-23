@@ -13,9 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class ProfilController extends AbstractController
 {
-    /**
-     * @Route("/profil", name="profil")
-     */
+    #[Route(path: '/profil', name: 'profil')]
     public function profil(MonApplication $monApplication)
     {
         return $this->render('profil/index.html.twig', [
