@@ -18,12 +18,25 @@ class RegistrationController extends AbstractController
     #[Route('/register', name: 'app_register')]
     public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager, MonApplication $monApplication): Response
     {
+        if ($this->getUser()) {
+            // L'utilisateur est connecté, redirigez-le ou affichez un message d'erreur
+            $this->addFlash('error', 'Vous n\'avez pas accès à cette page car vous êtes déjà connecté.');
+            return $this->redirectToRoute('profil'); // Remplacez 'accueil' par le nom de la route vers laquelle vous souhaitez rediriger
+        }
         $user = new User();
         $form = $this->createForm(RegistrationFormType::class, $user);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // encode the plain password
+          
+            $email = $form->get('email')->getData();
+            //Vérifiez la condition pour la redirection
+            if ($this->redirection($email)) {
+                $this->addFlash('warning', 'Votre compte a été redirigé vers la page de connexion car vous avez entrer une adresse email contenant @ac-guadeloupe.fr ce qui signifie que vous avez une adresse email académique.');
+                return $this->redirectToRoute('app_login'); // Redirection vers RSA !!!
+            }
+
+                 // hasher le mot de passe
             $user->setPassword(
                 $userPasswordHasher->hashPassword(
                     $user,
@@ -33,7 +46,11 @@ class RegistrationController extends AbstractController
 
             $entityManager->persist($user);
             $entityManager->flush();
-            // do anything else you need here, like send an email
+
+
+
+          
+
 
             return $this->redirectToRoute('profil');
         }
@@ -43,4 +60,22 @@ class RegistrationController extends AbstractController
             "monApplication" => $monApplication,
         ]);
     }
+
+
+
+
+
+
+    private function redirection(string $email): bool
+{
+    $domain = explode('@', $email)[1];
+
+    // Ajoutez des conditions pour les domaines spécifiques
+    return $domain === 'ac-guadeloupe.fr';
+}
+
+
+
+
+
 }

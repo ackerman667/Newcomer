@@ -15,7 +15,8 @@ class ConnexionType extends AbstractType
         $builder
             ->add('email', EmailType::class, [
                 'label' => 'Adresse email',
-                'attr' => ['autocomplete' => 'username'],
+                'attr' => ['autocomplete' => 'username' , 'style' => 'width: 550px; font-size: 14px;'],
+
             ])
             ->add('password', PasswordType::class, [
                 'label' => 'Mot de passe',

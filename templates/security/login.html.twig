@@ -14,8 +14,13 @@
             Vous êtes connectés avec l'adresse :  {{ app.user.userIdentifier }}, <a href="{{ path('app_logout') }}">Déconnexion</a>
         </div>
     {% endif %}
+    {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning">
+        {{ message }}
+    </div>
+{% endfor %}
 
-    <h1 class="h3 mb-3 font-weight-normal"> Connectez-vous ! </h1>
+    <h5 class="h3 mb-3 font-weight-normal"> Connectez-vous  </h5>
     <label for="inputEmail">Email</label>
     <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
     <label for="inputPassword">Password</label>
@@ -29,6 +34,8 @@
      <form method="post" action="{{ path('app_login') }}">
      
     <button style="margin-top: 30px;" , type="submit"> Se connecter !  </button>
-    <h4 style="margin-top: 20px;"><a href="{{ path('app_register') }}"> Je n'ai pas de compte local, m'inscrire ! </a></h4>
+    {% if not app.user %}
+    <h6 style="margin-top: 20px;"><a href="{{ path('app_register') }}"> Je n'ai pas de compte local, m'inscrire ! </a></h6>
+    {% endif %}
 </form>
 {% endblock %}
