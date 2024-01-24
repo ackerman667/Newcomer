@@ -15,6 +15,11 @@
     <h3 class="page-title">Connexion</h3>  
 {% endblock %}
 {% block main %}
+{% for message in app.flashes('error') %}
+    <div class="alert alert-warning">
+        {{ message }}
+    </div>
+{% endfor %}
     <main class="row justify-content-md-left">
         <div class="col-md-12 col-sm-12 col-lg-9">
             <h4><a href="{{ path('app_login') }}">Je dispose déjà d'un compte académique</a></h4> {# Ajoutez la futur redirection RSA#}
