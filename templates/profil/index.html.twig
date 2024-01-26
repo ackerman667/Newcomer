@@ -23,7 +23,12 @@
     <address>
         <span id="vcard" class="vcard">
             <figure class="photo"><img src="{{ asset('css/images/avatar/avatar.png','interfaceappli') }}"></figure>
+              {% if app.user %}
             <h2 class="fn">{{ 'Utilisateur'|trans }} {{ app.user.username }}</h2>
+            {% endif %}
+            {% if not app.user %}
+            <h2 class="fn">{{ 'Utilisateur anonyme'}} </h2>
+            {% endif %}
             {# <span class="adr"><em>Localisation proxy: {{app.user.urlproxy }}</em></span> #}
         </span>
     </address>

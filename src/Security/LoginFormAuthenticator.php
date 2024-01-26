@@ -1,8 +1,11 @@
 <?php
 
+// src/Security/LoginFormAuthenticator.php
+
 namespace App\Security;
 
-use Symfony\Component\HttpFoundation\RedirectResponse;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -12,45 +15,50 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\CsrfTokenBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
-use Symfony\Component\Security\Http\SecurityRequestAttributes;
-use Symfony\Component\Security\Http\Util\TargetPathTrait;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 {
-    use TargetPathTrait;
-
     public const LOGIN_ROUTE = 'app_login';
 
-    public function __construct(private UrlGeneratorInterface $urlGenerator)
+    private $urlGenerator;
+    private $jwtManager;
+
+    public function __construct(UrlGeneratorInterface $urlGenerator, JWTTokenManagerInterface $jwtManager)
     {
+        $this->urlGenerator = $urlGenerator;
+        $this->jwtManager = $jwtManager;
     }
 
     public function authenticate(Request $request): Passport
     {
         $email = $request->request->get('email', '');
 
-        $request->getSession()->set(SecurityRequestAttributes::LAST_USERNAME, $email);
-
-        dump($email, $request->request->get('password'));
-
         return new Passport(
             new UserBadge($email),
             new PasswordCredentials($request->request->get('password', '')),
             [
-                new CsrfTokenBadge('authenticate', $request->request->get('_csrf_token')),            ]
+                new CsrfTokenBadge('authenticate', $request->request->get('_csrf_token')),
+            ]
         );
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        dump($token->getUser());
-        if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
-            return new RedirectResponse($targetPath);
-        }
+        $user = $token->getUser();
 
-        // For example:
-        return new RedirectResponse($this->urlGenerator->generate('profil'));
-        // throw new \Exception('TODO: provide a valid redirect inside '.__FILE__);
+        // Generate the JWT token
+        $jwt = $this->jwtManager->create($user);
+
+        dump($jwt);
+
+        // Return the JWT as part of the response
+        $redirectUrl = $this->urlGenerator->generate('profil');
+        $response = new RedirectResponse($redirectUrl);
+        $response->headers->set('Authorization', 'Bearer ' . $jwt);
+        // return $response;
+        return new JsonResponse(['token' => $jwt]);
+
     }
 
     protected function getLoginUrl(Request $request): string

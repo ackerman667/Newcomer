@@ -19,7 +19,12 @@
         <span id="vcard" class="vcard">
             <figure class="photo"><img src="{{ asset('css/images/avatar/avatar.png','interfaceappli') }}"></figure>
             <ol>
-            Utilisateur
+           {% if app.user is not null %}
+    {{ app.user.roles|join(', ') }}
+{% else %}
+    pas de rôles
+{% endif %}
+              
             </ol>
         </span>
     </address>

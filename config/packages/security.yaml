@@ -18,7 +18,9 @@ security:
             lazy: true
             provider: app_user_provider
             pattern: ^/
-            custom_authenticator: App\Security\LoginFormAuthenticator
+            custom_authenticator: App\Security\LoginFormAuthenticator     
+            jwt: ~
+            entry_point: App\Security\LoginFormAuthenticator
             logout:
                 path: app_logout
                 # where to redirect after logout
@@ -34,7 +36,11 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/profil, roles: ROLE_USER }
+        # - { path: ^/profil, roles: ROLE_USER }
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        
+        
+        
 
 when@test:
     security:

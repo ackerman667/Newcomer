@@ -46,12 +46,6 @@ class RegistrationController extends AbstractController
 
             $entityManager->persist($user);
             $entityManager->flush();
-
-
-
-          
-
-
             return $this->redirectToRoute('profil');
         }
 
@@ -60,11 +54,6 @@ class RegistrationController extends AbstractController
             "monApplication" => $monApplication,
         ]);
     }
-
-
-
-
-
 
     private function redirection(string $email): bool
 {
