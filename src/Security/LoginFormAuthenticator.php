@@ -57,7 +57,7 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
         $response = new RedirectResponse($redirectUrl);
         $response->headers->set('Authorization', 'Bearer ' . $jwt);
         return $response;
-        //return new JsonResponse(['token' => $jwt]); test Contenu du jetons
+        //return new JsonResponse(['token' => $jwt]); 
 
     }
 
@@ -65,4 +65,5 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     {
         return $this->urlGenerator->generate(self::LOGIN_ROUTE);
     }
+    
 }

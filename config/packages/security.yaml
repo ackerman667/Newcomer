@@ -38,6 +38,11 @@ security:
         - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profil, roles: ROLE_USER }
         - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/testjwt, roles: ROLE_USER }
+        - { path: ^/aide, roles: ROLE_USER }
+        
+
+        
         
         
         
