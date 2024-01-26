@@ -47,17 +47,17 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     {
         $user = $token->getUser();
 
-        // Generate the JWT token
+        // Générer le jetons
         $jwt = $this->jwtManager->create($user);
 
         dump($jwt);
 
-        // Return the JWT as part of the response
+        
         $redirectUrl = $this->urlGenerator->generate('profil');
         $response = new RedirectResponse($redirectUrl);
         $response->headers->set('Authorization', 'Bearer ' . $jwt);
-        // return $response;
-        return new JsonResponse(['token' => $jwt]);
+        return $response;
+        //return new JsonResponse(['token' => $jwt]); test Contenu du jetons
 
     }
 
