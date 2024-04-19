@@ -1,6 +1,6 @@
 <?php
 
-// src/Security/LoginFormAuthenticator.php
+
 
 namespace App\Security;
 
@@ -16,6 +16,8 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Cookie;
+use App\Repository\UserRepository;
 
 class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 {
@@ -23,11 +25,14 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
     private $urlGenerator;
     private $jwtManager;
+    private $userRepository;
 
-    public function __construct(UrlGeneratorInterface $urlGenerator, JWTTokenManagerInterface $jwtManager)
+
+    public function __construct(UrlGeneratorInterface $urlGenerator, JWTTokenManagerInterface $jwtManager, UserRepository $userRepository)
     {
         $this->urlGenerator = $urlGenerator;
         $this->jwtManager = $jwtManager;
+        $this->userRepository = $userRepository;
     }
 
     public function authenticate(Request $request): Passport
@@ -44,26 +49,27 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
-    {
-        $user = $token->getUser();
+{
+    $user = $token->getUser();
+    $jwt = $this->jwtManager->create($user);
+    
+  
+    
+    $response = new RedirectResponse($this->urlGenerator->generate('profil'));
+   
 
-        // Générer le jetons
-        $jwt = $this->jwtManager->create($user);
-
-        dump($jwt);
-
-        
-        $redirectUrl = $this->urlGenerator->generate('profil');
-        $response = new RedirectResponse($redirectUrl);
-        $response->headers->set('Authorization', 'Bearer ' . $jwt);
-        return $response;
-        //return new JsonResponse(['token' => $jwt]); 
-
-    }
+    $response->headers->setCookie(
+        new Cookie('JWT_TOKEN', $jwt, time() + 3600, '/', null, true, true) 
+    );
+    
+    return $response;
+}
 
     protected function getLoginUrl(Request $request): string
     {
         return $this->urlGenerator->generate(self::LOGIN_ROUTE);
     }
+    
+
     
 }

@@ -52,7 +52,18 @@ public function loadUserByUsername(string $username): ?User
         ->getOneOrNullResult();
 }
 
+public function findRealRoleByEmail(string $email): ?string
+    {
+        $user = $this->findOneBy(['email' => $email]);
 
+        if ($user instanceof User) {
+            $realRoleArray = $user->getRoles();
+            $realRole = implode(',', $realRoleArray);
+        return $realRole;
+        }
+
+        return null;
+    }
 
 //    /**
 //     * @return User[] Returns an array of User objects

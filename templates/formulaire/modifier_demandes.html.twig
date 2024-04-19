@@ -1,0 +1,12 @@
+{% extends 'layout_ag.html.twig' %}
+{% block title %}<title>Modifier la demande</title>{% endblock %}
+
+{% block main %}
+    <h1>Modifier la demande</h1>
+    {{ form_start(form) }}
+    {{ form_row(form.nom, { 'value': form.vars.data.nom }) }}
+    {{ form_row(form.prenom, { 'value': form.vars.data.prenom }) }}
+    {{ form_row(form.fonction, { 'value': form.vars.data.fonction }) }}
+  
+    {{ form_end(form) }}
+{% endblock %}

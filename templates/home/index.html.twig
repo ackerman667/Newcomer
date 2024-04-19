@@ -3,9 +3,13 @@
  {% if not app.user %}
 <meta http-equiv="refresh" content="2; url={{ path('choix') }}">
 {% endif %}
-  {% if app.user %}
-  <meta http-equiv="refresh" content="2; url={{ path('formulaire') }}">
+ {% if  app.user %}
+   <meta http-equiv="refresh" content="2; url={{ path('statuts') }}">
   {% endif %}
+{# {% if app.user.isLdapUser()  %}
+   <meta http-equiv="refresh" content="2; url={{ path('listedemandes') }}">
+     {% endif %} #}
+
 {% endblock %}
 {% block title %}<title>Home - New Comer</title>{% endblock %}
 {% block body %}<body class="page home plainpage">{% endblock %}

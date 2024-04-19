@@ -1,0 +1,45 @@
+{% extends 'layout_ag.html.twig' %}
+{% block title %}<title>Aide - {{ monApplication.Appli }}</title>{% endblock %}
+{% block head_gene %}
+    <script type="text/javascript" src="{{ asset('js/documentation.js','interfaceappli') }}" defer></script>
+{% endblock %}
+{% block body %}<body class="page not-home">{% endblock %}
+{% block header %}
+    {# <div class="title_app" id="title">
+        <h1 class="title">{{ monApplication.Appli }}</h1>
+        <h2 class="desc">{{ monApplication.LibAppli }}</h2>
+    </div> #}
+   
+    <h3 class="page-title">Historique de vos demandes</h3>
+{% endblock %}
+{% block main %}
+   {% if not demandes %}
+    <a href="{{ path('formulaire') }}" class="btn btn-primary float-right">Nouvelle demande</a>
+     {% endif %}
+    <table style="width:100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 1px solid #ddd;">
+                <th style="text-align: center; padding: 8px;">Titre</th>
+                <th style="text-align: center; padding: 8px;">Date de soumission</th>
+                <th style="text-align: center; padding: 8px;">Heure de soumission</th>
+                <th style="text-align: center; padding: 8px;">Statut</th>
+                <th style="text-align: center; padding: 8px;">Modifier la demande</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for demande in demandes %}
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="text-align: center; padding: 8px;">{{ demande.titre }}</td>
+                    <td style="text-align: center; padding: 8px;">{{ demande.statuts }}</td>
+                    <td style="text-align: center; padding: 8px;">{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
+                    <td style="text-align: center; padding: 8px;">{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
+                      {% if demande.statuts == 'En attente' %}
+            <td style="text-align: center; padding: 8px;"><a href="{{ path('modifier_demandes', {id: demande.id}) }}">Modifier</a></td>
+        {% else %}
+            <td style="text-align: center; padding: 8px;"><span style="color: gray;" title="La demande ne peut pas être modifiée car elle a deja été traitée">Modifier</span></td>
+        {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
