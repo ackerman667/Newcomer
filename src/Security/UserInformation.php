@@ -16,12 +16,18 @@ class UserInformation
         $nb=ldap_count_entries($ds,$result);
         if ($nb>0):
             $fiche=array();
+            
             $info = ldap_get_entries($ds, $result);
+            dump($info);
             //On récupère certaine données de l'utlisateur
             $fiche['codecivilite']=$info[0]['codecivilite'][0];
             $fiche['cn']=$info[0]['cn'][0];
             $fiche['datenaissance']=$info[0]['datenaissance'][0];
             $fiche['mail']=$info[0]['mail'][0];
+            $fiche['sn']=$info[0]['sn'][0];
+            $fiche['givenname']=$info[0]['givenname'][0];
+            $fiche['title']=$info[0]['title'][0];
+            // $fiche['fonction']=$info[0]['fonction'][0];
             dump($fiche);
             //Recherche de l'URL du portail suivant le rev-proxy d'ou vient l'agent
             // $result=ldap_search($ds, $_SERVER["ANNU_BASE_DATAREPOSITORY"],"(ctscPEPName=".$_SERVER["HTTP_CT_WEB_SVR_ID"].")");

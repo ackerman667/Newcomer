@@ -39,12 +39,14 @@ class FormulaireLdapController extends AbstractController
 
         // Appeler la méthode getUserInformation
         $infos_user = $userInformation->getUserInformation($user);
-        dump($ldapUsername);
+         
         
         
 
         $form = $this->createForm(DemandeFormType::class, [
-            'nom' => $infos_user['cn'],
+            'nom' => $infos_user['sn'],
+            'prenom' => $infos_user['givenname'],
+            // 'date_naissance' => $infos_user['datenaissance'],
             
         ]);
         

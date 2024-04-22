@@ -16,22 +16,25 @@ security:
             entity:
                 class: App\Entity\User
                 property: email
+        combined_providers:
+            chain:
+                providers: [app_user_provider, app_user_provider2]
     firewalls:
        
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
-            remote_user:
-                user: HTTP_CT_REMOTE_USER
-            provider: app_user_provider2
+            # remote_user:
+            #     user: HTTP_CT_REMOTE_USER
+            # provider: app_user_provider2
     
-            # provider: app_user_provider
-            # lazy: true
-            # pattern: ^/
-            # custom_authenticator: App\Security\LoginFormAuthenticator
-            # jwt: ~
-            # entry_point: App\Security\LoginFormAuthenticator
+            provider: app_user_provider
+            lazy: true
+            pattern: ^/
+            custom_authenticator: App\Security\LoginFormAuthenticator
+            jwt: ~
+            entry_point: App\Security\LoginFormAuthenticator
 
 
 
@@ -61,8 +64,6 @@ security:
     # access_control:
     #     - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
 
-        
-        
         
         
 

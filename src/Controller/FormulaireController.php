@@ -34,8 +34,8 @@ class FormulaireController extends AbstractController
         $servicesDropdownData = $this->transformServicesForDropdown($services);
 
         // Créer une nouvelle instance de l'entité User
-        $user = $this->getUser();
-        $user = $security->getUser();
+        // $user = $this->getUser();
+        // $user = $security->getUser();
         // Créez une nouvelle instance de l'entité Demandes
         
         $apiDataSecond = null;

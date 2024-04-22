@@ -5,6 +5,8 @@ namespace App\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\BirthdayType;
+
 use App\Entity\Demandes;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -28,6 +30,11 @@ class DemandeFormType extends AbstractType
             ->add('fonction', TextType::class, [
                 'label' => 'Fonction :',
                 'attr' => ['class' => 'form-control'],
+            ])
+            ->add('date_naissance', BirthdayType::class, [
+                'label' => 'Date de naissance :',
+                'attr' => ['class' => 'form-control'],
+                
             ])
             ->add('submit', SubmitType::class, [
                 'label' => 'Soumettre',
