@@ -29,6 +29,7 @@ class TypeAppliDomainTheme
             $TypeAppliDomainTheme['appli']=$info[0]['st'][0];
             $TypeAppliDomainTheme['libappli']=$info[0]['description'][0];
             $coddomain=$info[0]['postaladdress'][0];
+            dump($info);
             // dd($AppliDomainTheme);
             //Maintenant on va chercher le libellé du code domaine et le theme de l'appli
             $result=ldap_search($ds, $_SERVER["ANNU_BASE_APPLIS_LOCALES"], "cn=".$coddomain);

@@ -34,10 +34,7 @@ class FormulaireLdapController extends AbstractController
     {
         
         $user = $this->security->getUser();
-
         $userInformation = new UserInformation();
-
-        // Appeler la méthode getUserInformation
         $infos_user = $userInformation->getUserInformation($user);
          
         
@@ -46,7 +43,7 @@ class FormulaireLdapController extends AbstractController
         $form = $this->createForm(DemandeFormType::class, [
             'nom' => $infos_user['sn'],
             'prenom' => $infos_user['givenname'],
-            // 'date_naissance' => $infos_user['datenaissance'],
+           
             
         ]);
         
@@ -56,7 +53,7 @@ class FormulaireLdapController extends AbstractController
         $form->handleRequest($request);
 
         return $this->render('formulaireldap/index.html.twig', [
-            'form' => $form->createView(), // Transmettre le formulaire à la vue
+            'form' => $form->createView(), 
             'monApplication' => $monApplication,
         ]);
         

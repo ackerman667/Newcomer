@@ -13,6 +13,7 @@ class UserInformation
         if ($_SERVER["OPENLDAP"]=="OUI"): ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3); endif;
         $r=ldap_bind($ds,$_SERVER["ANNU_LOGIN"],$_SERVER["ANNU_PASSWD"]);
         $result=ldap_search($ds, $_SERVER["ANNU_BASE"], "uid=".$_SERVER["HTTP_CT_REMOTE_USER"]);
+        dump($ds);
         $nb=ldap_count_entries($ds,$result);
         if ($nb>0):
             $fiche=array();
@@ -27,7 +28,7 @@ class UserInformation
             $fiche['sn']=$info[0]['sn'][0];
             $fiche['givenname']=$info[0]['givenname'][0];
             $fiche['title']=$info[0]['title'][0];
-            // $fiche['fonction']=$info[0]['fonction'][0];
+           
             dump($fiche);
             //Recherche de l'URL du portail suivant le rev-proxy d'ou vient l'agent
             // $result=ldap_search($ds, $_SERVER["ANNU_BASE_DATAREPOSITORY"],"(ctscPEPName=".$_SERVER["HTTP_CT_WEB_SVR_ID"].")");

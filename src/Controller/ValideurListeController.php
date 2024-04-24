@@ -42,9 +42,7 @@ class ValideurListeController extends AbstractController
             
             'demandes' => $demandes,
             "monApplication" => $monApplication,
-            'nomUtilisateur' => $nomUtilisateur,
-            'prenomUtilisateur' => $prenomUtilisateur,
-
+            
         ]);
     }
 }
