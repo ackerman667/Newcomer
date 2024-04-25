@@ -31,7 +31,7 @@ class DemandeFormType extends AbstractType
                 'label' => 'Fonction :',
                 'attr' => ['class' => 'form-control'],
             ])
-            ->add('date_naissance', BirthdayType::class, [
+            ->add('date_de_naissance', BirthdayType::class, [
                 'label' => 'Date de naissance :',
                 'attr' => ['class' => 'form-control'],
                 

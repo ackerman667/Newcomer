@@ -12,6 +12,7 @@
     <div class="title_image">
         <span>Rectorat</span>
     </div>
+
     <h3 class="page-title">Connexion</h3>  
 {% endblock %}
 {% block main %}
@@ -22,7 +23,7 @@
 {% endfor %}
     <main class="row justify-content-md-left">
         <div class="col-md-12 col-sm-12 col-lg-9">
-            <h4><a href="{{ path('app_login') }}">Je dispose déjà d'un compte académique</a></h4> {# Ajoutez la futur redirection RSA#}
+            <h4><a href="{{ path('loginldap') }}">Je dispose déjà d'un compte académique</a></h4> {# Ajoutez la futur redirection RSA#}
             <h4 style="margin-top: 90px;"><a href="{{ path('app_login') }}">Je n'ai pas de compte académique</a></h4>
         </div>
     </div>

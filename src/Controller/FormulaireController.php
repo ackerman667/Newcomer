@@ -41,6 +41,11 @@ class FormulaireController extends AbstractController
        
         $form = $this->createForm(DemandeFormType::class, null, [
             'services' => $servicesDropdownData,
+            'data' => [
+                'nom' => $user->getNom(),
+                'prenom' => $user->getPrenom(),
+                'date_de_naissance' => $user->getDateDeNaissance(),
+            ],
         ]);
 
         $form->handleRequest($request);
@@ -81,7 +86,7 @@ class FormulaireController extends AbstractController
             $demande->setTitre('Demande d\'accès à un poste informatique');
             $demande->setStatuts('En attente'); 
              $demande->setUidValideur($nomValideur);
-             $dompdf = new Dompdf();
+            
              $html = $this->renderView('formulaire/pdf_template.html.twig', [
                 
                 'nom' => $nom,
@@ -89,17 +94,27 @@ class FormulaireController extends AbstractController
                 'fonction' => $fonction,
                 
             ]);
+            $dompdf = new Dompdf();
             $dompdf->loadHtml($html);
-            $options = new Options();
-            $options->set('defaultFont', 'Arial');
-            $dompdf->setOptions($options);
+            $dompdf->setPaper('A4', 'portrait');
             $dompdf->render();
+        
+            // Convertir le contenu PDF en base64
             $pdfContent = $dompdf->output();
-            $pdfBase64 = base64_encode($pdfContent);
-            $demande->setPdf($pdfBase64);
+            // $pdfBase64 = base64_encode($pdfContent);
+        
+            // Enregistrer le PDF dans la base de données
+        
+            $demande->setPdf($pdfContent);
+            
+            // $pdfBase64 = base64_encode($pdfContent);
+            // $demande->setPdf($pdfBase64);
             $entityManager->persist($user);
             $entityManager->persist($demande);
             $entityManager->flush();
+            $response = new Response($dompdf->output());
+            $response->headers->set('Content-Type', 'application/pdf');
+            return $response;
             return $this->redirectToRoute('home');
 
             

@@ -24,6 +24,7 @@
                 <th style="text-align: center; padding: 8px;">Heure de soumission</th>
                 <th style="text-align: center; padding: 8px;">Statut</th>
                 <th style="text-align: center; padding: 8px;">Modifier la demande</th>
+                <th style="text-align: center; padding: 8px;">Visualiser</th>
             </tr>
         </thead>
         <tbody>
@@ -47,6 +48,13 @@
         {% else %}
             <td style="text-align: center; padding: 8px;"><span style="color: gray;" title="La demande ne peut pas être modifiée car elle a deja été traitée">Modifier</span></td>
         {% endif %}
+       <td style="text-align: center; padding: 8px;">
+           {% if demande.pdf %}
+                <a href="data:application/pdf;base64,{{ demande.pdf }}" target="_blank">Voir le PDF</a>
+            {% else %}
+                Aucun PDF disponible
+            {% endif %}
+        </td>
                  
             {% endfor %}
             {% endif %}
