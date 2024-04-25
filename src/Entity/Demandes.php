@@ -36,6 +36,9 @@ class Demandes
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $uid_valideur = null;
 
+    #[ORM\Column(type: Types::BLOB, nullable: true)]
+    private $pdf = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -121,6 +124,18 @@ class Demandes
     public function setUidValideur(?string $uid_valideur): static
     {
         $this->uid_valideur = $uid_valideur;
+
+        return $this;
+    }
+
+    public function getPdf()
+    {
+        return $this->pdf;
+    }
+
+    public function setPdf($pdf): static
+    {
+        $this->pdf = $pdf;
 
         return $this;
     }

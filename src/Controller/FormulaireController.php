@@ -46,6 +46,7 @@ class FormulaireController extends AbstractController
         $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
+                
             
                 $selectedServiceId = $form->get('selectedService')->getData();
                 dump($selectedServiceId);
@@ -80,15 +81,30 @@ class FormulaireController extends AbstractController
             $demande->setTitre('Demande d\'accès à un poste informatique');
             $demande->setStatuts('En attente'); 
              $demande->setUidValideur($nomValideur);
-
-          
+             $dompdf = new Dompdf();
+             $html = $this->renderView('formulaire/pdf_template.html.twig', [
+                
+                'nom' => $nom,
+                'prenom' => $prenom,
+                'fonction' => $fonction,
+                
+            ]);
+            $dompdf->loadHtml($html);
+            $options = new Options();
+            $options->set('defaultFont', 'Arial');
+            $dompdf->setOptions($options);
+            $dompdf->render();
+            $pdfContent = $dompdf->output();
+            $pdfBase64 = base64_encode($pdfContent);
+            $demande->setPdf($pdfBase64);
             $entityManager->persist($user);
             $entityManager->persist($demande);
             $entityManager->flush();
-      
             return $this->redirectToRoute('home');
-        }
 
+            
+        }
+        
        
         return $this->render('formulaire/index.html.twig', [
             'form' => $form->createView(), 

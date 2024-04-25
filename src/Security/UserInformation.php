@@ -46,7 +46,7 @@ class UserInformation
             //     }
             // }
             //Ici on sait que l'agent est dans l'annuaire et on va lui mettre une rôle defaut
-            $fiche["roles"]="ROLE_ADMIN";
+            $fiche["roles"]="ROLE_LDAP_USER";
             //dd($fiche);
             return $fiche;
         else : return null;

@@ -23,7 +23,7 @@
                 <th style="text-align: center; padding: 8px;">Prénom</th>
                 <th style="text-align: center; padding: 8px;">Date</th>
                 <th style="text-align: center; padding: 8px;">Statuts</th>
-                <th style="text-align: center; padding: 8px;">Choix</th>
+                <th style="text-align: center; padding: 8px;">Visualiser la demande</th>
             </tr>
         </thead>
         <tbody>
@@ -35,8 +35,13 @@
                     <td style="text-align: center; padding: 8px;">{{ demande.IDutilisateur.getPrenom() }}</td>
                       <td style="text-align: center; padding: 8px;">{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
                     <td style="text-align: center; padding: 8px;">{{ demande.statuts }}</td>
-                    
-                  
+                     <td style="text-align: center; padding: 8px;">
+        {% if demande.pdf %}
+            <a href="data:application/pdf;base64,{{ demande.pdf }}" target="_blank">Voir le PDF</a>
+        {% else %}
+            Aucun PDF disponible
+        {% endif %}
+    </td>
                     
                  
                 </tr>

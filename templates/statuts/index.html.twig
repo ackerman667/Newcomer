@@ -37,9 +37,11 @@
             {% for demande in demandes %}
                 <tr style="border-bottom: 1px solid #ddd;">
                     <td style="text-align: center; padding: 8px;">{{ demande.titre }}</td>
-                    <td style="text-align: center; padding: 8px;">{{ demande.statuts }}</td>
                     <td style="text-align: center; padding: 8px;">{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
-                    <td style="text-align: center; padding: 8px;">{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
+                     <td style="text-align: center; padding: 8px;">{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
+                    <td style="text-align: center; padding: 8px;">{{ demande.statuts }}</td>
+                    
+                   
                       {% if demande.statuts == 'En attente' %}
             <td style="text-align: center; padding: 8px;"><a href="{{ path('modifier_demandes', {id: demande.id}) }}">Modifier</a></td>
         {% else %}
