@@ -145,6 +145,7 @@ class FormulaireController extends AbstractController
             'nom' => $user->getNom(),
             'prenom' => $user->getPrenom(),
             'fonction' => $user->getFonction(),
+            'date_de_naissance' => $user->getDateDeNaissance(),
             
         ];
 
