@@ -25,22 +25,39 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
-        main:
-            # remote_user:
-            #     user: HTTP_CT_REMOTE_USER
-            # provider: app_user_provider2
+        # test:
+        #     remote_user:
+        #         user: HTTP_CT_REMOTE_USER
+        #     provider: app_user_provider2
+        #     pattern: ^/loginldap
     
+
+        # test2:
+            
+        #     lazy: true
+        #     pattern: ^/profil
+        #     remote_user:
+        #         user: HTTP_CT_REMOTE_USER
+        #     provider: app_user_provider2
+        #     logout:
+        #         path: app_logout
+
+            
+        
+        autre_firewall:
             provider: app_user_provider
             lazy: true
             pattern: ^/
             custom_authenticator: App\Security\LoginFormAuthenticator
             jwt: ~
             entry_point: App\Security\LoginFormAuthenticator
-      
             logout:
                 path: app_logout
-    
 
+
+          
+        
+        
                 # where to redirect after logout
                 # target: app_any_route
 

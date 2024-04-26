@@ -36,7 +36,7 @@ class ValideurListeController extends AbstractController
                 dump($prenomUtilisateur);
 
                 
-                // Ajouter les infos de l'utilisateur à la demande
+
             }
         return $this->render('valideur/index.html.twig', [
             

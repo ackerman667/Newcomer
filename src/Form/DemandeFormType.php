@@ -37,7 +37,7 @@ class DemandeFormType extends AbstractType
                 
             ])
             ->add('submit', SubmitType::class, [
-                'label' => 'Soumettre',
+                'label' => 'Enregistrer',
                 'attr' => ['class' => 'btn btn-primary'],
             ])
             ->add('selectedService', ChoiceType::class, [
