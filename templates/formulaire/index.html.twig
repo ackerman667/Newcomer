@@ -1,10 +1,32 @@
+{# templates/formulaire/index.html.twig #}
+
 {% extends 'layout_ag.html.twig' %}
 
 {% block title %}<title>Aide - {{ monApplication.Appli }}</title>{% endblock %}
 {% block head_gene %}
     <script type="text/javascript" src="{{ asset('js/documentation.js','interfaceappli') }}" defer></script>
+    <style>
+        .form-section {
+            border: 1px solid #000;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .form-section-title {
+           font-weight: bold;
+           text-align: center;
+           display: block;
+           margin-bottom: 10px;
+        }
+        .form-group-inline {
+            display: flex;
+            align-items: center;
+        }
+        .form-group-inline > div {
+            margin-right: 15px;
+        }
+    </style>
 {% endblock %}
-{% block body %}<body  class="page not-home">{% endblock %}
+{% block body %}<body class="page not-home">{% endblock %}
 {% block header %}
     <div class="title_app" id="title">
         <h1 class="title">{{ monApplication.Appli }}</h1>
@@ -16,39 +38,181 @@
     <h3 class="page-title">Demande d'un accès à un poste de travail informatique</h3>  
 {% endblock %}
 {% block main %}
-   <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                {{ form_start(form) }}
-                <div class="form-group">
-                    {{ form_label(form.nom) }}
-                    {{ form_widget(form.nom, { 'attr': {'class': 'form-control'} }) }}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            {{ form_start(form) }}
+            <div class="form-section">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form_label(form.nom) }}
+                            {{ form_widget(form.nom, { 'attr': {'class': 'form-control'} }) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form_label(form.prenom) }}
+                            {{ form_widget(form.prenom, { 'attr': {'class': 'form-control'} }) }}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form_label(form.selectedService) }}
+                            {{ form_widget(form.selectedService, { 'attr': {'class': 'form-control'} }) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form_label(form.fonction) }}
+                            {{ form_widget(form.fonction, { 'attr': {'class': 'form-control'} }) }}
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group">
-                    {{ form_label(form.prenom) }}
-                    {{ form_widget(form.prenom, { 'attr': {'class': 'form-control'} }) }}
+                    {{ form_label(form.date_de_naissance) }}
+                    {{ form_widget(form.date_de_naissance, { 'attr': {'class': 'form-control'} }) }}
                 </div>
                 <div class="form-group">
-                    {{ form_label(form.fonction) }}
-                    {{ form_widget(form.fonction, { 'attr': {'class': 'form-control'} }) }}
+                    {{ form_label(form.missions) }}
+                    {{ form_widget(form.missions, { 'attr': {'class': 'form-control'} }) }}
                 </div>
                 <div class="form-group">
-                   {{ form_label(form.selectedService, 'Choisissez un service :') }}
-{{ form_widget(form.selectedService) }}
+                    {{ form_label(form.statut) }}
+                    {{ form_widget(form.statut, { 'attr': {'class': 'form-control statut-select'} }) }}
                 </div>
-
-                 <div class="form-group">
-                   {{ form_label(form.date_de_naissance, 'Date de Naissance :') }}
-{{ form_widget(form.date_de_naissance) }}
+                <div class="row contract-dates" style="display: none;">
+                    <div class="col-md-6">
+                        {{ form_label(form.date_debut_contrat) }}
+                        {{ form_widget(form.date_debut_contrat, { 'attr': {'class': 'form-control'} }) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_label(form.date_fin_contrat) }}
+                        {{ form_widget(form.date_fin_contrat, { 'attr': {'class': 'form-control'} }) }}
+                    </div>
                 </div>
                 <div class="form-group">
-                    {{ form_widget(form.submit, { 'attr': {'class': 'btn btn-primary'} }) }}
+                    {{ form_label(form.telephone_bureau) }}
+                    {{ form_widget(form.telephone_bureau, { 'attr': {'class': 'form-control'} }) }}
                 </div>
-                {{ form_end(form) }}
+            </div>
+            <div class="form-section">
+                <div class="form-group">
+                    {{ form_label(form.messagerie_academique) }}
+                    <div class="form-group-inline">
+                        {{ form_widget(form.messagerie_academique) }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.acces_dossiers) }}
+                    <div class="form-group-inline">
+                        {{ form_widget(form.acces_dossiers) }}
+                    </div>
+                </div>
+                <div class="form-group" id="form_liste_dossiers" style="display: none;">
+                    {{ form_label(form.liste_dossiers) }}
+                    {{ form_widget(form.liste_dossiers, { 'attr': {'class': 'form-control'} }) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.imprimante_print_on_demand) }}
+                    <div class="form-group-inline">
+                        {{ form_widget(form.imprimante_print_on_demand) }}
+                    </div>
+                </div>
+                <div class="form-group" id="form_liste_imprimantes" style="display: none;">
+                    {{ form_label(form.liste_imprimantes) }}
+                    {{ form_widget(form.liste_imprimantes, { 'attr': {'class': 'form-control'} }) }}
+                </div>
+            </div>
+            <div class="form-section">
+    <span class="form-section-title">Remplacement de</span>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                {{ form_label(form.remplacement_nom) }}
+                {{ form_widget(form.remplacement_nom, { 'attr': {'class': 'form-control'} }) }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                {{ form_label(form.remplacement_prenom) }}
+                {{ form_widget(form.remplacement_prenom, { 'attr': {'class': 'form-control'} }) }}
             </div>
         </div>
     </div>
+    <div class="form-group">
+        {{ form_label(form.telephone_avant_service) }}
+        {{ form_widget(form.telephone_avant_service, { 'attr': {'class': 'form-control'} }) }}
+    </div>
+    <div class="form-group">
+        {{ form_label(form.parti_rectorat) }}
+        <div class="form-group-inline">
+            {{ form_widget(form.parti_rectorat) }}
+        </div>
+    </div>
+    <div class="form-group" id="form_nouvelle_affectation_service" style="display: none;">
+        {{ form_label(form.nouvelle_affectation_service) }}
+        {{ form_widget(form.nouvelle_affectation_service, { 'attr': {'class': 'form-control'} }) }}
+    </div>
+</div>
+            <div class="form-group text-center">
+                {{ form_widget(form.submit, { 'attr': {'class': 'btn btn-primary'} }) }}
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const statutField = document.querySelector('.statut-select');
+    const contractDates = document.querySelectorAll('.contract-dates');
+    const accesDossiersFields = document.querySelectorAll('[name="demande_form[acces_dossiers]"]');
+    const listeDossiersField = document.getElementById('form_liste_dossiers');
+    const imprimanteFields = document.querySelectorAll('[name="demande_form[imprimante_print_on_demand]"]');
+    const listeImprimantesField = document.getElementById('form_liste_imprimantes');
+    const partiRectoratFields = document.querySelectorAll('[name="demande_form[parti_rectorat]"]');
+    const nouvelleAffectationField = document.getElementById('form_nouvelle_affectation_service');
 
+    function toggleContractDates() {
+        const selectedValue = statutField.value;
+        contractDates.forEach(field => {
+            field.style.display = (selectedValue !== 'Titulaire' && selectedValue !== '') ? 'block' : 'none';
+        });
+    }
+
+    function toggleField(radioGroup, textField, showForYes = true) {
+        radioGroup.forEach(radio => {
+            radio.addEventListener('change', function () {
+                if (showForYes) {
+                    textField.style.display = (radio.value === '1' && radio.checked) ? 'block' : 'none';
+                } else {
+                    textField.style.display = (radio.value !== '1' && radio.checked) ? 'block' : 'none';
+                }
+            });
+
+            // Initial check on page load
+            if (radio.checked) {
+                if (showForYes) {
+                    textField.style.display = (radio.value === '1') ? 'block' : 'none';
+                } else {
+                    textField.style.display = (radio.value !== '1') ? 'block' : 'none';
+                }
+            }
+        });
+    }
+
+    statutField.addEventListener('change', toggleContractDates);
+
+    // Initial state setup: hide contract dates
+    contractDates.forEach(field => {
+        field.style.display = 'none';
+    });
+
+    toggleField(accesDossiersFields, listeDossiersField);
+    toggleField(imprimanteFields, listeImprimantesField);
+    toggleField(partiRectoratFields, nouvelleAffectationField, false); // Show for "Non" selection
+});
+</script>
 {% endblock %}
-
-
