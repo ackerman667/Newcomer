@@ -12,10 +12,9 @@
             margin-bottom: 20px;
         }
         .form-section-title {
-           font-weight: bold;
-           text-align: center;
-           display: block;
-           margin-bottom: 10px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
         }
         .form-group-inline {
             display: flex;
@@ -42,6 +41,41 @@
     <div class="row justify-content-center">
         <div class="col-md-10">
             {{ form_start(form) }}
+            
+            <!-- Bloc Remplacement De -->
+            <div class="form-section">
+                <div class="form-section-title">Remplacement de</div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form_label(form.remplacement_nom) }}
+                            {{ form_widget(form.remplacement_nom, { 'attr': {'class': 'form-control'} }) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form_label(form.remplacement_prenom) }}
+                            {{ form_widget(form.remplacement_prenom, { 'attr': {'class': 'form-control'} }) }}
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.telephone_avant_service) }}
+                    {{ form_widget(form.telephone_avant_service, { 'attr': {'class': 'form-control'} }) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.parti_rectorat) }}
+                    <div class="form-group-inline">
+                        {{ form_widget(form.parti_rectorat) }}
+                    </div>
+                </div>
+                <div class="form-group" id="form_nouvelle_affectation_service" style="display: none;">
+                    {{ form_label(form.nouvelle_affectation_service) }}
+                    {{ form_widget(form.nouvelle_affectation_service, { 'attr': {'class': 'form-control'} }) }}
+                </div>
+            </div>
+            
+            <!-- Autres sections -->
             <div class="form-section">
                 <div class="row">
                     <div class="col-md-6">
@@ -126,37 +160,6 @@
                     {{ form_widget(form.liste_imprimantes, { 'attr': {'class': 'form-control'} }) }}
                 </div>
             </div>
-            <div class="form-section">
-    <span class="form-section-title">Remplacement de</span>
-    <div class="row">
-        <div class="col-md-6">
-            <div class="form-group">
-                {{ form_label(form.remplacement_nom) }}
-                {{ form_widget(form.remplacement_nom, { 'attr': {'class': 'form-control'} }) }}
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="form-group">
-                {{ form_label(form.remplacement_prenom) }}
-                {{ form_widget(form.remplacement_prenom, { 'attr': {'class': 'form-control'} }) }}
-            </div>
-        </div>
-    </div>
-    <div class="form-group">
-        {{ form_label(form.telephone_avant_service) }}
-        {{ form_widget(form.telephone_avant_service, { 'attr': {'class': 'form-control'} }) }}
-    </div>
-    <div class="form-group">
-        {{ form_label(form.parti_rectorat) }}
-        <div class="form-group-inline">
-            {{ form_widget(form.parti_rectorat) }}
-        </div>
-    </div>
-    <div class="form-group" id="form_nouvelle_affectation_service" style="display: none;">
-        {{ form_label(form.nouvelle_affectation_service) }}
-        {{ form_widget(form.nouvelle_affectation_service, { 'attr': {'class': 'form-control'} }) }}
-    </div>
-</div>
             <div class="form-group text-center">
                 {{ form_widget(form.submit, { 'attr': {'class': 'btn btn-primary'} }) }}
             </div>
