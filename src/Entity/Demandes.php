@@ -17,20 +17,20 @@ class Demandes
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $date = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $statuts = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateAutorisation = null;
 
     #[ORM\ManyToOne(inversedBy: 'demandes')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?User $IDutilisateur = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $heureSoumission = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $titre = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -38,6 +38,12 @@ class Demandes
 
     #[ORM\Column(type: Types::BLOB, nullable: true)]
     private $pdf = null;
+
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $token = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $tokenExpiration = null;
 
     public function getId(): ?int
     {
@@ -136,6 +142,30 @@ class Demandes
     public function setPdf($pdf): static
     {
         $this->pdf = $pdf;
+
+        return $this;
+    }
+
+    public function getToken(): ?string
+    {
+        return $this->token;
+    }
+
+    public function setToken(?string $token): static
+    {
+        $this->token = $token;
+
+        return $this;
+    }
+
+    public function getTokenExpiration(): ?\DateTimeImmutable
+    {
+        return $this->tokenExpiration;
+    }
+
+    public function setTokenExpiration(?\DateTimeImmutable $tokenExpiration): static
+    {
+        $this->tokenExpiration = $tokenExpiration;
 
         return $this;
     }

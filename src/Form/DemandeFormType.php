@@ -11,6 +11,8 @@ use App\Entity\Demandes;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
+
 
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
@@ -153,11 +155,16 @@ class DemandeFormType extends AbstractType
                 'multiple' => false,
                 'attr' => ['class' => 'form-check'],
             ])
+            ->add('email', EmailType::class, [
+                'label' => 'Email :',
+                'attr' => ['class' => 'form-control'],
+            ])
             ->add('nouvelle_affectation_service', TextType::class, [
                 'label' => 'Si non, dans quel service est la nouvelle affectation :',
                 'required' => false,
                 'attr' => ['class' => 'form-control'],
             ]);
+
     }
     public function configureOptions(OptionsResolver $resolver)
     {

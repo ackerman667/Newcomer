@@ -1,0 +1,113 @@
+{# templates/formulaire/etape3.html.twig #}
+{% extends 'layout_ag.html.twig' %}
+
+{% block title %}<title>Étape 3 - {{ monApplication.Appli }}</title>{% endblock %}
+{% block head_gene %}
+    <style>
+        .form-section {
+            border: 1px solid #000;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .form-section-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            font-weight: bold;
+        }
+        .form-group-inline {
+            display: flex;
+            align-items: center;
+        }
+        .form-group-inline > div {
+            margin-right: 15px;
+        }
+        .btn-group {
+           
+        }
+    </style>
+{% endblock %}
+{% block body %}<body class="page not-home">{% endblock %}
+{% block header %}
+    <div class="title_app" id="title">
+        <h1 class="title">{{ monApplication.Appli }}</h1>
+        <h2 class="desc">{{ monApplication.LibAppli }}</h2>
+    </div>
+    <div class="title_image">
+        <span>Rectorat</span>
+    </div>
+   
+{% endblock %}
+{% block main %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            {{ form_start(form) }}
+            
+            <div class="form-section">
+                <div class="form-section-title">Autres Informations</div>
+                <div class="form-group">
+                    {{ form_label(form.messagerie_academique) }}
+                    <div class="form-group-inline">
+                        {{ form_widget(form.messagerie_academique) }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.acces_dossiers) }}
+                    <div class="form-group-inline">
+                        {{ form_widget(form.acces_dossiers) }}
+                    </div>
+                </div>
+                <div class="form-group" id="form_liste_dossiers" style="display: none;">
+                    {{ form_label(form.liste_dossiers) }}
+                    {{ form_widget(form.liste_dossiers, { 'attr': {'class': 'form-control'} }) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.imprimante_print_on_demand) }}
+                    <div class="form-group-inline">
+                        {{ form_widget(form.imprimante_print_on_demand) }}
+                    </div>
+                </div>
+                <div class="form-group" id="form_liste_imprimantes" style="display: none;">
+                    {{ form_label(form.liste_imprimantes) }}
+                    {{ form_widget(form.liste_imprimantes, { 'attr': {'class': 'form-control'} }) }}
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <a href="{{ path('formulairetest_etape2') }}" class="btn btn-secondary">Précédent</a>
+                <button class="btn btn-primary">Soumettre</button>
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const accesDossiersFields = document.querySelectorAll('[name="demande_form[acces_dossiers]"]');
+    const listeDossiersField = document.getElementById('form_liste_dossiers');
+    const imprimanteFields = document.querySelectorAll('[name="demande_form[imprimante_print_on_demand]"]');
+    const listeImprimantesField = document.getElementById('form_liste_imprimantes');
+
+    function toggleField(radioGroup, textField) {
+        radioGroup.forEach(radio => {
+            radio.addEventListener('change', function () {
+                textField.style.display = (radio.value === '1' && radio.checked) ? 'block' : 'none';
+            });
+
+            if (radio.checked) {
+                textField.style.display = (radio.value === '1') ? 'block' : 'none';
+            }
+        });
+    }
+
+    toggleField(accesDossiersFields, listeDossiersField);
+    toggleField(imprimanteFields, listeImprimantesField);
+});
+</script>
+{% endblock %}

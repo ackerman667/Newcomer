@@ -1,0 +1,139 @@
+{# templates/formulaire/etape2.html.twig #}
+{% extends 'layout_ag.html.twig' %}
+
+{% block title %}<title>Étape 2 - {{ monApplication.Appli }}</title>{% endblock %}
+{% block head_gene %}
+    <style>
+        .form-section {
+            border: 1px solid #000;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .form-section-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            font-weight: bold;
+        }
+        .form-group-inline {
+            display: flex;
+            align-items: center;
+        }
+        .form-group-inline > div {
+            margin-right: 15px;
+        }
+        .btn-group {
+           
+        }
+    </style>
+{% endblock %}
+{% block body %}<body class="page not-home">{% endblock %}
+{% block header %}
+    <div class="title_app" id="title">
+        <h1 class="title">{{ monApplication.Appli }}</h1>
+        <h2 class="desc">{{ monApplication.LibAppli }}</h2>
+    </div>
+    <div class="title_image">
+        <span>Rectorat</span>
+    </div>
+     
+{% endblock %}
+{% block main %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            {{ form_start(form) }}
+            
+            <!-- Autres sections -->
+            <div class="form-section">
+                <div class="form-section-title">Informations Personnelles</div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form_label(form.nom) }}
+                            {{ form_widget(form.nom, { 'attr': {'class': 'form-control'} }) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form_label(form.prenom) }}
+                            {{ form_widget(form.prenom, { 'attr': {'class': 'form-control'} }) }}
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.email) }}
+                    {{ form_widget(form.email, { 'attr': {'class': 'form-control'} }) }}
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form_label(form.selectedService) }}
+                            {{ form_widget(form.selectedService, { 'attr': {'class': 'form-control'} }) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form_label(form.fonction) }}
+                            {{ form_widget(form.fonction, { 'attr': {'class': 'form-control'} }) }}
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.date_de_naissance) }}
+                    {{ form_widget(form.date_de_naissance, { 'attr': {'class': 'form-control'} }) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.missions) }}
+                    {{ form_widget(form.missions, { 'attr': {'class': 'form-control'} }) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.statut) }}
+                    {{ form_widget(form.statut, { 'attr': {'class': 'form-control statut-select'} }) }}
+                </div>
+                <div class="row contract-dates" style="display: none;">
+                    <div class="col-md-6">
+                        {{ form_label(form.date_debut_contrat) }}
+                        {{ form_widget(form.date_debut_contrat, { 'attr': {'class': 'form-control'} }) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_label(form.date_fin_contrat) }}
+                        {{ form_widget(form.date_fin_contrat, { 'attr': {'class': 'form-control'} }) }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <a href="{{ path('formulairetest_etape1') }}" class="btn btn-secondary">Précédent</a>
+                <button class="btn btn-primary">Suivant</button>
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const statutField = document.querySelector('.statut-select');
+    const contractDates = document.querySelectorAll('.contract-dates');
+
+    function toggleContractDates() {
+        const selectedValue = statutField.value;
+        contractDates.forEach(field => {
+            field.style.display = (selectedValue !== 'Titulaire' && selectedValue !== '') ? 'block' : 'none';
+        });
+    }
+
+    statutField.addEventListener('change', toggleContractDates);
+
+    // Initial state setup: hide contract dates
+    contractDates.forEach(field => {
+        field.style.display = 'none';
+    });
+});
+</script>
+{% endblock %}

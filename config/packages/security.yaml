@@ -74,7 +74,8 @@ security:
         # - { path: ^/profil, roles: ROLE_USER }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/aide, roles: PUBLIC_ACCESS}
-        - { path: ^/formulaire, roles: IS_AUTHENTICATED_FULLY}
+        - { path: ^/formulaire, roles: PUBLIC_ACCESS}
+        - { path: ^/formulairetest, roles: PUBLIC_ACCESS}
         # - { path: ^/aide, roles: IS_AUTHENTICATED_FULLY}
     # access_control:
     #     - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
