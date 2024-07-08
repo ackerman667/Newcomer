@@ -16,8 +16,8 @@ class DemandeEtape1FormType extends AbstractType
             ->add('replace_someone', ChoiceType::class, [
                 'label' => 'Remplacez-vous quelqu\'un ?',
                 'choices' => [
-                    'Oui' => true,
-                    'Non' => false,
+                    'Oui' => 'oui',
+                    'Non' => 'non',
                 ],
                 'expanded' => true,
                 'multiple' => false,
@@ -25,17 +25,17 @@ class DemandeEtape1FormType extends AbstractType
             ])
             ->add('remplacement_nom', TextType::class, [
                 'label' => 'Nom :',
-                'required' => true,
+                'required' => false,
                 'attr' => ['class' => 'form-control'],
             ])
             ->add('remplacement_prenom', TextType::class, [
                 'label' => 'Prénom :',
-                'required' => true,
+                'required' => false,
                 'attr' => ['class' => 'form-control'],
             ])
             ->add('telephone_avant_service', TextType::class, [
                 'label' => 'Numéro de téléphone avant de quitter le service :',
-                'required' => true,
+                'required' => false,
                 'attr' => ['class' => 'form-control'],
             ])
             ->add('parti_rectorat', ChoiceType::class, [
@@ -46,11 +46,13 @@ class DemandeEtape1FormType extends AbstractType
                 ],
                 'expanded' => true,
                 'multiple' => false,
+                'placeholder' => false, // Désactive le placeholder
+                'required' => false,
                 'attr' => ['class' => 'form-check'],
             ])
             ->add('nouvelle_affectation_service', TextType::class, [
                 'label' => 'Si non, dans quel service est la nouvelle affectation :',
-                'required' => true,
+                'required' => false,
                 'attr' => ['class' => 'form-control'],
             ]);
     }

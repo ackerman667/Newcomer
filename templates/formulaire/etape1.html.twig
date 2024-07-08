@@ -42,9 +42,6 @@
             align-items: center;
             justify-content: space-between;
         }
-        .bold-label {
-            font-weight: bold;
-        }
     </style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
@@ -112,7 +109,7 @@
             <div class="inline-container">
                 <button id="next-button" class="btn btn-primary">Suivant</button>
                 <div class="page-counter">
-                     {{ current_step }} / {{ total_steps }}
+                    {{ current_step }} / {{ total_steps }}
                 </div>
             </div>
 
@@ -122,8 +119,8 @@
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const replaceSomeoneYes = document.querySelector('[name="demande_etape1_form[replace_someone]"][value="1"]');
-    const replaceSomeoneNo = document.querySelector('[name="demande_etape1_form[replace_someone]"][value="0"]');
+    const replaceSomeoneYes = document.querySelector('[name="demande_etape1_form[replace_someone]"][value="oui"]');
+    const replaceSomeoneNo = document.querySelector('[name="demande_etape1_form[replace_someone]"][value="non"]');
     const remplacementSection = document.getElementById('remplacement-section');
     const nextButton = document.getElementById('next-button');
     const remplacementFields = document.querySelectorAll('.remplacement-field');
@@ -162,23 +159,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Initial check on page load
     toggleRemplacementSection();
-
-    const partiRectoratFields = document.querySelectorAll('[name="demande_etape1_form[parti_rectorat]"]');
-    const nouvelleAffectationField = document.getElementById('form_nouvelle_affectation_service');
-
-    function toggleField(radioGroup, textField) {
-        radioGroup.forEach(radio => {
-            radio.addEventListener('change', function () {
-                textField.style.display = (radio.value !== '1' && radio.checked) ? 'block' : 'none';
-            });
-
-            if (radio.checked) {
-                textField.style.display = (radio.value !== '1') ? 'block' : 'none';
-            }
-        });
-    }
-
-    toggleField(partiRectoratFields, nouvelleAffectationField);
 });
 </script>
 {% endblock %}

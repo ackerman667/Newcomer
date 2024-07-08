@@ -13,9 +13,7 @@
     <h3 class="page-title">Historique de vos demandes</h3>
 {% endblock %}
 {% block main %}
-   {% if not demandes %}
-    <a href="{{ path('formulaire') }}" class="btn btn-primary float-right">Nouvelle demande</a>
-     {% endif %}
+   
     <table style="width:100%; border-collapse: collapse;">
         <thead>
             <tr style="border-bottom: 1px solid #ddd;">

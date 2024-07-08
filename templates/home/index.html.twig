@@ -1,16 +1,16 @@
 {% extends 'layout_ag.html.twig' %}
 {% block home %}
- {# {% if not app.user %}
-<meta http-equiv="refresh" content="2; url={{ path('choix') }}">
+ {% if not app.user %}
+<meta http-equiv="refresh" content="2; url={{ path('formulaire') }}">
 {% endif %}
 
 
 {% if app.user  %}
    <meta http-equiv="refresh" content="2; url={{ path('statuts') }}">
      {% endif %}
-      #}
-
-<meta http-equiv="refresh" content="2; url={{ path('formulairetest_etape1') }}">
+     
+{# 
+<meta http-equiv="refresh" content="2; url={{ path('formulairetest_etape1') }}"> #}
 {% endblock %}
 {% block title %}<title>Home - New Comer</title>{% endblock %}
 {% block body %}<body class="page home plainpage">{% endblock %}

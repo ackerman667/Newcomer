@@ -45,6 +45,33 @@ class Demandes
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $tokenExpiration = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?bool $Adresse_academique = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $statut_demande = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $nom_remplacant = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $prenom_remplacant = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $telephone_remplacant = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $depart = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $affectation_remplacant = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $charte = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $imprimante = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -166,6 +193,114 @@ class Demandes
     public function setTokenExpiration(?\DateTimeImmutable $tokenExpiration): static
     {
         $this->tokenExpiration = $tokenExpiration;
+
+        return $this;
+    }
+
+    public function isAdresseAcademique(): ?bool
+    {
+        return $this->Adresse_academique;
+    }
+
+    public function setAdresseAcademique(?bool $Adresse_academique): static
+    {
+        $this->Adresse_academique = $Adresse_academique;
+
+        return $this;
+    }
+
+    public function getStatutDemande(): ?string
+    {
+        return $this->statut_demande;
+    }
+
+    public function setStatutDemande(?string $statut_demande): static
+    {
+        $this->statut_demande = $statut_demande;
+
+        return $this;
+    }
+
+    public function getNomRemplacant(): ?string
+    {
+        return $this->nom_remplacant;
+    }
+
+    public function setNomRemplacant(?string $nom_remplacant): static
+    {
+        $this->nom_remplacant = $nom_remplacant;
+
+        return $this;
+    }
+
+    public function getPrenomRemplacant(): ?string
+    {
+        return $this->prenom_remplacant;
+    }
+
+    public function setPrenomRemplacant(?string $prenom_remplacant): static
+    {
+        $this->prenom_remplacant = $prenom_remplacant;
+
+        return $this;
+    }
+
+    public function getTelephoneRemplacant(): ?string
+    {
+        return $this->telephone_remplacant;
+    }
+
+    public function setTelephoneRemplacant(?string $telephone_remplacant): static
+    {
+        $this->telephone_remplacant = $telephone_remplacant;
+
+        return $this;
+    }
+
+    public function isDepart(): ?bool
+    {
+        return $this->depart;
+    }
+
+    public function setDepart(?bool $depart): static
+    {
+        $this->depart = $depart;
+
+        return $this;
+    }
+
+    public function getAffectationRemplacant(): ?string
+    {
+        return $this->affectation_remplacant;
+    }
+
+    public function setAffectationRemplacant(?string $affectation_remplacant): static
+    {
+        $this->affectation_remplacant = $affectation_remplacant;
+
+        return $this;
+    }
+
+    public function isCharte(): ?bool
+    {
+        return $this->charte;
+    }
+
+    public function setCharte(?bool $charte): static
+    {
+        $this->charte = $charte;
+
+        return $this;
+    }
+
+    public function isImprimante(): ?bool
+    {
+        return $this->imprimante;
+    }
+
+    public function setImprimante(?bool $imprimante): static
+    {
+        $this->imprimante = $imprimante;
 
         return $this;
     }
