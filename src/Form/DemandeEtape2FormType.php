@@ -69,7 +69,7 @@ class DemandeEtape2FormType extends AbstractType
             'required' => false,
             'attr' => [
                 'class' => 'form-control contract-date',
-                // 'style' => 'display: none;',  // Hidden by default
+                
             ],
         ])
         ->add('date_fin_contrat', DateType::class, [
@@ -78,7 +78,7 @@ class DemandeEtape2FormType extends AbstractType
             'required' => false,
             'attr' => [
                 'class' => 'form-control contract-date',
-                // 'style' => 'display: none;',  // Hidden by default
+                
             ],
         ])
         ->add('email', EmailType::class, [

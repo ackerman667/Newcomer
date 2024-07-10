@@ -27,7 +27,7 @@ class FormulaireTestController extends AbstractController
     #[Route('/formulairetest/etape1', name: 'formulairetest_etape1')]
     public function etape1(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager): Response
     {
-        // Initialiser la demande et l'utilisateur s'ils n'existent pas dans la session
+       
         
 
         $data = $session->get('form_data', []);
@@ -37,7 +37,7 @@ class FormulaireTestController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $session->set('form_data', $data);
-          // Sauvegarder les modifications de la demande
+          
 
             return $this->redirectToRoute('formulairetest_etape2');
         }
@@ -53,13 +53,12 @@ class FormulaireTestController extends AbstractController
     #[Route('/formulairetest/etape2', name: 'formulairetest_etape2')]
     public function etape2(MonApplication $monApplication, Request $request, SessionInterface $session, HttpClientInterface $httpClient, EntityManagerInterface $entityManager): Response
     {
-        // Récupérer les données de la session
+        
         $data = $session->get('form_data', []);
 
-        // Récupérer l'utilisateur et la demande depuis la session
+        
     
 
-        // Récupérer les services depuis l'API
         $apiUrl = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/services';
         $apiToken = 'b97b055g210125afb4c5f507dc823958ff18dfa56a12c7n12agch8db58e21767';
         $response = $httpClient->request('GET', $apiUrl, [
@@ -82,7 +81,7 @@ class FormulaireTestController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
-// Sauvegarder les modifications de l'utilisateur
+
 
             $session->set('form_data', $data);
 
@@ -101,12 +100,11 @@ class FormulaireTestController extends AbstractController
     #[Route('/formulairetest/etape3', name: 'formulairetest_etape3')]
     public function etape3(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, MailerInterface $mailer, LoginLinkHandlerInterface $loginLinkHandler, NotifierInterface $notifier): Response
     {
-        // Récupérer les données de la session
+        
         $data = $session->get('form_data', []);
         $form = $this->createForm(DemandeEtape3FormType::class, $data);
         $form->handleRequest($request);
 
-        // Récupérer l'utilisateur et la demande depuis la session
        
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -158,18 +156,23 @@ class FormulaireTestController extends AbstractController
             $demande->setHeureSoumission(new \DateTime());
             $demande->setTitre('Demande d\'accès à un poste informatique TEST!!!!!');
             $demande->setStatuts('En attente');
+            $token = bin2hex(random_bytes(32));
+            $expiration = new \DateTimeImmutable('+24 hours');
+            $demande->setToken($token);
+            $demande->setTokenExpiration($expiration);
+
             $entityManager->persist($user);
             $entityManager->persist($demande);
             
 
             $entityManager->flush();
+            
            
-            $session->clear(); // Sauvegarder les modifications de la demande et de l'utilisateur
+            $session->clear(); 
 
             $loginLinkDetails = $loginLinkHandler->createLoginLink($user);
             $loginLink = $loginLinkDetails->getUrl();
 
-            // Envoi de l'email avec Symfony Mailer
             $email = (new Email())
                 ->from('noreply@ac-guadeloupe.fr')
                 ->to($user->getEmail())
@@ -188,7 +191,7 @@ class FormulaireTestController extends AbstractController
 
             $mailer->send($email);
 
-            // Rediriger vers une page de confirmation ou autre
+          
             return $this->redirectToRoute('home');
         }
 
@@ -211,7 +214,6 @@ class FormulaireTestController extends AbstractController
                 $loginLinkDetails = $loginLinkHandler->createLoginLink($user);
                 $loginLink = $loginLinkDetails->getUrl();
 
-                // Envoi de l'email avec Symfony Mailer
                 $email = (new Email())
                     ->from('noreply@ac-guadeloupe.fr')
                     ->to($email)
