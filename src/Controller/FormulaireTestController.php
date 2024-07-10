@@ -1,7 +1,4 @@
 <?php
-
-
-
 namespace App\Controller;
 
 use App\Classe\MonApplication;
@@ -23,34 +20,25 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\LoginLink\LoginLinkHandlerInterface;
 use Symfony\Component\Notifier\NotifierInterface;
-use Symfony\Component\Notifier\Recipient\Recipient;
-use Symfony\Component\Security\Http\LoginLink\LoginLinkNotification;
 
 class FormulaireTestController extends AbstractController
 {
-    
+
     #[Route('/formulairetest/etape1', name: 'formulairetest_etape1')]
-    public function etape1(MonApplication $monApplication, Request $request, SessionInterface $session): Response
+    public function etape1(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager): Response
     {
-        $demande = new Demandes();
-        $user = new User();
+        // Initialiser la demande et l'utilisateur s'ils n'existent pas dans la session
+        
+
         $data = $session->get('form_data', []);
         $form = $this->createForm(DemandeEtape1FormType::class, $data);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $choix = $data['bouton_radio'];
-
-            // Traiter les données en fonction de la sélection du bouton radio
-            if ($choix === 'oui') {
-                // Champ spécifique pour le bouton 'oui'
-                $data['champ_specifique'] = 'Valeur pour oui';
-            } else {
-                // Champ spécifique pour le bouton 'non'
-                $data['champ_specifique'] = null; // ou autre valeur par défaut
-            }
             $data = $form->getData();
             $session->set('form_data', $data);
+          // Sauvegarder les modifications de la demande
+
             return $this->redirectToRoute('formulairetest_etape2');
         }
 
@@ -63,101 +51,140 @@ class FormulaireTestController extends AbstractController
     }
 
     #[Route('/formulairetest/etape2', name: 'formulairetest_etape2')]
-    public function etape2(MonApplication $monApplication, Request $request, SessionInterface $session, HttpClientInterface $httpClient): Response
+    public function etape2(MonApplication $monApplication, Request $request, SessionInterface $session, HttpClientInterface $httpClient, EntityManagerInterface $entityManager): Response
     {
-         // Récupérer les données de la session
-         $data = $session->get('form_data', []);
+        // Récupérer les données de la session
+        $data = $session->get('form_data', []);
 
-         // Créer le formulaire avec les données de la session
-        
- 
-         // Récupérer les services depuis l'API
-         $apiUrl = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/services';
-         $apiToken = 'b97b055g210125afb4c5f507dc823958ff18dfa56a12c7n12agch8db58e21767';
-         
-         $response = $httpClient->request('GET', $apiUrl, [
-             'headers' => [
-                 'x-auth-token' => $apiToken,
-                 'Accept' => 'application/json',
-             ],
-         ]);
- 
-         $services = $response->toArray();
-         $servicesDropdownData = $this->transformServicesForDropdown($services);
-         dump($servicesDropdownData);
-         $form = $this->createForm(DemandeEtape2FormType::class, $data, [
+        // Récupérer l'utilisateur et la demande depuis la session
+    
+
+        // Récupérer les services depuis l'API
+        $apiUrl = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/services';
+        $apiToken = 'b97b055g210125afb4c5f507dc823958ff18dfa56a12c7n12agch8db58e21767';
+        $response = $httpClient->request('GET', $apiUrl, [
+            'headers' => [
+                'x-auth-token' => $apiToken,
+                'Accept' => 'application/json',
+            ],
+        ]);
+       
+
+        $services = $response->toArray();
+        dump($services);
+        $servicesDropdownData = $this->transformServicesForDropdown($services);
+
+        $form = $this->createForm(DemandeEtape2FormType::class, $data, [
             'services' => $servicesDropdownData,
         ]);
-         // Gérer la soumission du formulaire
-         $form->handleRequest($request);
- 
-         if ($form->isSubmitted() && $form->isValid()) {
-             // Sauvegarder les données dans la session ou faire autre chose ici
-             $data = $form->getData();
-             $session->set('form_data', $data);
- 
-             return $this->redirectToRoute('formulairetest_etape3');
-         }
- 
-         // Afficher le formulaire
-         return $this->render('formulaire/etape2.html.twig', [
-             'form' => $form->createView(),
-             'monApplication' => $monApplication,
-             'servicesDropdownData' => $servicesDropdownData, // Passer les services au template Twig
-             'current_step' => 2,
-             'total_steps' => 3,
-         ]);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+// Sauvegarder les modifications de l'utilisateur
+
+            $session->set('form_data', $data);
+
+            return $this->redirectToRoute('formulairetest_etape3');
+        }
+
+        return $this->render('formulaire/etape2.html.twig', [
+            'form' => $form->createView(),
+            'monApplication' => $monApplication,
+            'servicesDropdownData' => $servicesDropdownData,
+            'current_step' => 2,
+            'total_steps' => 3,
+        ]);
     }
 
     #[Route('/formulairetest/etape3', name: 'formulairetest_etape3')]
     public function etape3(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, MailerInterface $mailer, LoginLinkHandlerInterface $loginLinkHandler, NotifierInterface $notifier): Response
     {
+        // Récupérer les données de la session
         $data = $session->get('form_data', []);
         $form = $this->createForm(DemandeEtape3FormType::class, $data);
         $form->handleRequest($request);
 
+        // Récupérer l'utilisateur et la demande depuis la session
+       
+
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
+            $nom = $data['nom'];
+            $prenom = $data['prenom'];
+            $demande = new Demandes();
+            $user = new User();
+            $choix = $data['replace_someone'];
+            $date_debut_contrat=$data['date_debut_contrat'];
+            $date_fin_contrat=$data['date_fin_contrat'];
+            $statut_utilisateur=$data['statut'];
+            if ($choix === 'oui') {
+                $demande->setRemplacant(true);
+                $demande->setNomRemplacant($data['remplacement_nom']);
+                $demande->setPrenomRemplacant($data['remplacement_prenom']);
+                $demande->setTelephoneRemplacant($data['telephone_avant_service']);
+                $depart = $data['parti_rectorat'];
+                if ($depart === true) {
+                    $demande->setDepart(true);
+                $demande->setAffectationRemplacant($data['nouvelle_affectation_service']);
+                } else {
+                    $demande->setDepart(false);
+                }
+            } else 
+            {
+                $demande->setRemplacant(false);
+            }
 
-            // Sauvegarder les données dans la base de données
+            if($statut_utilisateur !== 'Titulaire') {
+                $user->setDateDebut($date_debut_contrat);
+                $user->setDateFin($date_fin_contrat);
+            }
+
+            
             
             $user->setNom($data['nom']);
             $user->setPrenom($data['prenom']);
             $user->setEmail($data['email']);
             $user->setFonction($data['fonction']);
-
-
-            $destinataire = $data['email'];
-            dump($destinataire);
+            $user->setStatutPersonne($data['statut']);
+            $user->setDateDeNaissance($data['date_de_naissance']);
+            $demande->setNomRemplacant($data['remplacement_nom']);
+            $demande->setPrenomRemplacant($data['remplacement_prenom']);
+            $demande->setTelephoneRemplacant($data['telephone_avant_service']);
+            $demande->setAffectationRemplacant($data['nouvelle_affectation_service']);
             $demande->setIDutilisateur($user);
-
             $demande->setDate(new \DateTime());
             $demande->setHeureSoumission(new \DateTime());
             $demande->setTitre('Demande d\'accès à un poste informatique TEST!!!!!');
             $demande->setStatuts('En attente');
-            $token = bin2hex(random_bytes(32));
-            $expiration = new \DateTimeImmutable('+24 hours');
-            $demande->setToken($token);
-            
-            $demande->setTokenExpiration($expiration);
-
-            $entityManager->persist($demande);
             $entityManager->persist($user);
+            $entityManager->persist($demande);
+            
+
             $entityManager->flush();
+           
+            $session->clear(); // Sauvegarder les modifications de la demande et de l'utilisateur
 
             $loginLinkDetails = $loginLinkHandler->createLoginLink($user);
             $loginLink = $loginLinkDetails->getUrl();
-            $targetUrl = $this->generateUrl('aide'); 
-             $loginLink .= '?target=' . urlencode($targetUrl);
 
             // Envoi de l'email avec Symfony Mailer
             $email = (new Email())
                 ->from('noreply@ac-guadeloupe.fr')
-                ->to($destinataire)
+                ->to($user->getEmail())
                 ->subject('Votre lien de connexion')
                 ->cc('Nicolas.Barbeu@ac-guadeloupe.fr')
                 ->text('Voici votre lien de connexion :')
-                ->html('<p>Voici votre lien de connexion :</p><p><a href="' . $loginLink . '">Cliquez ici pour vous connecter</a></p>');
+                ->html('
+                <p>Bonjour ' . $nom. ' ' . $prenom . ',</p>
+                <p>Nous avons bien recu votre demande d\'accès à un poste de travail informatique.</p>
+                <p>Pour  accéder à votre compte, veuillez cliquer sur le lien ci-dessous :</p>
+                <p><a href="' . $loginLink . '">Cliquez ici pour vous connecter</a></p>
+                <p>Ce lien est valable pour une durée de 24 heures. Si vous n\'avez pas demandé cet accès, veuillez ignorer cet e-mail.</p>
+                <p>Bien cordialement,</p>
+                <p><strong>Votre équipe informatique</strong></p>
+            ');
 
             $mailer->send($email);
 
@@ -183,7 +210,7 @@ class FormulaireTestController extends AbstractController
             if ($user) {
                 $loginLinkDetails = $loginLinkHandler->createLoginLink($user);
                 $loginLink = $loginLinkDetails->getUrl();
-    
+
                 // Envoi de l'email avec Symfony Mailer
                 $email = (new Email())
                     ->from('noreply@ac-guadeloupe.fr')
@@ -192,18 +219,16 @@ class FormulaireTestController extends AbstractController
                     ->cc('Nicolas.Barbeu@ac-guadeloupe.fr')
                     ->text('Voici votre lien de connexion :')
                     ->html('<p>Voici votre lien de connexion :</p><p><a href="' . $loginLink . '">Cliquez ici pour vous connecter</a></p>');
-    
+
                 $mailer->send($email);
 
-                return $this->render('security/lien.html.twig',[
+                return $this->render('security/lien.html.twig', [
                     'monApplication' => $monApplication,
                 ]);
             }
-
-            
         }
 
-        return $this->render('security/demande_connexion.html.twig',[
+        return $this->render('security/demande_connexion.html.twig', [
             'monApplication' => $monApplication,
         ]);
     }
@@ -228,6 +253,7 @@ class FormulaireTestController extends AbstractController
             'monApplication' => $monApplication,
         ]);
     }
+
     private function transformServicesForDropdown(array $services): array
     {
         $servicesDropdownData = [];
@@ -237,6 +263,4 @@ class FormulaireTestController extends AbstractController
 
         return $servicesDropdownData;
     }
-    
-
 }

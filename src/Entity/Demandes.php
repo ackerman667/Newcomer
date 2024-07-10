@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\DemandesRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -71,6 +73,17 @@ class Demandes
 
     #[ORM\Column(nullable: true)]
     private ?bool $imprimante = null;
+
+    #[ORM\OneToMany(mappedBy: 'demande', targetEntity: HistoriqueDemande::class)]
+    private Collection $historiqueDemandes;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $remplacant = null;
+
+    public function __construct()
+    {
+        $this->historiqueDemandes = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -301,6 +314,48 @@ class Demandes
     public function setImprimante(?bool $imprimante): static
     {
         $this->imprimante = $imprimante;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, HistoriqueDemande>
+     */
+    public function getHistoriqueDemandes(): Collection
+    {
+        return $this->historiqueDemandes;
+    }
+
+    public function addHistoriqueDemande(HistoriqueDemande $historiqueDemande): static
+    {
+        if (!$this->historiqueDemandes->contains($historiqueDemande)) {
+            $this->historiqueDemandes->add($historiqueDemande);
+            $historiqueDemande->setDemande($this);
+        }
+
+        return $this;
+    }
+
+    public function removeHistoriqueDemande(HistoriqueDemande $historiqueDemande): static
+    {
+        if ($this->historiqueDemandes->removeElement($historiqueDemande)) {
+            // set the owning side to null (unless already changed)
+            if ($historiqueDemande->getDemande() === $this) {
+                $historiqueDemande->setDemande(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function isRemplacant(): ?bool
+    {
+        return $this->remplacant;
+    }
+
+    public function setRemplacant(?bool $remplacant): static
+    {
+        $this->remplacant = $remplacant;
 
         return $this;
     }

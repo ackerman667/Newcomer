@@ -48,6 +48,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $date_de_naissance = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $statut_personne = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $date_debut = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $date_fin = null;
+
     public function __construct()
     {
         $this->demandes = new ArrayCollection();
@@ -203,6 +212,42 @@ public function getDateDeNaissance(): ?\DateTimeInterface
 public function setDateDeNaissance(?\DateTimeInterface $date_de_naissance): static
 {
     $this->date_de_naissance = $date_de_naissance;
+
+    return $this;
+}
+
+public function getStatutPersonne(): ?string
+{
+    return $this->statut_personne;
+}
+
+public function setStatutPersonne(?string $statut_personne): static
+{
+    $this->statut_personne = $statut_personne;
+
+    return $this;
+}
+
+public function getDateDebut(): ?\DateTimeInterface
+{
+    return $this->date_debut;
+}
+
+public function setDateDebut(?\DateTimeInterface $date_debut): static
+{
+    $this->date_debut = $date_debut;
+
+    return $this;
+}
+
+public function getDateFin(): ?\DateTimeInterface
+{
+    return $this->date_fin;
+}
+
+public function setDateFin(?\DateTimeInterface $date_fin): static
+{
+    $this->date_fin = $date_fin;
 
     return $this;
 }
