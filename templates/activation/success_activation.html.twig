@@ -1,0 +1,17 @@
+{% extends 'layout_ag.html.twig' %}
+
+{% block title %}
+<title>Activation réussie - {{ monApplication.Appli }}</title>
+{% endblock %}
+
+{% block head_gene %}
+    <meta http-equiv="refresh" content="5;url={{ path('formulairetest_etape1', {'token': token}) }}">
+{% endblock %}
+
+{% block main %}
+<div class="activation-container">
+    <h1>Activation réussie</h1>
+    <p>Votre compte a été activé avec succès. Vous allez être redirigé vers le formulaire de demande.</p>
+    <p>Si vous n'êtes pas redirigé automatiquement, cliquez <a href="{{ path('formulairetest_etape1', {'token': token}) }}">ici</a>.</p>
+</div>
+{% endblock %}

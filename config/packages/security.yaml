@@ -21,13 +21,13 @@ security:
                 providers: [app_user_provider, app_user_provider2]
         
     firewalls:
-        main:
-            login_link:
-                check_route: login_check
-                signature_properties: ['id']
-                provider: app_user_provider
-            logout:
-                path: app_logout
+        # main:
+        #     login_link:
+        #         check_route: login_check
+        #         signature_properties: ['id']
+        #         provider: app_user_provider
+        #     logout:
+        #         path: app_logout
                 
 
        

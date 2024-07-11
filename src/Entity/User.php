@@ -57,6 +57,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $date_fin = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?bool $compte_actif = null;
+
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $token = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $tokenExpiration = null;
+
     public function __construct()
     {
         $this->demandes = new ArrayCollection();
@@ -248,6 +257,42 @@ public function getDateFin(): ?\DateTimeInterface
 public function setDateFin(?\DateTimeInterface $date_fin): static
 {
     $this->date_fin = $date_fin;
+
+    return $this;
+}
+
+public function isCompteActif(): ?bool
+{
+    return $this->compte_actif;
+}
+
+public function setCompteActif(?bool $compte_actif): static
+{
+    $this->compte_actif = $compte_actif;
+
+    return $this;
+}
+
+public function getToken(): ?string
+{
+    return $this->token;
+}
+
+public function setToken(?string $token): static
+{
+    $this->token = $token;
+
+    return $this;
+}
+
+public function getTokenExpiration(): ?\DateTimeImmutable
+{
+    return $this->tokenExpiration;
+}
+
+public function setTokenExpiration(?\DateTimeImmutable $tokenExpiration): static
+{
+    $this->tokenExpiration = $tokenExpiration;
 
     return $this;
 }

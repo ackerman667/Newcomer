@@ -1,0 +1,51 @@
+{% extends 'layout_ag.html.twig' %}
+
+{% block title %}<title>Redirection</title>{% endblock %}
+
+{% block body %}
+<body class="page not-home">
+{% endblock %}
+
+{% block header %}
+    <h1 class="page-title">Vérification de l'email</h1>
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger">
+                    {{ message }}
+                </div>
+            {% endfor %}
+            <p>Vous serez redirigé dans quelques secondes...</p>
+        </div>
+    </div>
+</div>
+<script>
+    setTimeout(function() {
+        window.location.href = "{{ redirect_url }}";
+    }, 5000); 
+</script>
+<style>
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .form-group label {
+        font-weight: bold;
+    }
+    .btn-primary {
+        margin-top: 20px;
+    }
+    .page-title {
+        text-align: center;
+        font-style: italic;
+        color: #04A0DB;
+        margin-bottom: 20px;
+    }
+    .alert {
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}

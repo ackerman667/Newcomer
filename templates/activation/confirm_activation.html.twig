@@ -1,0 +1,53 @@
+{% extends 'layout_ag.html.twig' %}
+
+{% block title %}
+<title>Activation réussie - {{ monApplication.Appli }}</title>
+{% endblock %}
+
+{% block head_gene %}
+    <meta http-equiv="refresh" content="5;url={{ path('formulairetest_etape1', {'token': token}) }}">
+    <style>
+        .activation-container {
+            border: 1px solid #000;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .activation-container h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #04A0DB;
+        }
+        .activation-container p {
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .activation-container a {
+            color: #04A0DB;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .activation-container a:hover {
+            text-decoration: underline;
+        }
+    </style>
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="activation-container">
+                <h1>Activation réussie</h1>
+                <p>Votre compte a été activé avec succès. Vous allez être redirigé vers le formulaire de demande.</p>
+                <p>Si vous n'êtes pas redirigé automatiquement, cliquez <a href="{{ path('formulairetest_etape1', {'token': token}) }}">ici</a>.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
