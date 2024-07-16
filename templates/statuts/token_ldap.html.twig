@@ -1,5 +1,5 @@
 {% extends 'layout_ag.html.twig' %}
-{% block title %}<title>Liste des demandes - {{ monApplication.Appli }}</title>{% endblock %}
+{% block title %}<title>Historique de vos demandes - {{ monApplication.Appli }}</title>{% endblock %}
 {% block head_gene %}
     <style>
         .details-section {
@@ -39,52 +39,51 @@
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
 {% block header %}
-    <h3 class="page-title">Liste des demandes</h3>
+    <h3 class="page-title">Historique de vos demandes</h3>
 {% endblock %}
 {% block main %}
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-10">
+                {% for message in app.flashes('success') %}
+                    <div class="alert alert-success">
+                        {{ message }}
+                    </div>
+                {% endfor %}
                 <table style="width:100%; border-collapse: collapse;">
                     <thead>
                         <tr style="border-bottom: 1px solid #ddd;">
                             <th style="text-align: center; padding: 8px;">Titre</th>
-                            <th style="text-align: center; padding: 8px;">Nom</th>
-                            <th style="text-align: center; padding: 8px;">Prénom</th>
-                            <th style="text-align: center; padding: 8px;">Date</th>
-                            <th style="text-align: center; padding: 8px;">Statuts</th>
-                            <th style="text-align: center; padding: 8px;">Visualiser la demande</th>
-                            <th style="text-align: center; padding: 8px;">Actions</th>
+                            <th style="text-align: center; padding: 8px;">Date de soumission</th>
+                            <th style="text-align: center; padding: 8px;">Heure de soumission</th>
+                            <th style="text-align: center; padding: 8px;">Statut</th>
+                            <th style="text-align: center; padding: 8px;">Modifier la demande</th>
+                            <th style="text-align: center; padding: 8px;">Visualiser</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% if demandes is empty %}
                             <tr>
-                                <td colspan="7" style="text-align: center; padding: 8px;">Vous n'avez aucune demande pour l'instant</td>
+                                <td colspan="6" style="text-align: center; padding: 8px;">Vous n'avez aucune demande pour l'instant</td>
                             </tr>
                         {% else %}
                             {% for demande in demandes %}
                                 <tr style="border-bottom: 1px solid #ddd;">
                                     <td style="text-align: center; padding: 8px;">{{ demande.titre }}</td>
-                                    <td style="text-align: center; padding: 8px;">{{ demande.IDutilisateur.getNom() }}</td>
-                                    <td style="text-align: center; padding: 8px;">{{ demande.IDutilisateur.getPrenom() }}</td>
                                     <td style="text-align: center; padding: 8px;">{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
+                                    <td style="text-align: center; padding: 8px;">{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
                                     <td style="text-align: center; padding: 8px;">{{ demande.statuts }}</td>
+                                    {% if demande.statuts == 'En attente' %}
+                                        <td style="text-align: center; padding: 8px;">
+                                            <a href="{{ path('modifier_demandesldap', {id: demande.id}) }}">Modifier</a>
+                                        </td>
+                                    {% else %}
+                                        <td style="text-align: center; padding: 8px;">
+                                            <span style="color: gray;" title="La demande ne peut pas être modifiée car elle a déjà été traitée">Modifier</span>
+                                        </td>
+                                    {% endif %}
                                     <td style="text-align: center; padding: 8px;">
-                                        {% if demande.pdf %}
-                                            <a href="data:application/pdf;base64,{{ demande.pdf }}" target="_blank">Voir le PDF</a>
-                                        {% else %}
-                                            Aucun PDF disponible
-                                        {% endif %}
-                                    </td>
-                                    <td style="text-align: center; padding: 8px;">
-                                        {% if demande.statuts != 'Validé' %}
-                                            <form method="post" action="{{ path('valider_demande', {id: demande.id}) }}">
-                                                <button type="submit" class="btn btn-success">Valider</button>
-                                            </form>
-                                        {% else %}
-                                            <span style="color: gray;">Déjà validé</span>
-                                        {% endif %}
+                                        <a href="{{ path('demande_consult', {token: demande.token}) }}">Voir la demande</a>
                                     </td>
                                 </tr>
                             {% endfor %}

@@ -1,8 +1,10 @@
 <?php
+
 namespace App\Controller;
 
 use App\Classe\MonApplication;
 use App\Entity\Demandes;
+use App\Entity\HistoriqueDemande;
 use App\Entity\User;
 use App\Form\DemandeEtape1FormType;
 use App\Form\DemandeEtape2FormType;
@@ -38,7 +40,6 @@ class FormulaireTestController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $session->set('form_data', $data);
-            dump($data);
 
             return $this->redirectToRoute('formulairetest_etape2', ['token' => $token]);
         }
@@ -67,7 +68,6 @@ class FormulaireTestController extends AbstractController
         $data['prenom'] = $user->getPrenom();
         $data['email'] = $user->getEmail();
         $data['date_de_naissance'] = $user->getDateDeNaissance();
-
         $data['fonction'] = $user->getFonction();
 
         $apiUrl = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/services';
@@ -108,7 +108,6 @@ class FormulaireTestController extends AbstractController
     #[Route('/formulairetest/etape3/{token}', name: 'formulairetest_etape3')]
     public function etape3(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, MailerInterface $mailer, $token): Response
     {
-        
         $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
 
         if (!$user) {
@@ -116,20 +115,40 @@ class FormulaireTestController extends AbstractController
         }
 
         $data = $session->get('form_data', []);
-        dump($data);
         $form = $this->createForm(DemandeEtape3FormType::class, $data);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
-            dump($data);
-          
-            $demande = new Demandes();
+            $historique = new HistoriqueDemande();
+
+            // Vérifier si une demande existante doit être mise à jour
+            $demandeId = $session->get('demande_id');
+            if ($demandeId) {
+                $demande = $entityManager->getRepository(Demandes::class)->find($demandeId);
+                $historique->setDemande($demande);
+                $historique->setStatut($demande->getStatuts());
+                $historique->setDate(new \DateTime());
+                $historique->setStatutOperation('Modification');
+                
+                if (!$demande) {
+                    throw $this->createNotFoundException('Demande non trouvée.');
+                }
+            } else {
+                $demande = new Demandes();
+                $demande->setToken($token);
+                $expiration = new \DateTimeImmutable('+24 hours');
+                $demande->setTokenExpiration($expiration);
+                $historique->setDemande($demande);
+                $historique->setStatut($demande->getStatuts());
+                $historique->setDate(new \DateTime());
+                $historique->setStatutOperation('Création');
+            }
+
             $choix = $data['replace_someone'];
             $statut_utilisateur = $data['statut'];
             $nom = $data['nom'];
-            $prenom= $data['prenom'];
-            
+            $prenom = $data['prenom'];
 
             if ($choix === 'oui') {
                 $demande->setRemplacant(true);
@@ -140,7 +159,6 @@ class FormulaireTestController extends AbstractController
                 if ($depart === true) {
                     $demande->setDepart(true);
                     $demande->setAffectationRemplacant('Aucune');
-                    
                 } else {
                     $demande->setDepart(false);
                     $demande->setAffectationRemplacant($data['nouvelle_affectation_service']);
@@ -155,8 +173,8 @@ class FormulaireTestController extends AbstractController
 
             if ($statut_utilisateur !== 'Titulaire') {
                 $date_debut_contrat = $data['date_debut_contrat'];
-            $date_fin_contrat = $data['date_fin_contrat'];
-            $statut_utilisateur = $data['statut'];
+                $date_fin_contrat = $data['date_fin_contrat'];
+                $statut_utilisateur = $data['statut'];
                 $user->setDateDebut($date_debut_contrat);
                 $user->setDateFin($date_fin_contrat);
                 $user->setStatutPersonne($statut_utilisateur);
@@ -164,18 +182,20 @@ class FormulaireTestController extends AbstractController
                 $user->setStatutPersonne($statut_utilisateur);
             }
 
-
             $demande->setIDutilisateur($user);
             $demande->setDate(new \DateTime());
             $demande->setHeureSoumission(new \DateTime());
             $demande->setTitre('Demande d\'accès à un poste informatique');
             $demande->setStatuts('En attente');
-            $demande->setToken($token);
-            $expiration = new \DateTimeImmutable('+24 hours');
-            $demande->setTokenExpiration($expiration);
 
             $entityManager->persist($user);
             $entityManager->persist($demande);
+
+            // Ajouter une entrée dans l'historique
+            
+          
+            $entityManager->persist($historique);
+
             $entityManager->flush();
 
             $url = $this->generateUrl('statuts_token', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
@@ -196,7 +216,7 @@ class FormulaireTestController extends AbstractController
                 <p>Bien cordialement,</p>
                 <p><strong>Votre équipe informatique</strong></p>
             ');
-            $this->addFlash('success', ' vous êtes redirigé. Vous pouvez accéder à cette page n\'importe quand depuis le lien dans votre boîte mail.');
+            $this->addFlash('success', 'Vous êtes redirigé. Vous pouvez accéder à cette page n\'importe quand depuis le lien dans votre boîte mail.');
             $mailer->send($email);
 
             return $this->redirectToRoute('statuts_token', ['token' => $token]);
@@ -209,6 +229,42 @@ class FormulaireTestController extends AbstractController
             'total_steps' => 3,
             'token' => $token
         ]);
+    }
+
+    #[Route('/formulairetest/modifier/{id}', name: 'modifier_demandes')]
+    public function modifierDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
+    {
+        $demande = $entityManager->getRepository(Demandes::class)->find($id);
+
+        if (!$demande) {
+            throw $this->createNotFoundException('Demande non trouvée.');
+        }
+
+        $user = $demande->getIDutilisateur();
+        $token = $demande->getToken();
+
+        // Pré-remplir les données pour le formulaire
+        $data = [
+            'nom' => $user->getNom(),
+            'prenom' => $user->getPrenom(),
+            'email' => $user->getEmail(),
+            'date_de_naissance' => $user->getDateDeNaissance(),
+            'fonction' => $user->getFonction(),
+            'replace_someone' => $demande->isRemplacant() ? 'oui' : 'non',
+            'remplacement_nom' => $demande->getNomRemplacant(),
+            'remplacement_prenom' => $demande->getPrenomRemplacant(),
+            'telephone_avant_service' => $demande->getTelephoneRemplacant(),
+            'parti_rectorat' => $demande->isDepart(),
+            'nouvelle_affectation_service' => $demande->getAffectationRemplacant(),
+            'date_debut_contrat' => $user->getDateDebut(),
+            'date_fin_contrat' => $user->getDateFin(),
+            'statut' => $user->getStatutPersonne(),
+        ];
+
+        $session->set('form_data', $data);
+        $session->set('demande_id', $id);
+
+        return $this->redirectToRoute('formulairetest_etape1', ['token' => $token]);
     }
 
     #[Route('/login', name: 'login')]
@@ -242,6 +298,11 @@ class FormulaireTestController extends AbstractController
             'monApplication' => $monApplication,
         ]);
     }
+
+
+
+
+    
 
     #[Route('/login_check', name: 'login_check')]
     public function check(): never

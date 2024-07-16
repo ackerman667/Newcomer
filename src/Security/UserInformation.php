@@ -28,6 +28,9 @@ class UserInformation
             $fiche['sn']=$info[0]['sn'][0];
             $fiche['givenname']=$info[0]['givenname'][0];
             $fiche['title']=$info[0]['title'][0];
+            $fiche['sn']=$info[0]['sn'][0];
+            $fiche['uid']=$info[0]['uid'][0];
+
            
             dump($fiche);
             //Recherche de l'URL du portail suivant le rev-proxy d'ou vient l'agent

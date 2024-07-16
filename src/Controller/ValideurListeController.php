@@ -1,48 +1,56 @@
 <?php
 
-
-
 namespace App\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Classe\MonApplication;
 use App\Entity\Demandes;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use App\Entity\HistoriqueDemande;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Security;
-use App\Security\User;
-
-use App\Classe\MonApplication;
-use Doctrine\ORM\EntityManagerInterface;
-
 
 class ValideurListeController extends AbstractController
-
 {
     #[Route('/listedemandes', name: 'listedemandes')]
-    public function index(MonApplication $monApplication,  EntityManagerInterface $entityManager, Security $security): Response
+    public function index(MonApplication $monApplication, EntityManagerInterface $entityManager, Security $security): Response
     {
         $user = $security->getUser();
-        $uid =$user->getUid();
+        $uid = $user->getUid();
         $demandes = $entityManager->getRepository(Demandes::class)->createQueryBuilder('d')
-        ->where('d.uid_valideur = :uid')
-        ->setParameter('uid', $uid)
-        ->getQuery()
-        ->getResult();
-        $demandesAvecInfosUtilisateur = [];
-            foreach ($demandes as $demande) {
-                $utilisateurDemande = $demande->getIDutilisateur();
-                $nomUtilisateur = $utilisateurDemande->getNom();
-                $prenomUtilisateur = $utilisateurDemande->getPrenom();
-                dump($prenomUtilisateur);
+            ->where('d.uid_valideur = :uid')
+            ->setParameter('uid', $uid)
+            ->getQuery()
+            ->getResult();
 
-                
-
-            }
         return $this->render('valideur/index.html.twig', [
-            
             'demandes' => $demandes,
-            "monApplication" => $monApplication,
-            
+            'monApplication' => $monApplication,
         ]);
     }
+
+    #[Route('/validerdemande/{id}', name: 'valider_demande', methods: ['POST'])]
+    public function validerDemande(int $id, EntityManagerInterface $entityManager): Response
+    {
+        $demande = $entityManager->getRepository(Demandes::class)->find($id);
+
+        if (!$demande) {
+            throw $this->createNotFoundException('Demande non trouvée.');
+        }
+
+        $demande->setStatuts('Validé');
+        $historique = new HistoriqueDemande();
+        $historique->setDemande($demande);
+        $historique->setStatut('Validée');
+        $historique->setStatutOperation('Validation');
+        $historique->setDate(new \DateTime());
+        $entityManager->persist($historique);
+
+        $entityManager->flush();
+
+        return $this->redirectToRoute('listedemandes');
+    }
 }
+  
+

@@ -8,8 +8,10 @@ use App\Entity\Demandes;
 use App\Form\DemandeEtape1FormType;
 use App\Form\DemandeEtape2FormType;
 use App\Form\DemandeEtape3FormType;
+use App\Entity\HistoriqueDemande;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
+
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Dompdf\Dompdf;
 use Symfony\Component\Security\Core\Security;
@@ -84,7 +86,7 @@ class FormulaireLdapController extends AbstractController
             return $this->redirectToRoute('formulaireldap_etape2');
         }
 
-        return $this->render('formulaire/etape1.html.twig', [
+        return $this->render('formulaireldap/etape1ldap.html.twig', [
             'form' => $form->createView(),
             'monApplication' => $monApplication,
             'current_step' => 1,
@@ -146,7 +148,7 @@ class FormulaireLdapController extends AbstractController
             return $this->redirectToRoute('formulaireldap_etape3');
         }
 
-        return $this->render('formulaire/etape2.html.twig', [
+        return $this->render('formulaireldap/etape2ldap.html.twig', [
             'form' => $form->createView(),
             'monApplication' => $monApplication,
             'servicesDropdownData' => $servicesDropdownData,
@@ -154,6 +156,208 @@ class FormulaireLdapController extends AbstractController
             'total_steps' => 3,
         ]);
     }
+
+
+    #[Route('/formulaireldap/etape3', name: 'formulaireldap_etape3')]
+    public function etape3(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
+    {
+        $user = $this->security->getUser();
+        $userInformation = new UserInformation();
+        $infos_user = $userInformation->getUserInformation($user);
+        $nom_utilisateur= $infos_user['sn'];
+        $prenom_utilisateur= $infos_user['givenname'];
+        $email_utilisateur= $infos_user['mail'];
+        $dateString = $infos_user['datenaissance'];
+        $uid = $infos_user['uid'];
+          $date = \DateTimeImmutable::createFromFormat('d/m/Y', $dateString);
+        $datedenaissance_utilisateur= $date;
+        
+
+        $data = $session->get('form_data', []);
+        $form = $this->createForm(DemandeEtape3FormType::class, $data);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $historique = new HistoriqueDemande();
+            
+
+
+            $demandeId = $session->get('demande_id');
+            if ($demandeId) {
+                $demande = $entityManager->getRepository(Demandes::class)->find($demandeId);
+                $historique->setDemande($demande);
+                $historique->setStatut($demande->getStatuts());
+                $historique->setDate(new \DateTime());
+                $historique->setStatutOperation('Modification');
+                
+                if (!$demande) {
+                    throw $this->createNotFoundException('Demande non trouvée.');
+                }
+            } else {
+                $demande = new Demandes();
+                $token = bin2hex(random_bytes(32));
+                $demande->setToken($token);
+                $expiration = new \DateTimeImmutable('+24 hours');
+                $demande->setTokenExpiration($expiration);
+                $historique->setDemande($demande);
+                $historique->setStatut($demande->getStatuts());
+                $historique->setDate(new \DateTime());
+                $historique->setStatutOperation('Création');
+                $user1 = new User();
+            $user1->setNom($nom_utilisateur);
+            $user1->setPrenom($prenom_utilisateur);
+            $user1->setDateDeNaissance($datedenaissance_utilisateur);
+            $user1->setEmail($email_utilisateur);
+            $user1->setCompteActif(true);
+            $user1->setUid($uid);
+                $user1->setToken($token);
+                $user1->setTokenExpiration($expiration);
+            }
+
+           
+            $choix = $data['replace_someone'];
+            $statut_utilisateur = $data['statut'];
+            $nom = $data['nom'];
+            $prenom = $data['prenom'];
+
+            if ($choix === 'oui') {
+                $demande->setRemplacant(true);
+                $demande->setNomRemplacant($data['remplacement_nom']);
+                $demande->setPrenomRemplacant($data['remplacement_prenom']);
+                $demande->setTelephoneRemplacant($data['telephone_avant_service']);
+                $depart = $data['parti_rectorat'];
+                if ($depart === true) {
+                    $demande->setDepart(true);
+                    $demande->setAffectationRemplacant('Aucune');
+                } else {
+                    $demande->setDepart(false);
+                    $demande->setAffectationRemplacant($data['nouvelle_affectation_service']);
+                }
+            } else {
+                $demande->setRemplacant(false);
+                $demande->setNomRemplacant('Pas de remplacant.');
+                $demande->setPrenomRemplacant('Pas de remplacant.');
+                $demande->setTelephoneRemplacant('Pas de remplacant.');
+                $demande->setAffectationRemplacant('Pas de remplacant.');
+            }
+
+            if ($statut_utilisateur !== 'Titulaire') {
+                $date_debut_contrat = $data['date_debut_contrat'];
+                $date_fin_contrat = $data['date_fin_contrat'];
+                $statut_utilisateur = $data['statut'];
+                $user1->setDateDebut($date_debut_contrat);
+                $user1->setDateFin($date_fin_contrat);
+                $user1->setStatutPersonne($statut_utilisateur);
+            } else {
+                $user1->setStatutPersonne($statut_utilisateur);
+            }
+
+            $demande->setIDutilisateur($user1);
+            $demande->setDate(new \DateTime());
+            $demande->setHeureSoumission(new \DateTime());
+            $demande->setTitre('Demande d\'accès à un poste informatique');
+            $demande->setStatuts('En attente');
+         
+            
+            // $demande->setToken($token);
+            // $expiration = new \DateTimeImmutable('+24 hours');
+            // $demande->setTokenExpiration($expiration);
+
+            // $entityManager->persist($user);
+            $entityManager->persist($demande);
+            $entityManager->persist($user1);
+            $entityManager->flush();            
+            // Ajouter une entrée dans l'historique pour la création de la demande
+           
+
+             $url = $this->generateUrl('statuts_token_ldap', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
+             $session->clear();
+            
+
+            $email = (new Email())
+                ->from('noreply@ac-guadeloupe.fr')
+                ->to($user1->getEmail())
+                ->subject('Votre lien de connexion')
+                ->cc('nbarbeu97180@gmail.com')
+                ->text('Voici votre lien de connexion :')
+                ->html('
+                    <p>Bonjour ' . $nom . ' ' . $prenom . ',</p>
+                    <p>Nous avons bien reçu votre demande d\'accès à un poste de travail informatique.</p>
+                    <p>Pour accéder à votre compte, veuillez cliquer sur le lien ci-dessous :</p>
+             
+                    <p>Ce lien est valable pour une durée de 24 heures. Si vous n\'avez pas demandé cet accès, veuillez ignorer cet e-mail.</p>
+                    <p>Bien cordialement,</p>
+                    <p><strong>Votre équipe informatique</strong></p>
+                ');
+
+            $mailer->send($email);
+
+            return $this->redirectToRoute('statuts_token_ldap', ['token' => $token]);
+        }
+
+        return $this->render('formulaireldap/etape3ldap.html.twig', [
+            'form' => $form->createView(),
+            'monApplication' => $monApplication,
+            'current_step' => 3,
+            'total_steps' => 3,
+        ]);
+    }
+
+
+
+
+
+
+
+
+
+    #[Route('/formulaireldap/modifier/{id}', name: 'modifier_demandesldap')]
+    public function modifierDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
+    {
+        $demande = $entityManager->getRepository(Demandes::class)->find($id);
+
+        if (!$demande) {
+            throw $this->createNotFoundException('Demande non trouvée.');
+        }
+        $user = $this->security->getUser();
+        $userInformation = new UserInformation();
+        $infos_user = $userInformation->getUserInformation($user);
+        $email_utilisateur= $infos_user['mail'];
+        $user1 = $entityManager->getRepository(User::class)->findOneBy(['email' => $email_utilisateur]);
+        $token = $demande->getToken();
+
+        // Pré-remplir les données pour le formulaire
+        $data = [
+            'nom' => $user1->getNom(),
+            'prenom' => $user1->getPrenom(),
+            'email' => $user1->getEmail(),
+            'date_de_naissance' => $user1->getDateDeNaissance(),
+            'fonction' => $user1->getFonction(),
+            'replace_someone' => $demande->isRemplacant() ? 'oui' : 'non',
+            'remplacement_nom' => $demande->getNomRemplacant(),
+            'remplacement_prenom' => $demande->getPrenomRemplacant(),
+            'telephone_avant_service' => $demande->getTelephoneRemplacant(),
+            'parti_rectorat' => $demande->isDepart(),
+            'nouvelle_affectation_service' => $demande->getAffectationRemplacant(),
+            'date_debut_contrat' => $user1->getDateDebut(),
+            'date_fin_contrat' => $user1->getDateFin(),
+            'statut' => $user1->getStatutPersonne(),
+        ];
+
+        $session->set('form_data', $data);
+        $session->set('demande_id', $id);
+
+        return $this->redirectToRoute('formulaireldap_etape1', ['token' => $token]);
+    }
+
+
+
+
+
+
+
+
     private function transformServicesForDropdown(array $services): array
     {
         $servicesDropdownData = [];

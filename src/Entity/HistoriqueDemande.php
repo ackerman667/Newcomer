@@ -26,6 +26,9 @@ class HistoriqueDemande
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $Date = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $StatutOperation = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -75,6 +78,18 @@ class HistoriqueDemande
     public function setDate(?\DateTimeInterface $Date): static
     {
         $this->Date = $Date;
+
+        return $this;
+    }
+
+    public function getStatutOperation(): ?string
+    {
+        return $this->StatutOperation;
+    }
+
+    public function setStatutOperation(?string $StatutOperation): static
+    {
+        $this->StatutOperation = $StatutOperation;
 
         return $this;
     }

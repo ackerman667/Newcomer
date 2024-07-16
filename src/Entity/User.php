@@ -66,6 +66,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $tokenExpiration = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $uid = null;
+
     public function __construct()
     {
         $this->demandes = new ArrayCollection();
@@ -293,6 +296,18 @@ public function getTokenExpiration(): ?\DateTimeImmutable
 public function setTokenExpiration(?\DateTimeImmutable $tokenExpiration): static
 {
     $this->tokenExpiration = $tokenExpiration;
+
+    return $this;
+}
+
+public function getUid(): ?string
+{
+    return $this->uid;
+}
+
+public function setUid(?string $uid): static
+{
+    $this->uid = $uid;
 
     return $this;
 }
