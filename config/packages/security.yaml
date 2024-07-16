@@ -24,7 +24,7 @@ security:
         test2:
             
             lazy: true
-            pattern: /formulaireldap/
+            # pattern: /formulaireldap/
             remote_user:
                 user: HTTP_CT_REMOTE_USER
             provider: app_user_provider2

@@ -38,38 +38,6 @@ class FormulaireLdapController extends AbstractController
     }
 
 
-
-    #[Route('/formulaireldap', name: 'formulaireldap')]
-    public function index(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, HttpClientInterface $httpClient): Response
-    {
-        
-        $user = $this->security->getUser();
-        $userInformation = new UserInformation();
-        $infos_user = $userInformation->getUserInformation($user);
-         
-        
-        
-
-        $form = $this->createForm(DemandeFormType::class, [
-            'nom' => $infos_user['sn'],
-            'prenom' => $infos_user['givenname'],
-           
-            
-        ]);
-        
-
-
-      
-        $form->handleRequest($request);
-
-        return $this->render('formulaireldap/index.html.twig', [
-            'form' => $form->createView(), 
-            'monApplication' => $monApplication,
-        ]);
-        
-    }
-
-
     #[Route('/formulaireldap/etape1', name: 'formulaireldap_etape1')]
     public function etape1(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager): Response
     {
@@ -115,7 +83,7 @@ class FormulaireLdapController extends AbstractController
 
             
         ]);
-         dump($infos_user);
+        
     
 
         $apiUrl = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/services';
@@ -129,7 +97,7 @@ class FormulaireLdapController extends AbstractController
        
 
         $services = $response->toArray();
-        dump($services);
+
         $servicesDropdownData = $this->transformServicesForDropdown($services);
 
         $form = $this->createForm(DemandeEtape2FormType::class, $data, [
@@ -144,6 +112,20 @@ class FormulaireLdapController extends AbstractController
 
 
             $session->set('form_data', $data);
+            $selectedServiceId = $form->get('selectedService')->getData();
+        $apiUrlSecond = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/valideur/' . $selectedServiceId;
+        $responseSecond = $httpClient->request('GET', $apiUrlSecond, [
+            'headers' => [
+                'x-auth-token' => $apiToken,  
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+            $apiDataSecond = $responseSecond->toArray();
+          
+            $nomValideur = $apiDataSecond[0]['valideur'];
+           
+
 
             return $this->redirectToRoute('formulaireldap_etape3');
         }
