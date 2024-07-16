@@ -6,6 +6,9 @@
 parameters:
 
 services:
+    App\Security\UserProvider:
+        arguments:
+            $cache: '@cache.app'
 
   
 

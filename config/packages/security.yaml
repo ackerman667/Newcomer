@@ -21,6 +21,15 @@ security:
                 providers: [app_user_provider, app_user_provider2]
         
     firewalls:
+        test2:
+            
+            lazy: true
+            pattern: /formulaireldap/
+            remote_user:
+                user: HTTP_CT_REMOTE_USER
+            provider: app_user_provider2
+            logout:
+                path: app_logout
         # main:
         #     login_link:
         #         check_route: login_check
@@ -41,15 +50,15 @@ security:
         #     pattern: ^/loginldap
     
 
-        test2:
+        # test2:
             
-            lazy: true
-            pattern: /formulaireldap/
-            remote_user:
-                user: HTTP_CT_REMOTE_USER
-            provider: app_user_provider2
-            logout:
-                path: app_logout
+        #     lazy: true
+        #     pattern: /formulaireldap/
+        #     remote_user:
+        #         user: HTTP_CT_REMOTE_USER
+        #     provider: app_user_provider2
+        #     logout:
+        #         path: app_logout
 
             
         

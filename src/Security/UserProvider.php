@@ -8,109 +8,66 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
 {
-    /**
-     * Symfony calls this method if you use features like switch_user
-     * or remember_me.
-     *
-     * If you're not using these features, you do not need to implement
-     * this method.
-     *
-     * @return UserInterface
-     *
-     * @throws UsernameNotFoundException if the user is not found
-     */
+    private $cache;
+
+    public function __construct(CacheInterface $cache)
+    {
+        $this->cache = $cache;
+    }
+
     public function loadUserByUsername($username)
     {
-        // Load a User object from your data source or throw UsernameNotFoundException.
-        // The $username argument may not actually be a username:
-        // it is whatever value is being returned by the getUsername()
-        // method in your User class.
-        //OM
-        $roleuser = new UserInformation();
-        $utilisateur=$roleuser->getUserInformation();
-        $TypeAppliDomainTheme= new TypeAppliDomainTheme();
-        //dd($utilisateur);
-        if ($utilisateur) {
-            $user=new User($_SERVER['HTTP_CT_REMOTE_USER'],$TypeAppliDomainTheme,$utilisateur);
-        } else {
-            $user=new User($_SERVER['HTTP_CT_REMOTE_USER'],$TypeAppliDomainTheme);
-        }
-        //dd($user);
-        return $user;
-        throw new \Exception('TODO: fill in loadUserByUsername() inside '.__FILE__);
+        return $this->loadUserByIdentifier($username);
     }
-    public function loadUserByIdentifier(String $username): UserInterface
+
+    public function loadUserByIdentifier(string $username): UserInterface
     {
-        // Load a User object from your data source or throw UsernameNotFoundException.
-        // The $username argument may not actually be a username:
-        // it is whatever value is being returned by the getUsername()
-        // method in your User class.
-        //OM
-        $roleuser = new UserInformation();
-        $utilisateur=$roleuser->getUserInformation();
-        $TypeAppliDomainTheme= new TypeAppliDomainTheme();
-        //dd($utilisateur);
-        if ($utilisateur) {
-            $user=new User($_SERVER['HTTP_CT_REMOTE_USER'],$TypeAppliDomainTheme,$utilisateur);
-        } else {
-            $user=new User($_SERVER['HTTP_CT_REMOTE_USER'],$TypeAppliDomainTheme);
-        }
-        //dd($user);
-        return $user;
-        throw new \Exception('TODO: fill in loadUserByUsername() inside '.__FILE__);
+        return $this->cache->get('user_' . $username, function (ItemInterface $item) use ($username) {
+            $item->expiresAfter(3600); // Cache expiration time (e.g., 1 hour)
+            
+            $roleuser = new UserInformation();
+            $utilisateur = $roleuser->getUserInformation();
+            $TypeAppliDomainTheme = new TypeAppliDomainTheme();
+            
+            if ($utilisateur) {
+                return new User($_SERVER['HTTP_CT_REMOTE_USER'], $TypeAppliDomainTheme, $utilisateur);
+            } else {
+                return new User($_SERVER['HTTP_CT_REMOTE_USER'], $TypeAppliDomainTheme);
+            }
+        });
     }
-    /**
-     * Refreshes the user after being reloaded from the session.
-     *
-     * When a user is logged in, at the beginning of each request, the
-     * User object is loaded from the session and then this method is
-     * called. Your job is to make sure the user's data is still fresh by,
-     * for example, re-querying for fresh User data.
-     *
-     * If your firewall is "stateless: true" (for a pure API), this
-     * method is not called.
-     *
-     * @return UserInterface
-     */
+
     public function refreshUser(UserInterface $user)
     {
         if (!$user instanceof User) {
             throw new UnsupportedUserException(sprintf('Invalid user class "%s".', get_class($user)));
         }
-        //OM
-        // if ($user->getUid()==$_SERVER['HTTP_CT_REMOTE_USER'])
-        // {
-            $roleuser = new UserInformation();
-            $utilisateur=$roleuser->getUserInformation();
-            $TypeAppliDomainTheme= new TypeAppliDomainTheme();
-            //dd($utilisateur);
-            if ($utilisateur) {
-                $user=new User($_SERVER['HTTP_CT_REMOTE_USER'],$TypeAppliDomainTheme,$utilisateur);
-            } else {
-                $user=new User($_SERVER['HTTP_CT_REMOTE_USER'],$TypeAppliDomainTheme);
-            }
-            return $user;
-        // }
 
-        // Return a User object after making sure its data is "fresh".
-        // Or throw a UsernameNotFoundException if the user no longer exists.
-        throw new \Exception('TODO: fill in refreshUser() inside '.__FILE__);
+        return $this->cache->get('user_' . $user->getUid(), function (ItemInterface $item) use ($user) {
+            $item->expiresAfter(3600); // Cache expiration time (e.g., 1 hour)
+            
+            $roleuser = new UserInformation();
+            $utilisateur = $roleuser->getUserInformation();
+            $TypeAppliDomainTheme = new TypeAppliDomainTheme();
+            
+            if ($utilisateur) {
+                return new User($_SERVER['HTTP_CT_REMOTE_USER'], $TypeAppliDomainTheme, $utilisateur);
+            } else {
+                return new User($_SERVER['HTTP_CT_REMOTE_USER'], $TypeAppliDomainTheme);
+            }
+        });
     }
 
-    /**
-     * Tells Symfony to use this provider for this User class.
-     */
     public function supportsClass($class)
     {
         return User::class === $class;
     }
 
-    /**
-     * Upgrades the encoded password of a user, typically for using a better hash algorithm.
-     */
     public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newEncodedPassword): void
     {
         // TODO: when encoded passwords are in use, this method should:

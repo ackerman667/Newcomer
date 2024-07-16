@@ -164,25 +164,36 @@ class FormulaireLdapController extends AbstractController
         $user = $this->security->getUser();
         $userInformation = new UserInformation();
         $infos_user = $userInformation->getUserInformation($user);
-        $nom_utilisateur= $infos_user['sn'];
-        $prenom_utilisateur= $infos_user['givenname'];
-        $email_utilisateur= $infos_user['mail'];
+        $nom_utilisateur = $infos_user['sn'];
+        $prenom_utilisateur = $infos_user['givenname'];
+        $email_utilisateur = $infos_user['mail'];
         $dateString = $infos_user['datenaissance'];
         $uid = $infos_user['uid'];
-          $date = \DateTimeImmutable::createFromFormat('d/m/Y', $dateString);
-        $datedenaissance_utilisateur= $date;
-        
-
+        $date = \DateTimeImmutable::createFromFormat('d/m/Y', $dateString);
+        $datedenaissance_utilisateur = $date;
+    
+        // Rechercher l'utilisateur par UID
+        $user1 = $entityManager->getRepository(User::class)->findOneBy(['uid' => $uid]);
+    
+        if (!$user1) {
+            // Si l'utilisateur n'existe pas, créer un nouvel utilisateur
+            $user1 = new User();
+            $user1->setNom($nom_utilisateur);
+            $user1->setPrenom($prenom_utilisateur);
+            $user1->setDateDeNaissance($datedenaissance_utilisateur);
+            $user1->setEmail($email_utilisateur);
+            $user1->setCompteActif(true);
+            $user1->setUid($uid);
+        }
+    
         $data = $session->get('form_data', []);
         $form = $this->createForm(DemandeEtape3FormType::class, $data);
         $form->handleRequest($request);
-
+    
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $historique = new HistoriqueDemande();
-            
-
-
+    
             $demandeId = $session->get('demande_id');
             if ($demandeId) {
                 $demande = $entityManager->getRepository(Demandes::class)->find($demandeId);
@@ -190,37 +201,34 @@ class FormulaireLdapController extends AbstractController
                 $historique->setStatut($demande->getStatuts());
                 $historique->setDate(new \DateTime());
                 $historique->setStatutOperation('Modification');
-                
+    
                 if (!$demande) {
                     throw $this->createNotFoundException('Demande non trouvée.');
                 }
+    
+                $historique->setDemande($demande);
+                $historique->setStatut($demande->getStatuts());
+                $historique->setDate(new \DateTime());
+                $historique->setStatutOperation('Modification');
             } else {
                 $demande = new Demandes();
                 $token = bin2hex(random_bytes(32));
                 $demande->setToken($token);
                 $expiration = new \DateTimeImmutable('+24 hours');
                 $demande->setTokenExpiration($expiration);
+    
                 $historique->setDemande($demande);
                 $historique->setStatut($demande->getStatuts());
                 $historique->setDate(new \DateTime());
                 $historique->setStatutOperation('Création');
-                $user1 = new User();
-            $user1->setNom($nom_utilisateur);
-            $user1->setPrenom($prenom_utilisateur);
-            $user1->setDateDeNaissance($datedenaissance_utilisateur);
-            $user1->setEmail($email_utilisateur);
-            $user1->setCompteActif(true);
-            $user1->setUid($uid);
+    
                 $user1->setToken($token);
                 $user1->setTokenExpiration($expiration);
             }
-
-           
+    
             $choix = $data['replace_someone'];
             $statut_utilisateur = $data['statut'];
-            $nom = $data['nom'];
-            $prenom = $data['prenom'];
-
+    
             if ($choix === 'oui') {
                 $demande->setRemplacant(true);
                 $demande->setNomRemplacant($data['remplacement_nom']);
@@ -241,40 +249,33 @@ class FormulaireLdapController extends AbstractController
                 $demande->setTelephoneRemplacant('Pas de remplacant.');
                 $demande->setAffectationRemplacant('Pas de remplacant.');
             }
-
+    
             if ($statut_utilisateur !== 'Titulaire') {
                 $date_debut_contrat = $data['date_debut_contrat'];
                 $date_fin_contrat = $data['date_fin_contrat'];
-                $statut_utilisateur = $data['statut'];
                 $user1->setDateDebut($date_debut_contrat);
                 $user1->setDateFin($date_fin_contrat);
                 $user1->setStatutPersonne($statut_utilisateur);
             } else {
                 $user1->setStatutPersonne($statut_utilisateur);
             }
-
+    
             $demande->setIDutilisateur($user1);
             $demande->setDate(new \DateTime());
             $demande->setHeureSoumission(new \DateTime());
             $demande->setTitre('Demande d\'accès à un poste informatique');
             $demande->setStatuts('En attente');
-         
-            
-            // $demande->setToken($token);
-            // $expiration = new \DateTimeImmutable('+24 hours');
-            // $demande->setTokenExpiration($expiration);
-
-            // $entityManager->persist($user);
+    
             $entityManager->persist($demande);
             $entityManager->persist($user1);
-            $entityManager->flush();            
-            // Ajouter une entrée dans l'historique pour la création de la demande
-           
-
-             $url = $this->generateUrl('statuts_token_ldap', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
-             $session->clear();
-            
-
+            $entityManager->persist($historique);
+            $entityManager->flush();
+            $token1 = $demande->getToken();
+            $nom = $user1->getNom();
+            $prenom = $user1->getPrenom();
+            $url = $this->generateUrl('statuts_token_ldap', ['token' => $token1], UrlGeneratorInterface::ABSOLUTE_URL);
+            $session->clear();
+    
             $email = (new Email())
                 ->from('noreply@ac-guadeloupe.fr')
                 ->to($user1->getEmail())
@@ -285,17 +286,17 @@ class FormulaireLdapController extends AbstractController
                     <p>Bonjour ' . $nom . ' ' . $prenom . ',</p>
                     <p>Nous avons bien reçu votre demande d\'accès à un poste de travail informatique.</p>
                     <p>Pour accéder à votre compte, veuillez cliquer sur le lien ci-dessous :</p>
-             
+                    <p><a href="' . $url . '">Cliquez ici pour vous connecter</a></p>
                     <p>Ce lien est valable pour une durée de 24 heures. Si vous n\'avez pas demandé cet accès, veuillez ignorer cet e-mail.</p>
                     <p>Bien cordialement,</p>
                     <p><strong>Votre équipe informatique</strong></p>
                 ');
-
+    
             $mailer->send($email);
-
-            return $this->redirectToRoute('statuts_token_ldap', ['token' => $token]);
+    
+            return $this->redirectToRoute('statuts_token_ldap', ['token' => $token1]);
         }
-
+    
         return $this->render('formulaireldap/etape3ldap.html.twig', [
             'form' => $form->createView(),
             'monApplication' => $monApplication,
