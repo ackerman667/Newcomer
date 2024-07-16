@@ -80,6 +80,7 @@ class FormulaireTestController extends AbstractController
         ]);
 
         $services = $response->toArray();
+        dump($services);
         $servicesDropdownData = $this->transformServicesForDropdown($services);
 
         $form = $this->createForm(DemandeEtape2FormType::class, $data, [
@@ -91,6 +92,34 @@ class FormulaireTestController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $session->set('form_data', $data);
+            $selectedServiceId = $form->get('selectedService')->getData();
+
+          foreach ($services as $service) {
+            if ($service['id_service'] == $selectedServiceId) {
+                $session->set('nom_service_selectionne', $service['service']);
+                if (isset($service['dossiers_partages']) && !empty($service['dossiers_partages'])) {
+                    $session->set('dossiers_partages', $service['dossiers_partages']);
+                } else {
+                    $session->set('dossiers_partages', []);
+                }
+                break;
+            }
+        }
+        $apiUrlSecond = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/valideur/' . $selectedServiceId;
+        $responseSecond = $httpClient->request('GET', $apiUrlSecond, [
+            'headers' => [
+                'x-auth-token' => $apiToken,  
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+            $apiDataSecond = $responseSecond->toArray();
+            dump($apiDataSecond);
+            $nomValideur = $apiDataSecond[0]['valideur'];
+            $session->set('nom_valideur', $nomValideur);
+            dump($nomValideur);
+        
+
 
             return $this->redirectToRoute('formulairetest_etape3', ['token' => $token]);
         }
@@ -115,6 +144,11 @@ class FormulaireTestController extends AbstractController
         }
 
         $data = $session->get('form_data', []);
+        $dossiersPartages = $session->get('dossiers_partages', []);
+$nomServiceSelectionne = $session->get('nom_service_selectionne', '');
+$nomValideur = $session->get('nom_valideur', '');
+dump($nomValideur);
+
         $form = $this->createForm(DemandeEtape3FormType::class, $data);
         $form->handleRequest($request);
 
@@ -140,7 +174,7 @@ class FormulaireTestController extends AbstractController
                 $expiration = new \DateTimeImmutable('+24 hours');
                 $demande->setTokenExpiration($expiration);
                 $historique->setDemande($demande);
-                $historique->setStatut($demande->getStatuts());
+                $historique->setStatut('En attente');
                 $historique->setDate(new \DateTime());
                 $historique->setStatutOperation('Création');
             }
@@ -187,15 +221,11 @@ class FormulaireTestController extends AbstractController
             $demande->setHeureSoumission(new \DateTime());
             $demande->setTitre('Demande d\'accès à un poste informatique');
             $demande->setStatuts('En attente');
+            $demande->setUidValideur($nomValideur);
 
             $entityManager->persist($user);
             $entityManager->persist($demande);
-
-            // Ajouter une entrée dans l'historique
-            
-          
             $entityManager->persist($historique);
-
             $entityManager->flush();
 
             $url = $this->generateUrl('statuts_token', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
@@ -225,8 +255,10 @@ class FormulaireTestController extends AbstractController
         return $this->render('formulaire/etape3.html.twig', [
             'form' => $form->createView(),
             'monApplication' => $monApplication,
+            'dossiersPartages' => $dossiersPartages,
             'current_step' => 3,
             'total_steps' => 3,
+            'nomServiceSelectionne' => $nomServiceSelectionne,
             'token' => $token
         ]);
     }
@@ -298,11 +330,6 @@ class FormulaireTestController extends AbstractController
             'monApplication' => $monApplication,
         ]);
     }
-
-
-
-
-    
 
     #[Route('/login_check', name: 'login_check')]
     public function check(): never

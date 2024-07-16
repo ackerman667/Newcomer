@@ -59,12 +59,13 @@
                             <th style="text-align: center; padding: 8px;">Statut</th>
                             <th style="text-align: center; padding: 8px;">Modifier la demande</th>
                             <th style="text-align: center; padding: 8px;">Visualiser</th>
+                            <th style="text-align: center; padding: 8px;">Commentaire</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% if demandes is empty %}
                             <tr>
-                                <td colspan="6" style="text-align: center; padding: 8px;">Vous n'avez aucune demande pour l'instant</td>
+                                <td colspan="7" style="text-align: center; padding: 8px;">Vous n'avez aucune demande pour l'instant</td>
                             </tr>
                         {% else %}
                             {% for demande in demandes %}
@@ -84,6 +85,9 @@
                                     {% endif %}
                                     <td style="text-align: center; padding: 8px;">
                                         <a href="{{ path('demande_consult', {token: demande.token}) }}">Voir la demande</a>
+                                    </td>
+                                    <td style="text-align: center; padding: 8px;">
+                                        <span>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</span>
                                     </td>
                                 </tr>
                             {% endfor %}

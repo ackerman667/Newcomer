@@ -11,7 +11,6 @@ use App\Form\DemandeEtape3FormType;
 use App\Entity\HistoriqueDemande;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
-
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Dompdf\Dompdf;
 use Symfony\Component\Security\Core\Security;
@@ -109,10 +108,19 @@ class FormulaireLdapController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
-
-
             $session->set('form_data', $data);
             $selectedServiceId = $form->get('selectedService')->getData();
+          foreach ($services as $service) {
+            if ($service['id_service'] == $selectedServiceId) {
+                $session->set('nom_service_selectionne', $service['service']);
+                if (isset($service['dossiers_partages']) && !empty($service['dossiers_partages'])) {
+                    $session->set('dossiers_partages', $service['dossiers_partages']);
+                } else {
+                    $session->set('dossiers_partages', []);
+                }
+                break;
+            }
+        }
         $apiUrlSecond = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/valideur/' . $selectedServiceId;
         $responseSecond = $httpClient->request('GET', $apiUrlSecond, [
             'headers' => [
@@ -122,8 +130,12 @@ class FormulaireLdapController extends AbstractController
         ]);
 
             $apiDataSecond = $responseSecond->toArray();
-          
+            dump($apiDataSecond);
             $nomValideur = $apiDataSecond[0]['valideur'];
+            $session->set('nom_valideur', $nomValideur);
+            dump($nomValideur);
+        
+
            
 
 
@@ -153,6 +165,10 @@ class FormulaireLdapController extends AbstractController
         $uid = $infos_user['uid'];
         $date = \DateTimeImmutable::createFromFormat('d/m/Y', $dateString);
         $datedenaissance_utilisateur = $date;
+        $dossiersPartages = $session->get('dossiers_partages', []);
+        $nomServiceSelectionne = $session->get('nom_service_selectionne', '');
+        $nomValideur = $session->get('nom_valideur', '');
+        dump($nomValideur);
     
         // Rechercher l'utilisateur par UID
         $user1 = $entityManager->getRepository(User::class)->findOneBy(['uid' => $uid]);
@@ -283,7 +299,9 @@ class FormulaireLdapController extends AbstractController
             'form' => $form->createView(),
             'monApplication' => $monApplication,
             'current_step' => 3,
+            'nomServiceSelectionne' => $nomServiceSelectionne,
             'total_steps' => 3,
+            'dossiersPartages' => $dossiersPartages,
         ]);
     }
 
