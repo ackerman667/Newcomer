@@ -9,6 +9,7 @@ use App\Form\DemandeEtape1FormType;
 use App\Form\DemandeEtape2FormType;
 use App\Form\DemandeEtape3FormType;
 use App\Entity\HistoriqueDemande;
+use App\Entity\Ressources;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -199,6 +200,10 @@ class FormulaireLdapController extends AbstractController
                 $historique->setStatut($demande->getStatuts());
                 $historique->setDate(new \DateTime());
                 $historique->setStatutOperation('Modification');
+                $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
+                $ressources->setNom('Dossier Partagés');
+                $ressources->setDemande($demande);
+                $ressources->setContenu(json_encode($dossiersPartages));
     
                 if (!$demande) {
                     throw $this->createNotFoundException('Demande non trouvée.');
@@ -219,7 +224,10 @@ class FormulaireLdapController extends AbstractController
                 $historique->setStatut($demande->getStatuts());
                 $historique->setDate(new \DateTime());
                 $historique->setStatutOperation('Création');
-    
+                $ressources = new Ressources();
+                $ressources->setNom('Dossier Partagés');
+                $ressources->setDemande($demande);
+                $ressources->setContenu(json_encode($dossiersPartages));
                 $user1->setToken($token);
                 $user1->setTokenExpiration($expiration);
             }
@@ -267,6 +275,7 @@ class FormulaireLdapController extends AbstractController
             $entityManager->persist($demande);
             $entityManager->persist($user1);
             $entityManager->persist($historique);
+            $entityManager->persist($ressources);
             $entityManager->flush();
             $token1 = $demande->getToken();
             $nom = $user1->getNom();

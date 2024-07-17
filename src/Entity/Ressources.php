@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\RessourcesRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: RessourcesRepository::class)]
@@ -13,23 +14,57 @@ class Ressources
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column]
-    private ?bool $emailaca = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $nom = null;
+
+    #[ORM\ManyToOne(inversedBy: 'ressources')]
+    private ?Demandes $demande = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $contenu = null;
+
+
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function isEmailaca(): ?bool
+    public function getNom(): ?string
     {
-        return $this->emailaca;
+        return $this->nom;
     }
 
-    public function setEmailaca(bool $emailaca): static
+    public function setNom(?string $nom): static
     {
-        $this->emailaca = $emailaca;
+        $this->nom = $nom;
 
         return $this;
     }
+
+    public function getDemande(): ?Demandes
+    {
+        return $this->demande;
+    }
+
+    public function setDemande(?Demandes $demande): static
+    {
+        $this->demande = $demande;
+
+        return $this;
+    }
+
+    public function getContenu(): ?string
+    {
+        return $this->contenu;
+    }
+
+    public function setContenu(?string $contenu): static
+    {
+        $this->contenu = $contenu;
+
+        return $this;
+    }
+
+  
 }

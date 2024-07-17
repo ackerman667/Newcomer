@@ -83,9 +83,13 @@ class Demandes
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $commentaire = null;
 
+    #[ORM\OneToMany(mappedBy: 'demande_id', targetEntity: Ressources::class)]
+    private Collection $ressources;
+
     public function __construct()
     {
         $this->historiqueDemandes = new ArrayCollection();
+        $this->ressources = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -371,6 +375,36 @@ class Demandes
     public function setCommentaire(?string $commentaire): static
     {
         $this->commentaire = $commentaire;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Ressources>
+     */
+    public function getRessources(): Collection
+    {
+        return $this->ressources;
+    }
+
+    public function addRessource(Ressources $ressource): static
+    {
+        if (!$this->ressources->contains($ressource)) {
+            $this->ressources->add($ressource);
+            $ressource->setDemandeId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRessource(Ressources $ressource): static
+    {
+        if ($this->ressources->removeElement($ressource)) {
+            // set the owning side to null (unless already changed)
+            if ($ressource->getDemandeId() === $this) {
+                $ressource->setDemandeId(null);
+            }
+        }
 
         return $this;
     }

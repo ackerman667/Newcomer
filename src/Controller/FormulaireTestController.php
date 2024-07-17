@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Classe\MonApplication;
 use App\Entity\Demandes;
+use App\Entity\Ressources;
 use App\Entity\HistoriqueDemande;
 use App\Entity\User;
 use App\Form\DemandeEtape1FormType;
@@ -148,6 +149,7 @@ class FormulaireTestController extends AbstractController
 $nomServiceSelectionne = $session->get('nom_service_selectionne', '');
 $nomValideur = $session->get('nom_valideur', '');
 dump($nomValideur);
+dump($dossiersPartages);
 
         $form = $this->createForm(DemandeEtape3FormType::class, $data);
         $form->handleRequest($request);
@@ -164,6 +166,16 @@ dump($nomValideur);
                 $historique->setStatut($demande->getStatuts());
                 $historique->setDate(new \DateTime());
                 $historique->setStatutOperation('Modification');
+                $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
+                $ressources->setNom('Dossier Partagés');
+                $ressources->setDemande($demande);
+                    if (!empty($dossiersPartages)) {
+                         $ressources->setContenu(json_encode($dossiersPartages));
+                    }
+                    else {
+                        $ressources->setContenu('Pas de dossier partagés disponible pour ce Service.');
+                    }
+
                 
                 if (!$demande) {
                     throw $this->createNotFoundException('Demande non trouvée.');
@@ -177,6 +189,15 @@ dump($nomValideur);
                 $historique->setStatut('En attente');
                 $historique->setDate(new \DateTime());
                 $historique->setStatutOperation('Création');
+                $ressources = new Ressources();
+                $ressources->setNom('Dossier Partagés');
+                $ressources->setDemande($demande);
+                    if (!empty($dossiersPartages)) {
+                    $ressources->setContenu(json_encode($dossiersPartages));
+                            }  
+                    else {
+                   $ressources->setContenu('Pas de dossier partagés disponible pour ce Service.');
+                        }
             }
 
             $choix = $data['replace_someone'];
@@ -216,6 +237,10 @@ dump($nomValideur);
                 $user->setStatutPersonne($statut_utilisateur);
             }
 
+        
+
+           
+
             $demande->setIDutilisateur($user);
             $demande->setDate(new \DateTime());
             $demande->setHeureSoumission(new \DateTime());
@@ -226,6 +251,7 @@ dump($nomValideur);
             $entityManager->persist($user);
             $entityManager->persist($demande);
             $entityManager->persist($historique);
+            $entityManager->persist($ressources);
             $entityManager->flush();
 
             $url = $this->generateUrl('statuts_token', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
