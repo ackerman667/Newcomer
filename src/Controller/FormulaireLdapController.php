@@ -324,7 +324,34 @@ class FormulaireLdapController extends AbstractController
     }
 
 
-
+    #[Route('/formulaireldap/supprimer/{id}', name: 'formulaireldap_supprimer')]
+    public function supprimerDemande($id, EntityManagerInterface $entityManager): RedirectResponse
+    {
+        $demande = $entityManager->getRepository(Demandes::class)->find($id);
+    
+        if (!$demande) {
+            throw $this->createNotFoundException('Demande non trouvée.');
+        }
+    
+     
+        $historiques = $entityManager->getRepository(HistoriqueDemande::class)->findBy(['demande' => $demande]);
+        foreach ($historiques as $historique) {
+            $entityManager->remove($historique);
+        }
+    
+ 
+        $ressources = $entityManager->getRepository(Ressources::class)->findBy(['demande' => $demande]);
+        foreach ($ressources as $ressource) {
+            $entityManager->remove($ressource);
+        }
+    
+        $entityManager->remove($demande);
+        $entityManager->flush();
+    
+        $this->addFlash('success', 'La demande a été supprimée avec succès.');
+    
+        return $this->redirectToRoute('home');
+    }
 
 
 

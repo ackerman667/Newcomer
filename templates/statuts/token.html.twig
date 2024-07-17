@@ -60,12 +60,13 @@
                             <th style="text-align: center; padding: 8px;">Modifier la demande</th>
                             <th style="text-align: center; padding: 8px;">Visualiser</th>
                             <th style="text-align: center; padding: 8px;">Commentaire</th>
+                            <th style="text-align: center; padding: 8px;">Supprimer</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% if demandes is empty %}
                             <tr>
-                                <td colspan="7" style="text-align: center; padding: 8px;">Vous n'avez aucune demande pour l'instant</td>
+                                <td colspan="8" style="text-align: center; padding: 8px;">Vous n'avez aucune demande pour l'instant</td>
                             </tr>
                         {% else %}
                             {% for demande in demandes %}
@@ -78,17 +79,29 @@
                                         <td style="text-align: center; padding: 8px;">
                                             <a href="{{ path('modifier_demandes', {id: demande.id}) }}">Modifier</a>
                                         </td>
+                                        <td style="text-align: center; padding: 8px;">
+                                            <a href="{{ path('demande_consult', {token: demande.token}) }}">Voir la demande</a>
+                                        </td>
+                                        <td style="text-align: center; padding: 8px;">
+                                            <span>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</span>
+                                        </td>
+                                        <td style="text-align: center; padding: 8px;">
+                                            <a href="{{ path('formulairetest_supprimer', {id: demande.id}) }}" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">Supprimer</a>
+                                        </td>
                                     {% else %}
                                         <td style="text-align: center; padding: 8px;">
                                             <span style="color: gray;" title="La demande ne peut pas être modifiée car elle a déjà été traitée">Modifier</span>
                                         </td>
+                                        <td style="text-align: center; padding: 8px;">
+                                            <a href="{{ path('demande_consult', {token: demande.token}) }}">Voir la demande</a>
+                                        </td>
+                                        <td style="text-align: center; padding: 8px;">
+                                            <span>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</span>
+                                        </td>
+                                        <td style="text-align: center; padding: 8px;">
+                                            <span style="color: gray;" title="La demande ne peut pas être supprimée car elle a déjà été traitée">Supprimer</span>
+                                        </td>
                                     {% endif %}
-                                    <td style="text-align: center; padding: 8px;">
-                                        <a href="{{ path('demande_consult', {token: demande.token}) }}">Voir la demande</a>
-                                    </td>
-                                    <td style="text-align: center; padding: 8px;">
-                                        <span>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</span>
-                                    </td>
                                 </tr>
                             {% endfor %}
                         {% endif %}

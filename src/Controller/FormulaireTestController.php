@@ -299,27 +299,35 @@ $nomValideur = $session->get('nom_valideur', '');
             'token' => $token
         ]);
     }
-   // Ajout de la route pour la suppression de la demande
-#[Route('/formulairetest/supprimer/{token}', name: 'formulairetest_supprimer')]
-public function supprimerDemande(Request $request, EntityManagerInterface $entityManager, $token): Response
-{
-    $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
-
-    if (!$demande) {
-        throw $this->createNotFoundException('Demande non trouvée.');
-    }
-
-    if ($demande->getStatuts() === 'En attente') {
-        $entityManager->remove($demande);
-        $entityManager->flush();
-
-        $this->addFlash('success', 'Demande supprimée avec succès.');
-    } else {
-        $this->addFlash('error', 'Vous ne pouvez supprimer la demande que si son statut est en attente.');
-    }
-
-    return $this->redirectToRoute('home'); // Redirection à la page d'accueil ou autre page appropriée
-}
+   
+   #[Route('/formulairetest/supprimer/{id}', name: 'formulairetest_supprimer')]
+   public function supprimerDemande(Request $request, EntityManagerInterface $entityManager, $id): Response
+   {
+       $demande = $entityManager->getRepository(Demandes::class)->find($id);
+       if (!$demande) {
+           throw $this->createNotFoundException('Demande non trouvée.');
+       }
+   
+       
+       $historiques = $entityManager->getRepository(HistoriqueDemande::class)->findBy(['demande' => $demande]);
+       foreach ($historiques as $historique) {
+           $entityManager->remove($historique);
+       }
+   
+       
+       $ressources = $entityManager->getRepository(Ressources::class)->findBy(['demande' => $demande]);
+       foreach ($ressources as $ressource) {
+           $entityManager->remove($ressource);
+       }
+   
+       $entityManager->remove($demande);
+       $entityManager->flush();
+   
+       $this->addFlash('success', 'La demande a été supprimée avec succès.');
+   
+       return $this->redirectToRoute('home'); 
+   }
+   
 
 
     #[Route('/formulairetest/modifier/{id}', name: 'modifier_demandes')]
