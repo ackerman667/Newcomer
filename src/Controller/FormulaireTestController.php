@@ -57,7 +57,6 @@ class FormulaireTestController extends AbstractController
     #[Route('/formulairetest/etape2/{token}', name: 'formulairetest_etape2')]
     public function etape2(MonApplication $monApplication, Request $request, SessionInterface $session, HttpClientInterface $httpClient, EntityManagerInterface $entityManager, $token): Response
     {
-        // Retrieve user based on token
         $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
 
         if (!$user) {
@@ -76,7 +75,7 @@ class FormulaireTestController extends AbstractController
         $data['date_debut_contrat'] = $user->getDateDebut();
         $data['date_fin_contrat'] = $user->getDateFin();
         }
-        dump($data);
+       
 
 
         $apiUrl = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/services';
@@ -89,7 +88,7 @@ class FormulaireTestController extends AbstractController
         ]);
 
         $services = $response->toArray();
-        dump($services);
+       
         $servicesDropdownData = $this->transformServicesForDropdown($services);
 
         $form = $this->createForm(DemandeEtape2FormType::class, $data, [
@@ -123,11 +122,10 @@ class FormulaireTestController extends AbstractController
         ]);
 
             $apiDataSecond = $responseSecond->toArray();
-            dump($apiDataSecond);
+       
             $nomValideur = $apiDataSecond[0]['valideur'];
             $session->set('nom_valideur', $nomValideur);
-            dump($nomValideur);
-        
+          
 
 
             return $this->redirectToRoute('formulairetest_etape3', ['token' => $token]);
@@ -156,8 +154,7 @@ class FormulaireTestController extends AbstractController
         $dossiersPartages = $session->get('dossiers_partages', []);
 $nomServiceSelectionne = $session->get('nom_service_selectionne', '');
 $nomValideur = $session->get('nom_valideur', '');
-dump($nomValideur);
-dump($dossiersPartages);
+
 
         $form = $this->createForm(DemandeEtape3FormType::class, $data);
         $form->handleRequest($request);
@@ -302,6 +299,28 @@ dump($dossiersPartages);
             'token' => $token
         ]);
     }
+   // Ajout de la route pour la suppression de la demande
+#[Route('/formulairetest/supprimer/{token}', name: 'formulairetest_supprimer')]
+public function supprimerDemande(Request $request, EntityManagerInterface $entityManager, $token): Response
+{
+    $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+
+    if (!$demande) {
+        throw $this->createNotFoundException('Demande non trouvée.');
+    }
+
+    if ($demande->getStatuts() === 'En attente') {
+        $entityManager->remove($demande);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Demande supprimée avec succès.');
+    } else {
+        $this->addFlash('error', 'Vous ne pouvez supprimer la demande que si son statut est en attente.');
+    }
+
+    return $this->redirectToRoute('home'); // Redirection à la page d'accueil ou autre page appropriée
+}
+
 
     #[Route('/formulairetest/modifier/{id}', name: 'modifier_demandes')]
     public function modifierDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Classe\MonApplication;
 use App\Entity\Demandes;
+use App\Entity\Ressources;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -106,7 +107,8 @@ class ValideurListeController extends AbstractController
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
         }
-        $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
+        $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande->getId()]);
+        dump($ressources);
         $user = $demande->getIDutilisateur();
         return $this->render('valideur/visualiser.html.twig', [
             'demande' => $demande,

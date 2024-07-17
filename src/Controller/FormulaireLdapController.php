@@ -131,10 +131,10 @@ class FormulaireLdapController extends AbstractController
         ]);
 
             $apiDataSecond = $responseSecond->toArray();
-            dump($apiDataSecond);
+           
             $nomValideur = $apiDataSecond[0]['valideur'];
             $session->set('nom_valideur', $nomValideur);
-            dump($nomValideur);
+            
         
 
            
@@ -169,7 +169,7 @@ class FormulaireLdapController extends AbstractController
         $dossiersPartages = $session->get('dossiers_partages', []);
         $nomServiceSelectionne = $session->get('nom_service_selectionne', '');
         $nomValideur = $session->get('nom_valideur', '');
-        dump($nomValideur);
+       
     
         // Rechercher l'utilisateur par UID
         $user1 = $entityManager->getRepository(User::class)->findOneBy(['uid' => $uid]);
@@ -270,6 +270,8 @@ class FormulaireLdapController extends AbstractController
                 $user1->setStatutPersonne($statut_utilisateur);
             } else {
                 $user1->setStatutPersonne($statut_utilisateur);
+                $user1->setDateDebut(null);
+                $user1->setDateFin(null);
             }
     
             $demande->setIDutilisateur($user1);
@@ -277,6 +279,7 @@ class FormulaireLdapController extends AbstractController
             $demande->setHeureSoumission(new \DateTime());
             $demande->setTitre('Demande d\'accès à un poste informatique');
             $demande->setStatuts('En attente');
+            $demande->setUidValideur($nomValideur);
     
             $entityManager->persist($demande);
             $entityManager->persist($user1);

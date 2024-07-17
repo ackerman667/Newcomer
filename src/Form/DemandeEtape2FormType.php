@@ -61,7 +61,7 @@ class DemandeEtape2FormType extends AbstractType
         ->add('missions', TextareaType::class, [
             'label' => 'Mission(s) :',
             'attr' => ['class' => 'form-control'],
-            'required' => false,
+            'required' => true,
         ])
         ->add('date_debut_contrat', DateType::class, [
             'label' => 'Date de début de contrat :',

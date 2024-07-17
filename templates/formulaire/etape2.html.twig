@@ -56,19 +56,19 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             {{ form_label(form.nom) }}
-                            {{ form_widget(form.nom, { 'attr': {'class': 'form-control'} }) }}
+                            {{ form_widget(form.nom, { 'attr': {'class': 'form-control', 'readonly': form.nom.vars.value ? 'readonly' : null} }) }}
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             {{ form_label(form.prenom) }}
-                            {{ form_widget(form.prenom, { 'attr': {'class': 'form-control'} }) }}
+                            {{ form_widget(form.prenom, { 'attr': {'class': 'form-control', 'readonly': form.prenom.vars.value ? 'readonly' : null} }) }}
                         </div>
                     </div>
                 </div>
                 <div class="form-group">
                     {{ form_label(form.email) }}
-                    {{ form_widget(form.email, { 'attr': {'class': 'form-control'} }) }}
+                    {{ form_widget(form.email, { 'attr': {'class': 'form-control', 'readonly': form.email.vars.value ? 'readonly' : null} }) }}
                 </div>
                 <div class="row">
                     <div class="col-md-6">
@@ -80,13 +80,13 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             {{ form_label(form.fonction) }}
-                            {{ form_widget(form.fonction, { 'attr': {'class': 'form-control'} }) }}
+                            {{ form_widget(form.fonction, { 'attr': {'class': 'form-control', 'readonly': form.fonction.vars.value ? 'readonly' : null} }) }}
                         </div>
                     </div>
                 </div>
                 <div class="form-group">
                     {{ form_label(form.date_de_naissance) }}
-                    {{ form_widget(form.date_de_naissance, { 'attr': {'class': 'form-control'} }) }}
+                    {{ form_widget(form.date_de_naissance, { 'attr': {'class': 'form-control', 'readonly': form.date_de_naissance.vars.value ? 'readonly' : null} }) }}
                 </div>
                 <div class="form-group">
                     {{ form_label(form.missions) }}
