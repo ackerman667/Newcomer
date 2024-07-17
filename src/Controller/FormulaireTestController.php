@@ -70,6 +70,14 @@ class FormulaireTestController extends AbstractController
         $data['email'] = $user->getEmail();
         $data['date_de_naissance'] = $user->getDateDeNaissance();
         $data['fonction'] = $user->getFonction();
+        $data['statut'] = $user->getStatutPersonne();
+
+        if($user->getStatutPersonne()!= 'Titulaire') {
+        $data['date_debut_contrat'] = $user->getDateDebut();
+        $data['date_fin_contrat'] = $user->getDateFin();
+        }
+        dump($data);
+
 
         $apiUrl = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/services';
         $apiToken = 'b97b055g210125afb4c5f507dc823958ff18dfa56a12c7n12agch8db58e21767';
@@ -158,47 +166,48 @@ dump($dossiersPartages);
             $data = $form->getData();
             $historique = new HistoriqueDemande();
 
-            // Vérifier si une demande existante doit être mise à jour
-            $demandeId = $session->get('demande_id');
-            if ($demandeId) {
-                $demande = $entityManager->getRepository(Demandes::class)->find($demandeId);
-                $historique->setDemande($demande);
-                $historique->setStatut($demande->getStatuts());
-                $historique->setDate(new \DateTime());
-                $historique->setStatutOperation('Modification');
-                $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
-                $ressources->setNom('Dossier Partagés');
-                $ressources->setDemande($demande);
-                    if (!empty($dossiersPartages)) {
-                         $ressources->setContenu(json_encode($dossiersPartages));
-                    }
-                    else {
-                        $ressources->setContenu('Pas de dossier partagés disponible pour ce Service.');
-                    }
+            
+            $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
 
-                
-                if (!$demande) {
-                    throw $this->createNotFoundException('Demande non trouvée.');
-                }
-            } else {
-                $demande = new Demandes();
-                $demande->setToken($token);
-                $expiration = new \DateTimeImmutable('+24 hours');
-                $demande->setTokenExpiration($expiration);
-                $historique->setDemande($demande);
-                $historique->setStatut('En attente');
-                $historique->setDate(new \DateTime());
-                $historique->setStatutOperation('Création');
-                $ressources = new Ressources();
-                $ressources->setNom('Dossier Partagés');
-                $ressources->setDemande($demande);
-                    if (!empty($dossiersPartages)) {
-                    $ressources->setContenu(json_encode($dossiersPartages));
-                            }  
-                    else {
-                   $ressources->setContenu('Pas de dossier partagés disponible pour ce Service.');
+                    if ($demande) {
+                       
+                        $historique->setDemande($demande);
+                        $historique->setStatut($demande->getStatuts());
+                        $historique->setDate(new \DateTime());
+                        $historique->setStatutOperation('Modification');
+                        
+                        $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
+                        if (!$ressources) {
+                            $ressources = new Ressources();
                         }
-            }
+                        $ressources->setNom('Dossier Partagés');
+                        $ressources->setDemande($demande);
+                        if (!empty($dossiersPartages)) {
+                            $ressources->setContenu(json_encode($dossiersPartages));
+                        } else {
+                            $ressources->setContenu('Pas de dossier partagés disponible pour ce Service.');
+                        }
+                    } else {
+                        
+                        $demande = new Demandes();
+                        $demande->setToken($token);
+                        $expiration = new \DateTimeImmutable('+24 hours');
+                        $demande->setTokenExpiration($expiration);
+                        $historique->setDemande($demande);
+                        $historique->setStatut('En attente');
+                        $historique->setDate(new \DateTime());
+                        $historique->setStatutOperation('Création');
+
+                        $ressources = new Ressources();
+                        $ressources->setNom('Dossier Partagés');
+                        $ressources->setDemande($demande);
+                        if (!empty($dossiersPartages)) {
+                            $ressources->setContenu(json_encode($dossiersPartages));
+                        } else {
+                            $ressources->setContenu('Pas de dossier partagés disponible pour ce Service.');
+                        }
+                    }
+                   
 
             $choix = $data['replace_someone'];
             $statut_utilisateur = $data['statut'];
@@ -211,7 +220,7 @@ dump($dossiersPartages);
                 $demande->setPrenomRemplacant($data['remplacement_prenom']);
                 $demande->setTelephoneRemplacant($data['telephone_avant_service']);
                 $depart = $data['parti_rectorat'];
-                if ($depart === true) {
+                if ($depart == true) {
                     $demande->setDepart(true);
                     $demande->setAffectationRemplacant('Aucune');
                 } else {
@@ -224,6 +233,7 @@ dump($dossiersPartages);
                 $demande->setPrenomRemplacant('Pas de remplacant.');
                 $demande->setTelephoneRemplacant('Pas de remplacant.');
                 $demande->setAffectationRemplacant('Pas de remplacant.');
+                $demande->setDepart(false);
             }
 
             if ($statut_utilisateur !== 'Titulaire') {
@@ -235,6 +245,10 @@ dump($dossiersPartages);
                 $user->setStatutPersonne($statut_utilisateur);
             } else {
                 $user->setStatutPersonne($statut_utilisateur);
+                $user->setDateDebut(null);
+                $user->setDateFin(null);
+                
+
             }
 
         

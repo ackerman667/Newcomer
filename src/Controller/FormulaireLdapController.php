@@ -184,6 +184,7 @@ class FormulaireLdapController extends AbstractController
             $user1->setCompteActif(true);
             $user1->setUid($uid);
         }
+   
     
         $data = $session->get('form_data', []);
         $form = $this->createForm(DemandeEtape3FormType::class, $data);
@@ -192,46 +193,50 @@ class FormulaireLdapController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $historique = new HistoriqueDemande();
-    
-            $demandeId = $session->get('demande_id');
-            if ($demandeId) {
-                $demande = $entityManager->getRepository(Demandes::class)->find($demandeId);
+
+
+            $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['IDutilisateur' => $user1]);
+
+            if ($demande) {
                 $historique->setDemande($demande);
                 $historique->setStatut($demande->getStatuts());
                 $historique->setDate(new \DateTime());
                 $historique->setStatutOperation('Modification');
                 $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
-                $ressources->setNom('Dossier Partagés');
-                $ressources->setDemande($demande);
-                $ressources->setContenu(json_encode($dossiersPartages));
+                        if (!$ressources) {
+                            $ressources = new Ressources();
+                        }
+                        $ressources->setNom('Dossier Partagés');
+                        $ressources->setDemande($demande);
+                        if (!empty($dossiersPartages)) {
+                            $ressources->setContenu(json_encode($dossiersPartages));
+                        } else {
+                            $ressources->setContenu('Pas de dossier partagés disponible pour ce Service.');
+                        }
     
-                if (!$demande) {
-                    throw $this->createNotFoundException('Demande non trouvée.');
-                }
-    
-                $historique->setDemande($demande);
-                $historique->setStatut($demande->getStatuts());
-                $historique->setDate(new \DateTime());
-                $historique->setStatutOperation('Modification');
+
             } else {
                 $demande = new Demandes();
                 $token = bin2hex(random_bytes(32));
                 $demande->setToken($token);
                 $expiration = new \DateTimeImmutable('+24 hours');
                 $demande->setTokenExpiration($expiration);
-    
                 $historique->setDemande($demande);
                 $historique->setStatut($demande->getStatuts());
                 $historique->setDate(new \DateTime());
                 $historique->setStatutOperation('Création');
-                $ressources = new Ressources();
-                $ressources->setNom('Dossier Partagés');
-                $ressources->setDemande($demande);
-                $ressources->setContenu(json_encode($dossiersPartages));
                 $user1->setToken($token);
                 $user1->setTokenExpiration($expiration);
+                $ressources = new Ressources();
+                        $ressources->setNom('Dossier Partagés');
+                        $ressources->setDemande($demande);
+                        if (!empty($dossiersPartages)) {
+                            $ressources->setContenu(json_encode($dossiersPartages));
+                        } else {
+                            $ressources->setContenu('Pas de dossier partagés disponible pour ce Service.');
+                        }
             }
-    
+       
             $choix = $data['replace_someone'];
             $statut_utilisateur = $data['statut'];
     
@@ -241,7 +246,7 @@ class FormulaireLdapController extends AbstractController
                 $demande->setPrenomRemplacant($data['remplacement_prenom']);
                 $demande->setTelephoneRemplacant($data['telephone_avant_service']);
                 $depart = $data['parti_rectorat'];
-                if ($depart === true) {
+                if ($depart == true) {
                     $demande->setDepart(true);
                     $demande->setAffectationRemplacant('Aucune');
                 } else {
@@ -254,6 +259,7 @@ class FormulaireLdapController extends AbstractController
                 $demande->setPrenomRemplacant('Pas de remplacant.');
                 $demande->setTelephoneRemplacant('Pas de remplacant.');
                 $demande->setAffectationRemplacant('Pas de remplacant.');
+                $demande->setDepart(false);
             }
     
             if ($statut_utilisateur !== 'Titulaire') {

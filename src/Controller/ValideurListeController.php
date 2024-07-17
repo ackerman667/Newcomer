@@ -106,11 +106,13 @@ class ValideurListeController extends AbstractController
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
         }
+        $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
         $user = $demande->getIDutilisateur();
         return $this->render('valideur/visualiser.html.twig', [
             'demande' => $demande,
             'monApplication' => $monApplication,
             'user' => $user,
+            'ressources' => $ressources,
             
         ]);
     }

@@ -7,6 +7,7 @@ use App\Entity\Demandes;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Classe\MonApplication;
+use App\Entity\Ressources;
 use Doctrine\ORM\EntityManagerInterface;
 
 class StatutController extends AbstractController
@@ -38,13 +39,14 @@ class StatutController extends AbstractController
         if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
             throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
         }
-
+        $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
         $user = $demande->getIDutilisateur();
 
         return $this->render('consult/index.html.twig', [
             'demande' => $demande,
             'user' => $user,
             'monApplication' => $monApplication,
+            'ressources' => $ressources,
         ]);
     }
 }

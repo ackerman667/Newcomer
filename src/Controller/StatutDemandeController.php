@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Entity\Demandes;
+use App\Entity\Ressources;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Classe\MonApplication;
@@ -35,16 +36,19 @@ class StatutDemandeController extends AbstractController
     {
         $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
 
+
         if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
             throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
         }
 
         $user = $demande->getIDutilisateur();
+        $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
 
         return $this->render('consult/index.html.twig', [
             'demande' => $demande,
             'user' => $user,
             'monApplication' => $monApplication,
+            'ressources' => $ressources,
         ]);
     }
 }
