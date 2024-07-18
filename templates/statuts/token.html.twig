@@ -61,6 +61,7 @@
                             <th style="text-align: center; padding: 8px;">Visualiser</th>
                             <th style="text-align: center; padding: 8px;">Commentaire</th>
                             <th style="text-align: center; padding: 8px;">Supprimer</th>
+                             <th style="text-align: center; padding: 8px;">PDF</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -75,6 +76,8 @@
                                     <td style="text-align: center; padding: 8px;">{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
                                     <td style="text-align: center; padding: 8px;">{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
                                     <td style="text-align: center; padding: 8px;">{{ demande.statuts }}</td>
+                                     </td>
+                                      
                                     {% if demande.statuts == 'En attente' %}
                                         <td style="text-align: center; padding: 8px;">
                                             <a href="{{ path('modifier_demandes', {id: demande.id}) }}">Modifier</a>
@@ -100,8 +103,13 @@
                                         </td>
                                         <td style="text-align: center; padding: 8px;">
                                             <span style="color: gray;" title="La demande ne peut pas être supprimée car elle a déjà été traitée">Supprimer</span>
+                                       
                                         </td>
+
                                     {% endif %}
+                                      <td style="text-align: center; padding: 8px;">
+                                        <a href="{{ path('demande_pdf', {token: demande.token}) }}" class="btn btn-primary" >Télécharger le PDF</a>
+                                        </td>
                                 </tr>
                             {% endfor %}
                         {% endif %}

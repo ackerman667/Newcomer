@@ -61,6 +61,7 @@
                             <th style="text-align: center; padding: 8px;">Visualiser</th>
                             <th style="text-align: center; padding: 8px;">Commentaire</th>
                             <th style="text-align: center; padding: 8px;">Supprimer</th>
+                            <th style="text-align: center; padding: 8px;">PDF</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -102,6 +103,9 @@
                                             <span style="color: gray;" title="La demande ne peut pas être supprimée car elle a déjà été traitée">Supprimer</span>
                                         </td>
                                     {% endif %}
+                                      <td style="text-align: center; padding: 8px;">
+                                        <a href="{{ path('demande_pdf', {token: demande.token}) }}" class="btn btn-primary" >Télécharger le PDF</a>
+                                        </td>
                                 </tr>
                             {% endfor %}
                         {% endif %}

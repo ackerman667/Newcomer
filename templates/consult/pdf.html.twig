@@ -1,0 +1,111 @@
+
+
+
+{% block head_gene %}
+    <style>
+        .details-section {
+            border: 1px solid #000;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .details-section-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .details-group {
+            margin-bottom: 15px;
+        }
+        .details-group label {
+            font-weight: bold;
+        }
+    </style>
+{% endblock %}
+
+{% block main %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="details-section">
+                    <div class="details-section-title">Détails de la Demande</div>
+                    <div class="details-group">
+                        <label>Titre :</label>
+                        <span>{{ demande.titre }}</span>
+                    </div>
+                    <div class="details-group">
+                        <label>Date de Soumission :</label>
+                        <span>{{ demande.date ? demande.date|date('d/m/Y') : '' }}</span>
+                    </div>
+                    <div class="details-group">
+                        <label>Heure de Soumission :</label>
+                        <span>{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</span>
+                    </div>
+                    <div class="details-group">
+                        <label>Statut :</label>
+                        <span>{{ demande.statuts }}</span>
+                    </div>
+                    <div class="details-group">
+                        <label>Nom Remplaçant :</label>
+                        <span>{{ demande.nomRemplacant }}</span>
+                    </div>
+                    <div class="details-group">
+                        <label>Prénom Remplaçant :</label>
+                        <span>{{ demande.prenomRemplacant }}</span>
+                    </div>
+                    <div class="details-group">
+                        <label>Téléphone Remplaçant :</label>
+                        <span>{{ demande.telephoneRemplacant }}</span>
+                    </div>
+                    <div class="details-group">
+                        <label>Affectation Remplaçant :</label>
+                        <span>{{ demande.affectationRemplacant }}</span>
+                    </div>
+                </div>
+                <div class="details-section">
+                    <div class="details-section-title">Détails de l'Utilisateur</div>
+                    <div class="details-group">
+                        <label>Nom :</label>
+                        <span>{{ user.nom }}</span>
+                    </div>
+                    <div class="details-group">
+                        <label>Prénom :</label>
+                        <span>{{ user.prenom }}</span>
+                    </div>
+                    <div class="details-group">
+                        <label>Email :</label>
+                        <span>{{ user.email }}</span>
+                    </div>
+                    <div class="details-group">
+                        <label>Fonction :</label>
+                        <span>{{ user.fonction }}</span>
+                    </div>
+                    <div class="details-group">
+                        <label>Statut :</label>
+                        <span>{{ user.statutPersonne }}</span>
+                    </div>
+                    <div class="details-group">
+                        <label>Date de Naissance :</label>
+                        <span>{{ user.dateDeNaissance ? user.dateDeNaissance|date('d/m/Y') : '' }}</span>
+                    </div>
+                    <div class="details-group" {% if user.statutPersonne == 'Titulaire' %} style="display:none" {% endif %}>
+                        <label>Date de Début de Contrat :</label>
+                        <span>{{ user.dateDebut ? user.dateDebut|date('d/m/Y') : '' }}</span>
+                    </div>
+                    <div class="details-group" {% if user.statutPersonne == 'Titulaire' %} style="display:none" {% endif %}>
+                        <label>Date de Fin de Contrat :</label>
+                        <span>{{ user.dateFin ? user.dateFin|date('d/m/Y') : '' }}</span>
+                    </div>
+                </div>
+                <div class="details-section">
+                    <div class="details-section-title">Ressources Associées</div>
+                    
+                        <div class="details-group">
+                            <label>{{ ressources.nom }} :</label>
+                            <span>{{ ressources.contenu }}</span>
+                        </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

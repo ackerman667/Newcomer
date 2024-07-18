@@ -154,6 +154,7 @@ class FormulaireTestController extends AbstractController
         $dossiersPartages = $session->get('dossiers_partages', []);
 $nomServiceSelectionne = $session->get('nom_service_selectionne', '');
 $nomValideur = $session->get('nom_valideur', '');
+dump($nomValideur);
 
 
         $form = $this->createForm(DemandeEtape3FormType::class, $data);
@@ -323,7 +324,7 @@ $nomValideur = $session->get('nom_valideur', '');
        $entityManager->remove($demande);
        $entityManager->flush();
    
-       $this->addFlash('success', 'La demande a été supprimée avec succès.');
+    //    $this->addFlash('success', 'La demande a été supprimée avec succès.');
    
        return $this->redirectToRoute('home'); 
    }
@@ -342,7 +343,7 @@ $nomValideur = $session->get('nom_valideur', '');
         $user = $demande->getIDutilisateur();
         $token = $demande->getToken();
 
-        // Pré-remplir les données pour le formulaire
+   
         $data = [
             'nom' => $user->getNom(),
             'prenom' => $user->getPrenom(),

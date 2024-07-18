@@ -81,7 +81,7 @@
                                     <td style="text-align: center; padding: 8px;">{{ demande.statuts }}</td>
                                     {% if demande.statuts == 'En attente' %}
                                         <td style="text-align: center; padding: 8px;">
-                                            <a href="{{ path('modifier_demandesvalideur', {id: demande.id}) }}">Modifier</a>
+                                            <a href="{{ path('modifier_demandesvalideur_etape1', {id: demande.id}) }}">Modifier</a>
                                         </td>
                                     {% else %}
                                         <td style="text-align: center; padding: 8px;">
@@ -95,10 +95,14 @@
                                         <span>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</span>
                                     </td>
                                     <td style="text-align: center; padding: 8px;">
-                                        <form class="comment-form" method="post" action="{{ path('commenter_demande', {id: demande.id}) }}">
-                                            <textarea name="commentaire" rows="2" cols="20"></textarea>
-                                            <button type="submit" class="btn btn-primary">Commenter</button>
-                                        </form>
+                                        {% if demande.commentaire %}
+                                            <span style="color: gray;">Commentaire ajouté</span>
+                                        {% else %}
+                                            <form class="comment-form" method="post" action="{{ path('commenter_demande', {id: demande.id}) }}">
+                                                <textarea name="commentaire" rows="2" cols="20"></textarea>
+                                                <button type="submit" class="btn btn-primary">Commenter</button>
+                                            </form>
+                                        {% endif %}
                                     </td>
                                     <td style="text-align: center; padding: 8px;">
                                         {% if demande.statuts != 'Validé' %}

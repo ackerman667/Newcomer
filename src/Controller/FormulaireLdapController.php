@@ -350,7 +350,7 @@ class FormulaireLdapController extends AbstractController
     
         $this->addFlash('success', 'La demande a été supprimée avec succès.');
     
-        return $this->redirectToRoute('home');
+        return $this->redirectToRoute('formulaireldap_etape1');
     }
 
 
