@@ -88,6 +88,10 @@ class FormulaireTestController extends AbstractController
         ]);
 
         $services = $response->toArray();
+
+        usort($services, function($a, $b) {
+            return strcmp($a['service'], $b['service']);
+        });
        
         $servicesDropdownData = $this->transformServicesForDropdown($services);
 
@@ -259,6 +263,7 @@ dump($nomValideur);
             $demande->setTitre('Demande d\'accès à un poste informatique');
             $demande->setStatuts('En attente');
             $demande->setUidValideur($nomValideur);
+            $demande->setService($nomServiceSelectionne);
 
             $entityManager->persist($user);
             $entityManager->persist($demande);

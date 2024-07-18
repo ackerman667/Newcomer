@@ -25,6 +25,7 @@
 {% block main %}
     <div class="container">
         <div class="row justify-content-center">
+          <h2 class="text-center mb-5">Récapitulatif de votre demande</h2>
             <div class="col-md-10">
                 <div class="details-section">
                     <div class="details-section-title">Détails de la Demande</div>
@@ -102,6 +103,10 @@
                         <div class="details-group">
                             <label>{{ ressources.nom }} :</label>
                             <span>{{ ressources.contenu }}</span>
+                        </div>
+                        <div class="details-group">
+                            <label>Service :</label>
+                            <span>{{ demande.service }}</span>
                         </div>
                     
                 </div>

@@ -97,6 +97,9 @@ class FormulaireLdapController extends AbstractController
        
 
         $services = $response->toArray();
+        usort($services, function($a, $b) {
+            return strcmp($a['service'], $b['service']);
+        });
 
         $servicesDropdownData = $this->transformServicesForDropdown($services);
 
@@ -280,6 +283,7 @@ class FormulaireLdapController extends AbstractController
             $demande->setTitre('Demande d\'accès à un poste informatique');
             $demande->setStatuts('En attente');
             $demande->setUidValideur($nomValideur);
+            $demande->setService($nomServiceSelectionne);
     
             $entityManager->persist($demande);
             $entityManager->persist($user1);

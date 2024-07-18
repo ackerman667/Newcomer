@@ -86,6 +86,9 @@ class Demandes
     #[ORM\OneToMany(mappedBy: 'demande_id', targetEntity: Ressources::class)]
     private Collection $ressources;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $service = null;
+
     public function __construct()
     {
         $this->historiqueDemandes = new ArrayCollection();
@@ -405,6 +408,18 @@ class Demandes
                 $ressource->setDemandeId(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getService(): ?string
+    {
+        return $this->service;
+    }
+
+    public function setService(?string $service): static
+    {
+        $this->service = $service;
 
         return $this;
     }
