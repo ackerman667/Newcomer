@@ -72,12 +72,11 @@ class FormulaireTestController extends AbstractController
         $data['statut'] = $user->getStatutPersonne();
 
         if($user->getStatutPersonne()!= 'Titulaire') {
-        $data['date_debut_contrat'] = $user->getDateDebut();
-        $data['date_fin_contrat'] = $user->getDateFin();
+            $data['date_debut_contrat'] = $user->getDateDebut();
+            $data['date_fin_contrat'] = $user->getDateFin();
         }
-       
 
-
+        // Appel à l'API pour récupérer les services
         $apiUrl = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/services';
         $apiToken = 'b97b055g210125afb4c5f507dc823958ff18dfa56a12c7n12agch8db58e21767';
         $response = $httpClient->request('GET', $apiUrl, [
@@ -88,13 +87,14 @@ class FormulaireTestController extends AbstractController
         ]);
 
         $services = $response->toArray();
-        dump($services);
 
-        usort($services, function($a, $b) {
-            return strcmp($a['service'], $b['service']);
-        });
        
-        $servicesDropdownData = $this->transformServicesForDropdown($services);
+
+        // Organiser les services en une structure arborescente
+        $servicesTree = $this->buildTree($services);
+
+        // Transform services for dropdown
+        $servicesDropdownData = $this->transformServicesForDropdown($servicesTree);
 
         $form = $this->createForm(DemandeEtape2FormType::class, $data, [
             'services' => $servicesDropdownData,
@@ -107,31 +107,29 @@ class FormulaireTestController extends AbstractController
             $session->set('form_data', $data);
             $selectedServiceId = $form->get('selectedService')->getData();
 
-          foreach ($services as $service) {
-            if ($service['id_service'] == $selectedServiceId) {
-                $session->set('nom_service_selectionne', $service['service']);
-                if (isset($service['dossiers_partages']) && !empty($service['dossiers_partages'])) {
-                    $session->set('dossiers_partages', $service['dossiers_partages']);
-                } else {
-                    $session->set('dossiers_partages', []);
+            foreach ($services as $service) {
+                if ($service['id_service'] == $selectedServiceId) {
+                    $session->set('nom_service_selectionne', $service['service']);
+                    if (isset($service['dossiers_partages']) && !empty($service['dossiers_partages'])) {
+                        $session->set('dossiers_partages', $service['dossiers_partages']);
+                    } else {
+                        $session->set('dossiers_partages', []);
+                    }
+                    break;
                 }
-                break;
             }
-        }
-        $apiUrlSecond = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/valideur/' . $selectedServiceId;
-        $responseSecond = $httpClient->request('GET', $apiUrlSecond, [
-            'headers' => [
-                'x-auth-token' => $apiToken,  
-                'Accept' => 'application/json',
-            ],
-        ]);
+            $apiUrlSecond = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/valideur/' . $selectedServiceId;
+            $responseSecond = $httpClient->request('GET', $apiUrlSecond, [
+                'headers' => [
+                    'x-auth-token' => $apiToken,
+                    'Accept' => 'application/json',
+                ],
+            ]);
 
             $apiDataSecond = $responseSecond->toArray();
        
             $nomValideur = $apiDataSecond[0]['valideur'];
             $session->set('nom_valideur', $nomValideur);
-          
-
 
             return $this->redirectToRoute('formulairetest_etape3', ['token' => $token]);
         }
@@ -157,10 +155,8 @@ class FormulaireTestController extends AbstractController
 
         $data = $session->get('form_data', []);
         $dossiersPartages = $session->get('dossiers_partages', []);
-$nomServiceSelectionne = $session->get('nom_service_selectionne', '');
-$nomValideur = $session->get('nom_valideur', '');
-dump($nomValideur);
-
+        $nomServiceSelectionne = $session->get('nom_service_selectionne', '');
+        $nomValideur = $session->get('nom_valideur', '');
 
         $form = $this->createForm(DemandeEtape3FormType::class, $data);
         $form->handleRequest($request);
@@ -169,48 +165,44 @@ dump($nomValideur);
             $data = $form->getData();
             $historique = new HistoriqueDemande();
 
-            
             $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
 
-                    if ($demande) {
-                       
-                        $historique->setDemande($demande);
-                        $historique->setStatut($demande->getStatuts());
-                        $historique->setDate(new \DateTime());
-                        $historique->setStatutOperation('Modification');
-                        
-                        $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
-                        if (!$ressources) {
-                            $ressources = new Ressources();
-                        }
-                        $ressources->setNom('Dossier Partagés');
-                        $ressources->setDemande($demande);
-                        if (!empty($dossiersPartages)) {
-                            $ressources->setContenu(json_encode($dossiersPartages));
-                        } else {
-                            $ressources->setContenu('Pas de dossier partagés disponible pour ce Service.');
-                        }
-                    } else {
-                        
-                        $demande = new Demandes();
-                        $demande->setToken($token);
-                        $expiration = new \DateTimeImmutable('+24 hours');
-                        $demande->setTokenExpiration($expiration);
-                        $historique->setDemande($demande);
-                        $historique->setStatut('En attente');
-                        $historique->setDate(new \DateTime());
-                        $historique->setStatutOperation('Création');
+            if ($demande) {
+                $historique->setDemande($demande);
+                $historique->setStatut($demande->getStatuts());
+                $historique->setDate(new \DateTime());
+                $historique->setStatutOperation('Modification');
 
-                        $ressources = new Ressources();
-                        $ressources->setNom('Dossier Partagés');
-                        $ressources->setDemande($demande);
-                        if (!empty($dossiersPartages)) {
-                            $ressources->setContenu(json_encode($dossiersPartages));
-                        } else {
-                            $ressources->setContenu('Pas de dossier partagés disponible pour ce Service.');
-                        }
-                    }
-                   
+                $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
+                if (!$ressources) {
+                    $ressources = new Ressources();
+                }
+                $ressources->setNom('Dossier Partagés');
+                $ressources->setDemande($demande);
+                if (!empty($dossiersPartages)) {
+                    $ressources->setContenu(json_encode($dossiersPartages));
+                } else {
+                    $ressources->setContenu('Pas de dossier partagés disponible pour ce Service.');
+                }
+            } else {
+                $demande = new Demandes();
+                $demande->setToken($token);
+                $expiration = new \DateTimeImmutable('+24 hours');
+                $demande->setTokenExpiration($expiration);
+                $historique->setDemande($demande);
+                $historique->setStatut('En attente');
+                $historique->setDate(new \DateTime());
+                $historique->setStatutOperation('Création');
+
+                $ressources = new Ressources();
+                $ressources->setNom('Dossier Partagés');
+                $ressources->setDemande($demande);
+                if (!empty($dossiersPartages)) {
+                    $ressources->setContenu(json_encode($dossiersPartages));
+                } else {
+                    $ressources->setContenu('Pas de dossier partagés disponible pour ce Service.');
+                }
+            }
 
             $choix = $data['replace_someone'];
             $statut_utilisateur = $data['statut'];
@@ -250,13 +242,7 @@ dump($nomValideur);
                 $user->setStatutPersonne($statut_utilisateur);
                 $user->setDateDebut(null);
                 $user->setDateFin(null);
-                
-
             }
-
-        
-
-           
 
             $demande->setIDutilisateur($user);
             $demande->setDate(new \DateTime());
@@ -306,36 +292,30 @@ dump($nomValideur);
             'token' => $token
         ]);
     }
-   
-   #[Route('/formulairetest/supprimer/{id}', name: 'formulairetest_supprimer')]
-   public function supprimerDemande(Request $request, EntityManagerInterface $entityManager, $id): Response
-   {
-       $demande = $entityManager->getRepository(Demandes::class)->find($id);
-       if (!$demande) {
-           throw $this->createNotFoundException('Demande non trouvée.');
-       }
-   
-       
-       $historiques = $entityManager->getRepository(HistoriqueDemande::class)->findBy(['demande' => $demande]);
-       foreach ($historiques as $historique) {
-           $entityManager->remove($historique);
-       }
-   
-       
-       $ressources = $entityManager->getRepository(Ressources::class)->findBy(['demande' => $demande]);
-       foreach ($ressources as $ressource) {
-           $entityManager->remove($ressource);
-       }
-   
-       $entityManager->remove($demande);
-       $entityManager->flush();
-   
-    //    $this->addFlash('success', 'La demande a été supprimée avec succès.');
-   
-       return $this->redirectToRoute('home'); 
-   }
-   
 
+    #[Route('/formulairetest/supprimer/{id}', name: 'formulairetest_supprimer')]
+    public function supprimerDemande(Request $request, EntityManagerInterface $entityManager, $id): Response
+    {
+        $demande = $entityManager->getRepository(Demandes::class)->find($id);
+        if (!$demande) {
+            throw $this->createNotFoundException('Demande non trouvée.');
+        }
+
+        $historiques = $entityManager->getRepository(HistoriqueDemande::class)->findBy(['demande' => $demande]);
+        foreach ($historiques as $historique) {
+            $entityManager->remove($historique);
+        }
+
+        $ressources = $entityManager->getRepository(Ressources::class)->findBy(['demande' => $demande]);
+        foreach ($ressources as $ressource) {
+            $entityManager->remove($ressource);
+        }
+
+        $entityManager->remove($demande);
+        $entityManager->flush();
+
+        return $this->redirectToRoute('home'); 
+    }
 
     #[Route('/formulairetest/modifier/{id}', name: 'modifier_demandes')]
     public function modifierDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
@@ -349,7 +329,6 @@ dump($nomValideur);
         $user = $demande->getIDutilisateur();
         $token = $demande->getToken();
 
-   
         $data = [
             'nom' => $user->getNom(),
             'prenom' => $user->getPrenom(),
@@ -411,13 +390,32 @@ dump($nomValideur);
         throw new \LogicException('Ce code ne devrait jamais être atteint');
     }
 
-    private function transformServicesForDropdown(array $services): array
+    private function buildTree(array &$services, $parentId = 0) {
+        $branch = [];
+        foreach ($services as &$service) {
+            if ($service['pere'] == $parentId) {
+                $children = $this->buildTree($services, $service['id_service']);
+                if ($children) {
+                    $service['children'] = $children;
+                }
+                $branch[] = $service;
+                unset($service);
+            }
+        }
+        return $branch;
+    }
+    
+    private function transformServicesForDropdown(array $services, $niveau = 0): array
     {
         $servicesDropdownData = [];
         foreach ($services as $service) {
-            $servicesDropdownData[$service['service']] = $service['id_service'];
+            $indent = str_repeat('&nbsp;&nbsp;', $niveau);
+            $servicesDropdownData[html_entity_decode($indent) . $service['service']] = $service['id_service'];
+            if (isset($service['children'])) {
+                $servicesDropdownData += $this->transformServicesForDropdown($service['children'], $niveau + 1);
+            }
         }
-
         return $servicesDropdownData;
     }
+    
 }
