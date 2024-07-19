@@ -35,6 +35,27 @@
             margin-top: 20px;
             text-align: center;
         }
+        .status-en-attente {
+            background-color: #FFC107;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            min-width: 100px; 
+            margin: 5px 0;
+        }
+        .status-valide {
+            background-color: #28A745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            min-width: 100px; 
+            margin: 5px 0;
+        }
+        .btn-danger, .btn-pdf {
+            margin: 5px;
+        }
     </style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
@@ -67,7 +88,7 @@
                     <tbody>
                         {% if demandes is empty %}
                             <tr>
-                                <td colspan="8" style="text-align: center; padding: 8px;">Vous n'avez aucune demande pour l'instant</td>
+                                <td colspan="9" style="text-align: center; padding: 8px;">Vous n'avez aucune demande pour l'instant</td>
                             </tr>
                         {% else %}
                             {% for demande in demandes %}
@@ -75,41 +96,60 @@
                                     <td style="text-align: center; padding: 8px;">{{ demande.titre }}</td>
                                     <td style="text-align: center; padding: 8px;">{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
                                     <td style="text-align: center; padding: 8px;">{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
-                                    <td style="text-align: center; padding: 8px;">{{ demande.statuts }}</td>
-                                     </td>
-                                      
+                                    <td class="status-cell" style="text-align: center; padding: 8px;">
+                                        <span class="{% if demande.statuts == 'En attente' %}status-en-attente{% elseif demande.statuts == 'Validé' %}status-valide{% endif %}">{{ demande.statuts }}</span>
+                                    </td>
+                                    
                                     {% if demande.statuts == 'En attente' %}
                                         <td style="text-align: center; padding: 8px;">
-                                            <a href="{{ path('modifier_demandes', {id: demande.id}) }}">Modifier</a>
+                                        <a href="{{ path('modifier_demandes', {id: demande.id}) }}">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
                                         </td>
-                                        <td style="text-align: center; padding: 8px;">
-                                            <a href="{{ path('demande_consult', {token: demande.token}) }}">Voir la demande</a>
+                                       <td style="text-align: center; padding: 8px;">
+                                            <a href="{{ path('demande_consult', {token: demande.token}) }}">
+                                                <i class="fas fa-search"></i>
+                                            </a>
                                         </td>
+
                                         <td style="text-align: center; padding: 8px;">
                                             <span>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</span>
                                         </td>
-                                        <td style="text-align: center; padding: 8px;">
-                                            <a href="{{ path('formulairetest_supprimer', {id: demande.id}) }}" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">Supprimer</a>
+                                       <td style="text-align: center; padding: 8px;">
+                                            <a href="{{ path('formulairetest_supprimer', {id: demande.id}) }}" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </a>
                                         </td>
+
                                     {% else %}
                                         <td style="text-align: center; padding: 8px;">
-                                            <span style="color: gray;" title="La demande ne peut pas être modifiée car elle a déjà été traitée">Modifier</span>
+                                            <span style="color: gray;" title="La demande ne peut pas être modifiée car elle a déjà été traitée">
+                                                <i class="fas fa-edit"></i>
+                                            </span>
                                         </td>
+
                                         <td style="text-align: center; padding: 8px;">
-                                            <a href="{{ path('demande_consult', {token: demande.token}) }}">Voir la demande</a>
+                                            <a href="{{ path('demande_consult', {token: demande.token}) }}">
+                                                <i class="fas fa-search"></i>
+                                            </a>
                                         </td>
+
                                         <td style="text-align: center; padding: 8px;">
                                             <span>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</span>
                                         </td>
                                         <td style="text-align: center; padding: 8px;">
-                                            <span style="color: gray;" title="La demande ne peut pas être supprimée car elle a déjà été traitée">Supprimer</span>
-                                       
+                                            <span style="color: gray;" title="La demande ne peut pas être supprimée car elle a déjà été traitée">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </span>
                                         </td>
 
                                     {% endif %}
-                                      <td style="text-align: center; padding: 8px;">
-                                        <a href="{{ path('demande_pdf', {token: demande.token}) }}" class="btn btn-primary" >Télécharger le PDF</a>
-                                        </td>
+                                   <td style="text-align: center; padding: 8px;">
+                                        <a href="{{ path('demande_pdf', {token: demande.token}) }}" class="btn btn-primary btn-pdf">
+                                            <i class="fas fa-file-pdf"></i>
+                                        </a>
+                                    </td>
+                                    
                                 </tr>
                             {% endfor %}
                         {% endif %}

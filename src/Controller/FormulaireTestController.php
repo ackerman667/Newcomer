@@ -88,6 +88,7 @@ class FormulaireTestController extends AbstractController
         ]);
 
         $services = $response->toArray();
+        dump($services);
 
         usort($services, function($a, $b) {
             return strcmp($a['service'], $b['service']);
