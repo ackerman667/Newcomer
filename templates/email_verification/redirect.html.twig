@@ -14,8 +14,8 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            {% for message in app.flashes('error') %}
-                <div class="alert alert-danger">
+            {% for message in app.flashes('creation') %}
+                <div class="alert alert-creation">
                     {{ message }}
                 </div>
             {% endfor %}
@@ -46,6 +46,11 @@
     }
     .alert {
         margin-top: 20px;
+    }
+    .alert-creation {
+        color: #155724;
+        background-color: #d4edda;
+        border-color: #c3e6cb;
     }
 </style>
 {% endblock %}

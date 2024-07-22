@@ -62,6 +62,7 @@
                             <th style="text-align: center; padding: 8px;">Commentaire</th>
                             <th style="text-align: center; padding: 8px;">Supprimer</th>
                             <th style="text-align: center; padding: 8px;">PDF</th>
+                            <th style="text-align: center; padding: 8px;">Valider</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -78,23 +79,32 @@
                                     <td style="text-align: center; padding: 8px;">{{ demande.statuts }}</td>
                                     {% if demande.statuts == 'En attente' %}
                                         <td style="text-align: center; padding: 8px;">
-                                            <a href="{{ path('modifier_demandesldap', {id: demande.id}) }}">Modifier</a>
+                                            <a href="{{ path('modifier_demandesldap', {id: demande.id}) }}">
+                                             <i class="fas fa-edit"></i>
+                                            </a>
                                         </td>
                                         <td style="text-align: center; padding: 8px;">
-                                            <a href="{{ path('demande_consult', {token: demande.token}) }}">Voir la demande</a>
+                                            <a href="{{ path('demande_consult', {token: demande.token}) }}">
+                                            <i class="fas fa-search"></i>
+                                            </a>
                                         </td>
                                         <td style="text-align: center; padding: 8px;">
                                             <span>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</span>
                                         </td>
                                         <td style="text-align: center; padding: 8px;">
-                                            <a href="{{ path('formulaireldap_supprimer', {id: demande.id}) }}" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">Supprimer</a>
+                                            <a href="{{ path('formulaireldap_supprimer', {id: demande.id}) }}" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">
+                                              <i class="fas fa-trash-alt"></i>
+                                            </a>
                                         </td>
                                     {% else %}
                                         <td style="text-align: center; padding: 8px;">
                                             <span style="color: gray;" title="La demande ne peut pas être modifiée car elle a déjà été traitée">Modifier</span>
                                         </td>
                                         <td style="text-align: center; padding: 8px;">
-                                            <a href="{{ path('demande_consult', {token: demande.token}) }}">Voir la demande</a>
+                                            <a href="{{ path('demande_consult', {token: demande.token}) }}">
+                                            <i class="fas fa-search"></i>
+                        
+                                            </a>
                                         </td>
                                         <td style="text-align: center; padding: 8px;">
                                             <span>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</span>
@@ -104,8 +114,17 @@
                                         </td>
                                     {% endif %}
                                       <td style="text-align: center; padding: 8px;">
-                                        <a href="{{ path('demande_pdf', {token: demande.token}) }}" class="btn btn-primary" >Télécharger le PDF</a>
+                                        <a href="{{ path('demande_pdf', {token: demande.token}) }}" class="btn btn-primary" >
+                                          <i class="fas fa-file-pdf"></i>
+        
+                                        </a>
                                         </td>
+                                        <td style="text-align: center; padding: 8px;">
+                                        <a href="{{ path('valider_demandesldap', {id: demande.id}) }}" >
+                                         <i class="fas fa-check"></i>
+                                        </a>
+                                    </td>
+
                                 </tr>
                             {% endfor %}
                         {% endif %}

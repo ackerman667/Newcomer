@@ -12,6 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 
 
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -20,16 +21,21 @@ class DemandeEtape3FormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-     
-
-        
+        $builder
+            ->add('dossiers_partages', ChoiceType::class, [
+                'choices' => array_combine($options['dossiers_partages'], $options['dossiers_partages']),
+                'multiple' => true,
+                'expanded' => true,
+                'label' => 'Sélectionnez les dossiers partagés que vous souhaitez garder',
+            ]);
+        // Ajoutez les autres champs du formulaire ici...
     }
-
     
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'services' => [],
+            'data_class' => Demandes::class,
+            'dossiers_partages' => [],
         ]);
     }
 }

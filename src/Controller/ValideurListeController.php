@@ -23,18 +23,30 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class ValideurListeController extends AbstractController
+
 {
+    private $timezone;
+
+    public function __construct()
+    {
+        $this->timezone = new \DateTimeZone('America/Guadeloupe'); // Définir la timezone
+    }
     #[Route('formulaireldap/listedemandes', name: 'listedemandes')]
     public function index(MonApplication $monApplication, EntityManagerInterface $entityManager, Security $security): Response
     {
         $user = $security->getUser();
         $uid = $user->getUid();
+        $user = $security->getUser();
+        $uid = $user->getUid();
+        $statut = 'En attente'; 
         $demandes = $entityManager->getRepository(Demandes::class)->createQueryBuilder('d')
             ->where('d.uid_valideur = :uid')
+            ->andWhere('d.statuts <> :statut') 
             ->setParameter('uid', $uid)
+            ->setParameter('statut', $statut)
             ->getQuery()
             ->getResult();
-
+        
         return $this->render('valideur/index.html.twig', [
             'demandes' => $demandes,
             'monApplication' => $monApplication,
@@ -105,7 +117,7 @@ class ValideurListeController extends AbstractController
         return $this->redirectToRoute('listedemandes');
     }
 
-    #[Route('formulaire/demande/visualiser/{id}', name: 'visualiser_demande')]
+    #[Route('formulaireldap/demande/visualiser/{id}', name: 'visualiser_demande')]
     public function visualiserDemande(MonApplication $monApplication, int $id, EntityManagerInterface $entityManager): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
@@ -129,11 +141,11 @@ class ValideurListeController extends AbstractController
     public function editDemandeEtape1(int $id, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, MonApplication $monApplication): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
-        
+
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
         }
-        
+
         $user = $demande->getIDutilisateur();
         $data = [
             'nom' => $user->getNom(),
@@ -151,164 +163,205 @@ class ValideurListeController extends AbstractController
             'date_fin_contrat' => $user->getDateFin(),
             'statut' => $user->getStatutPersonne(),
         ];
-    
+
         $form = $this->createForm(DemandeEtape1FormType::class, $data);
         $form->handleRequest($request);
-    
+
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $session->set('form_data', $data);
-            
+
             return $this->redirectToRoute('modifier_demandesvalideur_etape2', ['id' => $id]);
         }
-    
+
         return $this->render('valideur/modifier_etape1.html.twig', [
             'form' => $form->createView(),
             'monApplication' => $monApplication,
             'demande' => $demande
         ]);
     }
+
     #[Route('formulaireldap/modifierdemandes/etape2/{id}', name: 'modifier_demandesvalideur_etape2')]
-public function editDemandeEtape2(int $id, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, HttpClientInterface $httpClient, MonApplication $monApplication): Response
-{
-    $demande = $entityManager->getRepository(Demandes::class)->find($id);
-    
-    if (!$demande) {
-        throw $this->createNotFoundException('Demande non trouvée.');
-    }
+    public function editDemandeEtape2(int $id, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, HttpClientInterface $httpClient, MonApplication $monApplication): Response
+    {
+        $demande = $entityManager->getRepository(Demandes::class)->find($id);
 
-    $data = $session->get('form_data', []);
-    
-    $apiUrl = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/services';
-    $apiToken = 'b97b055g210125afb4c5f507dc823958ff18dfa56a12c7n12agch8db58e21767';
-    $response = $httpClient->request('GET', $apiUrl, [
-        'headers' => [
-            'x-auth-token' => $apiToken,
-            'Accept' => 'application/json',
-        ],
-    ]);
-
-    $services = $response->toArray();
-    $servicesDropdownData = $this->transformServicesForDropdown($services);
-
-    $form = $this->createForm(DemandeEtape2FormType::class, $data, [
-        'services' => $servicesDropdownData,
-    ]);
-    $form->handleRequest($request);
-
-    if ($form->isSubmitted() && $form->isValid()) {
-        $data = $form->getData();
-            $session->set('form_data', $data);
-            $selectedServiceId = $form->get('selectedService')->getData();
-          foreach ($services as $service) {
-            if ($service['id_service'] == $selectedServiceId) {
-                $session->set('nom_service_selectionne', $service['service']);
-                if (isset($service['dossiers_partages']) && !empty($service['dossiers_partages'])) {
-                    $session->set('dossiers_partages', $service['dossiers_partages']);
-                } else {
-                    $session->set('dossiers_partages', []);
-                }
-                break;
-            }
+        if (!$demande) {
+            throw $this->createNotFoundException('Demande non trouvée.');
         }
-        $apiUrlSecond = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/valideur/' . $selectedServiceId;
-        $responseSecond = $httpClient->request('GET', $apiUrlSecond, [
+
+        $data = $session->get('form_data', []);
+
+        $apiUrl = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/services';
+        $apiToken = 'b97b055g210125afb4c5f507dc823958ff18dfa56a12c7n12agch8db58e21767';
+        $response = $httpClient->request('GET', $apiUrl, [
             'headers' => [
-                'x-auth-token' => $apiToken,  
+                'x-auth-token' => $apiToken,
                 'Accept' => 'application/json',
             ],
         ]);
 
+        $services = $response->toArray();
+        $servicesTree = $this->buildTree($services);
+        $servicesDropdownData = $this->transformServicesForDropdown($servicesTree);
+
+        $form = $this->createForm(DemandeEtape2FormType::class, $data, [
+            'services' => $servicesDropdownData,
+        ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $session->set('form_data', $data);
+            $selectedServiceId = $form->get('selectedService')->getData();
+            foreach ($services as $service) {
+                if ($service['id_service'] == $selectedServiceId) {
+                    $session->set('nom_service_selectionne', $service['service']);
+                    if (isset($service['dossiers_partages']) && !empty($service['dossiers_partages'])) {
+                        $session->set('dossiers_partages', $service['dossiers_partages']);
+                    } else {
+                        $session->set('dossiers_partages', []);
+                    }
+                    break;
+                }
+            }
+            $apiUrlSecond = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/valideur/' . $selectedServiceId;
+            $responseSecond = $httpClient->request('GET', $apiUrlSecond, [
+                'headers' => [
+                    'x-auth-token' => $apiToken,
+                    'Accept' => 'application/json',
+                ],
+            ]);
+
             $apiDataSecond = $responseSecond->toArray();
-           
             $nomValideur = $apiDataSecond[0]['valideur'];
             $session->set('nom_valideur', $nomValideur);
-            
-        
-        return $this->redirectToRoute('modifier_demandesvalideur_etape3', ['id' => $id]);
+
+            return $this->redirectToRoute('modifier_demandesvalideur_etape3', ['id' => $id]);
+        }
+
+        return $this->render('valideur/modifier_etape2.html.twig', [
+            'form' => $form->createView(),
+            'monApplication' => $monApplication,
+            'servicesDropdownData' => $servicesDropdownData,
+            'demande' => $demande,
+        ]);
     }
 
-    return $this->render('valideur/modifier_etape2.html.twig', [
-        'form' => $form->createView(),
-        'monApplication' => $monApplication,
-        'servicesDropdownData' => $servicesDropdownData,
-        'demande' => $demande,
-    ]);
-}
+    #[Route('formulaireldap/modifierdemandes/etape3/{id}', name: 'modifier_demandesvalideur_etape3')]
+    public function editDemandeEtape3(int $id, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, MailerInterface $mailer, MonApplication $monApplication): Response
+    {
+        $demande = $entityManager->getRepository(Demandes::class)->find($id);
+        $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande->getId()]);
 
+        if (!$demande) {
+            throw $this->createNotFoundException('Demande non trouvée.');
+        }
 
-#[Route('formulaireldap/modifierdemandes/etape3/{id}', name: 'modifier_demandesvalideur_etape3')]
-public function editDemandeEtape3(int $id, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, MailerInterface $mailer, MonApplication $monApplication): Response
-{
-    $demande = $entityManager->getRepository(Demandes::class)->find($id);
-    $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande->getId()]);
-    
-    if (!$demande) {
-        throw $this->createNotFoundException('Demande non trouvée.');
-    }
+        $data = $session->get('form_data', []);
+        $dossiersPartages = $session->get('dossiers_partages', []);
+        $nomServiceSelectionne = $session->get('nom_service_selectionne', '');
+        $nomValideur = $session->get('nom_valideur', '');
 
-    $data = $session->get('form_data', []);
-    $dossiersPartages = $session->get('dossiers_partages', []);
-    $nomServiceSelectionne = $session->get('nom_service_selectionne', '');
-    $nomValideur = $session->get('nom_valideur', '');
+        $form = $this->createForm(DemandeEtape3FormType::class, $data, [
+            'dossiers_partages' => $dossiersPartages,
+            'data_class' => null,
+        ]);
+        $form->handleRequest($request);
 
-    $form = $this->createForm(DemandeEtape3FormType::class, $data);
-    $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $choix = $data['replace_someone'];
 
-    if ($form->isSubmitted() && $form->isValid()) {
-        $data = $form->getData();
-        
-        
-        $demande->setNomRemplacant($data['remplacement_nom']);
-        $demande->setPrenomRemplacant($data['remplacement_prenom']);
-        $demande->setTelephoneRemplacant($data['telephone_avant_service']);
-        $demande->setDepart($data['parti_rectorat']);
-        $demande->setAffectationRemplacant($data['nouvelle_affectation_service']);
-        // $demande->setDateDebut($data['date_debut_contrat']);
-        // $demande->setDateFin($data['date_fin_contrat']);
-        // $demande->setStatutPersonne($data['statut']);
-        $historique = new HistoriqueDemande();
-        $historique->setDemande($demande);
-        $historique->setStatut($demande->getStatuts());
-        $historique->setDate(new \DateTime());
-        $historique->setStatutOperation('Modification Valideur');
-        $ressources->setNom('Dossier Partagés');
-        $ressources->setDemande($demande);
-                if (!empty($dossiersPartages)) {
-                    $ressources->setContenu(json_encode($dossiersPartages));
+            if ($choix === 'oui') {
+                $demande->setRemplacant(true);
+                $demande->setNomRemplacant($data['remplacement_nom']);
+                $demande->setPrenomRemplacant($data['remplacement_prenom']);
+                $demande->setTelephoneRemplacant($data['telephone_avant_service']);
+                $depart = $data['parti_rectorat'];
+                if ($depart == true) {
+                    $demande->setDepart(true);
+                    $demande->setAffectationRemplacant('Aucune');
                 } else {
-                    $ressources->setContenu('Pas de dossier partagés disponible pour ce Service.');
+                    $demande->setDepart(false);
+                    $demande->setAffectationRemplacant($data['nouvelle_affectation_service']);
                 }
+            } else {
+                $demande->setRemplacant(false);
+                $demande->setNomRemplacant('Pas de remplacant.');
+                $demande->setPrenomRemplacant('Pas de remplacant.');
+                $demande->setTelephoneRemplacant('Pas de remplacant.');
+                $demande->setAffectationRemplacant('Pas de remplacant.');
+                $demande->setDepart(false);
+            }
 
-                $entityManager->persist($demande);
-                $entityManager->persist($historique);
-                $entityManager->persist($ressources);
-        $entityManager->flush();
+            $historique = new HistoriqueDemande();
+            $historique->setDemande($demande);
+            $historique->setStatut($demande->getStatuts());
+            $historique->setDate(new \DateTime('now', $this->timezone));
+            $historique->setStatutOperation('Modification Valideur');
 
-        $this->addFlash('success', 'La demande a été modifiée avec succès.');
+            if (!$ressources) {
+                $ressources = new Ressources();
+            }
+            $ressources->setNom('Dossier Partagés');
+            $ressources->setDemande($demande);
+            $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
+            if (!empty($dossiersSelectionnes)) {
+                $ressources->setContenu(json_encode($dossiersSelectionnes));
+            } else {
+                $ressources->setContenu('Pas de dossier partagés disponible pour ce Service.');
+            }
 
-        return $this->redirectToRoute('listedemandes');
+            $entityManager->persist($demande);
+            $entityManager->persist($historique);
+            $entityManager->persist($ressources);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'La demande a été modifiée avec succès.');
+
+            return $this->redirectToRoute('listedemandes');
+        }
+
+        return $this->render('valideur/modifier_etape3.html.twig', [
+            'form' => $form->createView(),
+            'monApplication' => $monApplication,
+            'dossiersPartages' => $dossiersPartages,
+            'nomServiceSelectionne' => $nomServiceSelectionne,
+            'nomValideur' => $nomValideur,
+            'demande' => $demande
+        ]);
     }
 
-    return $this->render('valideur/modifier_etape3.html.twig', [
-        'form' => $form->createView(),
-        'monApplication' => $monApplication,
-        'dossiersPartages' => $dossiersPartages,
-        'nomServiceSelectionne' => $nomServiceSelectionne,
-        'nomValideur' => $nomValideur,
-        'demande' => $demande
-    ]);
-}
-
-private function transformServicesForDropdown(array $services): array
-{
-    $servicesDropdownData = [];
-    foreach ($services as $service) {
-        $servicesDropdownData[$service['service']] = $service['id_service'];
+    private function buildTree(array &$services, $parentId = 0)
+    {
+        $branch = [];
+        foreach ($services as &$service) {
+            if ($service['pere'] == $parentId) {
+                $children = $this->buildTree($services, $service['id_service']);
+                if ($children) {
+                    $service['children'] = $children;
+                }
+                $branch[] = $service;
+                unset($service);
+            }
+        }
+        return $branch;
     }
 
-    return $servicesDropdownData;
-}
+    private function transformServicesForDropdown(array $services, $niveau = 0): array
+    {
+        $servicesDropdownData = [];
+        foreach ($services as $service) {
+            $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $niveau);
+            $servicesDropdownData[html_entity_decode($indent) . $service['service']] = $service['id_service'];
+            if (isset($service['children'])) {
+                $servicesDropdownData += $this->transformServicesForDropdown($service['children'], $niveau + 1);
+            }
+        }
+        return $servicesDropdownData;
+    }
+
 
 
 

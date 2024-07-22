@@ -83,6 +83,7 @@
                             <th style="text-align: center; padding: 8px;">Commentaire</th>
                             <th style="text-align: center; padding: 8px;">Supprimer</th>
                              <th style="text-align: center; padding: 8px;">PDF</th>
+                            <th style="text-align: center; padding: 8px;">Valider</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -147,6 +148,11 @@
                                    <td style="text-align: center; padding: 8px;">
                                         <a href="{{ path('demande_pdf', {token: demande.token}) }}" class="btn btn-primary btn-pdf">
                                             <i class="fas fa-file-pdf"></i>
+                                        </a>
+                                    </td>
+                                    <td style="text-align: center; padding: 8px;">
+                                        <a href="{{ path('valider_demandes', {id: demande.id}) }}" >
+                                         <i class="fas fa-check"></i>
                                         </a>
                                     </td>
                                     

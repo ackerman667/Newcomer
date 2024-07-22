@@ -79,9 +79,11 @@
                                     <td style="text-align: center; padding: 8px;">{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
                                     <td style="text-align: center; padding: 8px;">{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
                                     <td style="text-align: center; padding: 8px;">{{ demande.statuts }}</td>
-                                    {% if demande.statuts == 'En attente' %}
+                                    {% if demande.statuts == 'Envoyé' %}
                                         <td style="text-align: center; padding: 8px;">
-                                            <a href="{{ path('modifier_demandesvalideur_etape1', {id: demande.id}) }}">Modifier</a>
+                                            <a href="{{ path('modifier_demandesvalideur_etape1', {id: demande.id}) }}">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
                                         </td>
                                     {% else %}
                                         <td style="text-align: center; padding: 8px;">
@@ -89,25 +91,25 @@
                                         </td>
                                     {% endif %}
                                     <td style="text-align: center; padding: 8px;">
-                                        <a href="{{ path('visualiser_demande', {id: demande.id}) }}">Voir la demande</a>
+                                        <a href="{{ path('visualiser_demande', {id: demande.id}) }}">
+                                            <i class="fas fa-search"></i>
+                                        </a>
                                     </td>
                                     <td style="text-align: center; padding: 8px;">
                                         <span>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</span>
                                     </td>
                                     <td style="text-align: center; padding: 8px;">
-                                        {% if demande.commentaire %}
-                                            <span style="color: gray;">Commentaire ajouté</span>
-                                        {% else %}
-                                            <form class="comment-form" method="post" action="{{ path('commenter_demande', {id: demande.id}) }}">
-                                                <textarea name="commentaire" rows="2" cols="20"></textarea>
-                                                <button type="submit" class="btn btn-primary">Commenter</button>
-                                            </form>
-                                        {% endif %}
+                                        <form class="comment-form" method="post" action="{{ path('commenter_demande', {id: demande.id}) }}">
+                                            <textarea name="commentaire" rows="2" cols="20">{{ demande.commentaire ? demande.commentaire : '' }}</textarea>
+                                            <button type="submit" class="btn btn-primary">Commenter</button>
+                                        </form>
                                     </td>
                                     <td style="text-align: center; padding: 8px;">
                                         {% if demande.statuts != 'Validé' %}
                                             <form method="post" action="{{ path('valider_demande', {id: demande.id}) }}">
-                                                <button type="submit" class="btn btn-success">Valider</button>
+                                                <button type="submit" class="btn btn-success">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
                                             </form>
                                         {% else %}
                                             <span style="color: gray;">Déjà validé</span>

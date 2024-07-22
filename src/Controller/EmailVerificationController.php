@@ -73,7 +73,7 @@ class EmailVerificationController extends AbstractController
                 ]);
             }
                 elseif(!$user) {
-                    $this->addFlash('error', 'L\'adresse email n\'existe pas. Vous allez être redirigé vers la création de compte.');
+                    $this->addFlash('creation', 'Nous allons commencer la création de votre compte.');
                     // Rediriger vers le formulaire de création d'utilisateur
                     return $this->render('email_verification/redirect.html.twig', [
                         'redirect_url' => $this->generateUrl('user_creation'),

@@ -31,10 +31,12 @@ use App\Security\UserInformation;
 class FormulaireLdapController extends AbstractController
 {
     private $security;
+    private $timezone;
 
     public function __construct(Security $security)
     {
         $this->security = $security;
+        $this->timezone = new \DateTimeZone('America/Guadeloupe');
     }
 
 
@@ -94,19 +96,17 @@ class FormulaireLdapController extends AbstractController
                 'Accept' => 'application/json',
             ],
         ]);
-       
-
         $services = $response->toArray();
-        usort($services, function($a, $b) {
-            return strcmp($a['service'], $b['service']);
-        });
 
-        $servicesDropdownData = $this->transformServicesForDropdown($services);
+        $servicesTree = $this->buildTree($services);
+
+        // Transform services for dropdown
+        $servicesDropdownData = $this->transformServicesForDropdown($servicesTree);
 
         $form = $this->createForm(DemandeEtape2FormType::class, $data, [
             'services' => $servicesDropdownData,
-          
-         ]);
+        ]);
+
 
         $form->handleRequest($request);
 
@@ -114,17 +114,18 @@ class FormulaireLdapController extends AbstractController
             $data = $form->getData();
             $session->set('form_data', $data);
             $selectedServiceId = $form->get('selectedService')->getData();
-          foreach ($services as $service) {
-            if ($service['id_service'] == $selectedServiceId) {
-                $session->set('nom_service_selectionne', $service['service']);
-                if (isset($service['dossiers_partages']) && !empty($service['dossiers_partages'])) {
-                    $session->set('dossiers_partages', $service['dossiers_partages']);
-                } else {
-                    $session->set('dossiers_partages', []);
+
+            foreach ($services as $service) {
+                if ($service['id_service'] == $selectedServiceId) {
+                    $session->set('nom_service_selectionne', $service['service']);
+                    if (isset($service['dossiers_partages']) && !empty($service['dossiers_partages'])) {
+                        $session->set('dossiers_partages', $service['dossiers_partages']);
+                    } else {
+                        $session->set('dossiers_partages', []);
+                    }
+                    break;
                 }
-                break;
             }
-        }
         $apiUrlSecond = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/valideur/' . $selectedServiceId;
         $responseSecond = $httpClient->request('GET', $apiUrlSecond, [
             'headers' => [
@@ -190,12 +191,16 @@ class FormulaireLdapController extends AbstractController
    
     
         $data = $session->get('form_data', []);
-        $form = $this->createForm(DemandeEtape3FormType::class, $data);
+        $form = $this->createForm(DemandeEtape3FormType::class, $data, [
+            'dossiers_partages' => $dossiersPartages,
+            'data_class' => null, 
+        ]);
         $form->handleRequest($request);
     
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $historique = new HistoriqueDemande();
+            $fonction = $data['fonction'];
 
 
             $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['IDutilisateur' => $user1]);
@@ -203,16 +208,19 @@ class FormulaireLdapController extends AbstractController
             if ($demande) {
                 $historique->setDemande($demande);
                 $historique->setStatut($demande->getStatuts());
-                $historique->setDate(new \DateTime());
+                $historique->setDate((new \DateTime('now', $this->timezone)));
                 $historique->setStatutOperation('Modification');
+               
+
                 $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
                         if (!$ressources) {
                             $ressources = new Ressources();
                         }
                         $ressources->setNom('Dossier Partagés');
                         $ressources->setDemande($demande);
-                        if (!empty($dossiersPartages)) {
-                            $ressources->setContenu(json_encode($dossiersPartages));
+                        $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
+                        if (!empty($dossiersSelectionnes)) {
+                            $ressources->setContenu(json_encode($dossiersSelectionnes));
                         } else {
                             $ressources->setContenu('Pas de dossier partagés disponible pour ce Service.');
                         }
@@ -226,15 +234,16 @@ class FormulaireLdapController extends AbstractController
                 $demande->setTokenExpiration($expiration);
                 $historique->setDemande($demande);
                 $historique->setStatut($demande->getStatuts());
-                $historique->setDate(new \DateTime());
+                $historique->setDate((new \DateTime('now', $this->timezone)));
                 $historique->setStatutOperation('Création');
                 $user1->setToken($token);
                 $user1->setTokenExpiration($expiration);
                 $ressources = new Ressources();
                         $ressources->setNom('Dossier Partagés');
                         $ressources->setDemande($demande);
-                        if (!empty($dossiersPartages)) {
-                            $ressources->setContenu(json_encode($dossiersPartages));
+                        $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
+                        if (!empty($dossiersSelectionnes)) {
+                            $ressources->setContenu(json_encode($dossiersSelectionnes));
                         } else {
                             $ressources->setContenu('Pas de dossier partagés disponible pour ce Service.');
                         }
@@ -276,10 +285,11 @@ class FormulaireLdapController extends AbstractController
                 $user1->setDateDebut(null);
                 $user1->setDateFin(null);
             }
+            $user1->setFonction($fonction);
     
             $demande->setIDutilisateur($user1);
-            $demande->setDate(new \DateTime());
-            $demande->setHeureSoumission(new \DateTime());
+            $demande->setDate((new \DateTime('now', $this->timezone)));
+            $demande->setHeureSoumission((new \DateTime('now', $this->timezone)));
             $demande->setTitre('Demande d\'accès à un poste informatique');
             $demande->setStatuts('En attente');
             $demande->setUidValideur($nomValideur);
@@ -390,9 +400,10 @@ class FormulaireLdapController extends AbstractController
             'telephone_avant_service' => $demande->getTelephoneRemplacant(),
             'parti_rectorat' => $demande->isDepart(),
             'nouvelle_affectation_service' => $demande->getAffectationRemplacant(),
+            'statut' => $user1->getStatutPersonne(),
+            'fonction' => $user1->getFonction(),
             'date_debut_contrat' => $user1->getDateDebut(),
             'date_fin_contrat' => $user1->getDateFin(),
-            'statut' => $user1->getStatutPersonne(),
         ];
 
         $session->set('form_data', $data);
@@ -402,19 +413,60 @@ class FormulaireLdapController extends AbstractController
     }
 
 
+    #[Route('/formulairetest/valider/{id}', name: 'valider_demandesldap')]
+    public function validerDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
+    {
+        $demande = $entityManager->getRepository(Demandes::class)->find($id);
+
+        if (!$demande) {
+            throw $this->createNotFoundException('Demande non trouvée.');
+        }
+        $demande->setStatuts('Envoyé');
+        $entityManager->persist($demande);
+        $historique = new HistoriqueDemande();
+        $historique->setDemande($demande);
+                $historique->setStatut('Envoyé');
+                
+                $historique->setDate(new \DateTime('now', $this->timezone));
+                $historique->setStatutOperation('Envoie de la demande');
+
+                $entityManager->persist($historique);
+        $entityManager->flush();
+        $token = $demande->getToken();
+    
+
+        return $this->redirectToRoute('statuts_token_ldap', ['token' => $token]);
+    }
 
 
 
 
 
-
-    private function transformServicesForDropdown(array $services): array
+    private function buildTree(array &$services, $parentId = 0) {
+        $branch = [];
+        foreach ($services as &$service) {
+            if ($service['pere'] == $parentId) {
+                $children = $this->buildTree($services, $service['id_service']);
+                if ($children) {
+                    $service['children'] = $children;
+                }
+                $branch[] = $service;
+                unset($service);
+            }
+        }
+        return $branch;
+    }
+    
+    private function transformServicesForDropdown(array $services, $niveau = 0): array
     {
         $servicesDropdownData = [];
         foreach ($services as $service) {
-            $servicesDropdownData[$service['service']] = $service['id_service'];
+            $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $niveau);
+            $servicesDropdownData[html_entity_decode($indent) . $service['service']] = $service['id_service'];
+            if (isset($service['children'])) {
+                $servicesDropdownData += $this->transformServicesForDropdown($service['children'], $niveau + 1);
+            }
         }
-
         return $servicesDropdownData;
     }
 

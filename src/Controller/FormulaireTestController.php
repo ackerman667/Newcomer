@@ -24,6 +24,14 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class FormulaireTestController extends AbstractController
 {
+    private $timezone;
+
+    public function __construct()
+    {
+        
+        $this->timezone = new \DateTimeZone('America/Guadeloupe'); // Définir la timezone
+    }
+
     #[Route('/formulairetest/etape1/{token}', name: 'formulairetest_etape1')]
     public function etape1(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, $token): Response
     {
@@ -158,7 +166,10 @@ class FormulaireTestController extends AbstractController
         $nomServiceSelectionne = $session->get('nom_service_selectionne', '');
         $nomValideur = $session->get('nom_valideur', '');
 
-        $form = $this->createForm(DemandeEtape3FormType::class, $data);
+        $form = $this->createForm(DemandeEtape3FormType::class, $data, [
+            'dossiers_partages' => $dossiersPartages,
+            'data_class' => null, 
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -170,7 +181,7 @@ class FormulaireTestController extends AbstractController
             if ($demande) {
                 $historique->setDemande($demande);
                 $historique->setStatut($demande->getStatuts());
-                $historique->setDate(new \DateTime());
+                $historique->setDate(new \DateTime('now', $this->timezone));
                 $historique->setStatutOperation('Modification');
 
                 $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
@@ -179,8 +190,9 @@ class FormulaireTestController extends AbstractController
                 }
                 $ressources->setNom('Dossier Partagés');
                 $ressources->setDemande($demande);
-                if (!empty($dossiersPartages)) {
-                    $ressources->setContenu(json_encode($dossiersPartages));
+                $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
+                if (!empty($dossiersSelectionnes)) {
+                    $ressources->setContenu(json_encode($dossiersSelectionnes));
                 } else {
                     $ressources->setContenu('Pas de dossier partagés disponible pour ce Service.');
                 }
@@ -191,14 +203,15 @@ class FormulaireTestController extends AbstractController
                 $demande->setTokenExpiration($expiration);
                 $historique->setDemande($demande);
                 $historique->setStatut('En attente');
-                $historique->setDate(new \DateTime());
+                $historique->setDate(new \DateTime('now', $this->timezone));
                 $historique->setStatutOperation('Création');
 
                 $ressources = new Ressources();
                 $ressources->setNom('Dossier Partagés');
                 $ressources->setDemande($demande);
-                if (!empty($dossiersPartages)) {
-                    $ressources->setContenu(json_encode($dossiersPartages));
+                $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
+                if (!empty($dossiersSelectionnes)) {
+                    $ressources->setContenu(json_encode($dossiersSelectionnes));
                 } else {
                     $ressources->setContenu('Pas de dossier partagés disponible pour ce Service.');
                 }
@@ -245,8 +258,10 @@ class FormulaireTestController extends AbstractController
             }
 
             $demande->setIDutilisateur($user);
-            $demande->setDate(new \DateTime());
-            $demande->setHeureSoumission(new \DateTime());
+            // $demande->setDate(new \DateTime());
+            // $demande->setHeureSoumission(new \DateTime());
+            $demande->setDate(new \DateTime('now', $this->timezone));
+            $demande->setHeureSoumission(new \DateTime('now', $this->timezone));
             $demande->setTitre('Demande d\'accès à un poste informatique');
             $demande->setStatuts('En attente');
             $demande->setUidValideur($nomValideur);
@@ -344,6 +359,7 @@ class FormulaireTestController extends AbstractController
             'date_debut_contrat' => $user->getDateDebut(),
             'date_fin_contrat' => $user->getDateFin(),
             'statut' => $user->getStatutPersonne(),
+            'fonction' => $user1->getFonction(),
         ];
 
         $session->set('form_data', $data);
@@ -383,6 +399,30 @@ class FormulaireTestController extends AbstractController
             'monApplication' => $monApplication,
         ]);
     }
+    #[Route('/formulairetest/valider/{id}', name: 'valider_demandes')]
+    public function validerDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
+    {
+        $demande = $entityManager->getRepository(Demandes::class)->find($id);
+
+        if (!$demande) {
+            throw $this->createNotFoundException('Demande non trouvée.');
+        }
+        $demande->setStatuts('Envoyé');
+        $entityManager->persist($demande);
+        $historique = new HistoriqueDemande();
+        $historique->setDemande($demande);
+                $historique->setStatut('Envoyé');
+                
+                $historique->setDate(new \DateTime('now', $this->timezone));
+                $historique->setStatutOperation('Envoie de la demande');
+
+                $entityManager->persist($historique);
+        $entityManager->flush();
+        $token = $demande->getToken();
+    
+
+        return $this->redirectToRoute('statuts_token', ['token' => $token]);
+    }
 
     #[Route('/login_check', name: 'login_check')]
     public function check(): never
@@ -409,7 +449,7 @@ class FormulaireTestController extends AbstractController
     {
         $servicesDropdownData = [];
         foreach ($services as $service) {
-            $indent = str_repeat('&nbsp;&nbsp;', $niveau);
+            $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $niveau);
             $servicesDropdownData[html_entity_decode($indent) . $service['service']] = $service['id_service'];
             if (isset($service['children'])) {
                 $servicesDropdownData += $this->transformServicesForDropdown($service['children'], $niveau + 1);
