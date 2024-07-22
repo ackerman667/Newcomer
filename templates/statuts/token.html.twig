@@ -2,6 +2,23 @@
 {% block title %}<title>Historique de vos demandes - {{ monApplication.Appli }}</title>{% endblock %}
 {% block head_gene %}
     <style>
+        .table-container {
+        margin: 20px auto;
+        width: 90%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: center;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f8f8;
+        }
+    
         .details-section {
             border: 1px solid #000;
             padding: 15px;

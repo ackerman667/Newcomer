@@ -294,7 +294,7 @@ class ValideurListeController extends AbstractController
                 $demande->setAffectationRemplacant('Pas de remplacant.');
                 $demande->setDepart(false);
             }
-
+            $demande->setService($nomServiceSelectionne);
             $historique = new HistoriqueDemande();
             $historique->setDemande($demande);
             $historique->setStatut($demande->getStatuts());
