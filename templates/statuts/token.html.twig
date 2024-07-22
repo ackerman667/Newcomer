@@ -53,6 +53,16 @@
             min-width: 100px; 
             margin: 5px 0;
         }
+        .status-envoye {
+            background-color: #D3D3D3;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            min-width: 100px; 
+            margin: 5px 0;
+        }
+        
         .btn-danger, .btn-pdf {
             margin: 5px;
         }
@@ -82,8 +92,9 @@
                             <th style="text-align: center; padding: 8px;">Visualiser</th>
                             <th style="text-align: center; padding: 8px;">Commentaire</th>
                             <th style="text-align: center; padding: 8px;">Supprimer</th>
-                             <th style="text-align: center; padding: 8px;">PDF</th>
+                            
                             <th style="text-align: center; padding: 8px;">Valider</th>
+                             <th style="text-align: center; padding: 8px;">PDF</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -98,7 +109,7 @@
                                     <td style="text-align: center; padding: 8px;">{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
                                     <td style="text-align: center; padding: 8px;">{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
                                     <td class="status-cell" style="text-align: center; padding: 8px;">
-                                        <span class="{% if demande.statuts == 'En attente' %}status-en-attente{% elseif demande.statuts == 'Validé' %}status-valide{% endif %}">{{ demande.statuts }}</span>
+                                        <span class="{% if demande.statuts == 'En attente' %}status-en-attente{% elseif demande.statuts == 'Validé' %}status-valide{% elseif demande.statuts == 'Envoyé' %}status-envoye{% endif %}">{{ demande.statuts }}</span>
                                     </td>
                                     
                                     {% if demande.statuts == 'En attente' %}
@@ -117,10 +128,21 @@
                                             <span>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</span>
                                         </td>
                                        <td style="text-align: center; padding: 8px;">
-                                            <a href="{{ path('formulairetest_supprimer', {id: demande.id}) }}" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">
+                                            <a href="{{ path('formulairetest_supprimer', {id: demande.id}) }}"  onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">
                                                 <i class="fas fa-trash-alt"></i>
                                             </a>
                                         </td>
+                                          <td style="text-align: center; padding: 8px;">
+                                        <a href="{{ path('valider_demandes', {id: demande.id}) }}" >
+                                         <i class="fas fa-check"></i>
+                                        </a>
+                                    </td>
+                                    <td style="text-align: center; padding: 8px;">
+                                        <a href="{{ path('demande_pdf', {token: demande.token}) }}" >
+                                            <i class="fas fa-file-pdf"></i>
+                                        </a>
+                                    </td>
+                                  
 
                                     {% else %}
                                         <td style="text-align: center; padding: 8px;">
@@ -143,18 +165,20 @@
                                                 <i class="fas fa-trash-alt"></i>
                                             </span>
                                         </td>
-
-                                    {% endif %}
-                                   <td style="text-align: center; padding: 8px;">
-                                        <a href="{{ path('demande_pdf', {token: demande.token}) }}" class="btn btn-primary btn-pdf">
-                                            <i class="fas fa-file-pdf"></i>
-                                        </a>
-                                    </td>
-                                    <td style="text-align: center; padding: 8px;">
-                                        <a href="{{ path('valider_demandes', {id: demande.id}) }}" >
+                                          <td style="text-align: center; padding: 8px;">
+                                    
                                          <i class="fas fa-check"></i>
                                         </a>
                                     </td>
+                                    <td style="text-align: center; padding: 8px;">
+                                        <a href="{{ path('demande_pdf', {token: demande.token}) }}" >
+                                            <i class="fas fa-file-pdf"></i>
+                                        </a>
+                                    </td>
+                                  
+
+                                    {% endif %}
+                                   
                                     
                                 </tr>
                             {% endfor %}

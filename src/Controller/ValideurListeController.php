@@ -53,7 +53,7 @@ class ValideurListeController extends AbstractController
         ]);
     }
 
-    #[Route('formulaireldap/validerdemande/{id}', name: 'valider_demande', methods: ['POST'])]
+    #[Route('formulaireldap/validerdemande/{id}', name: 'valider_demande')]
     public function validerDemande(int $id, EntityManagerInterface $entityManager,  MailerInterface $mailer): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);

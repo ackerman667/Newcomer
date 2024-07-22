@@ -359,7 +359,7 @@ class FormulaireTestController extends AbstractController
             'date_debut_contrat' => $user->getDateDebut(),
             'date_fin_contrat' => $user->getDateFin(),
             'statut' => $user->getStatutPersonne(),
-            'fonction' => $user1->getFonction(),
+            'fonction' => $user->getFonction(),
         ];
 
         $session->set('form_data', $data);

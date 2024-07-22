@@ -57,20 +57,16 @@
         <div class="col-md-10">
             {{ form_start(form) }}
 
-            <div class="service-dossier-container">
+          <div class="service-dossier-container">
                 <div class="service">
                     <h3>Service sélectionné : {{ nomServiceSelectionne }}</h3>
                 </div>
                 <div class="dossiers">
                     <h3>Dossiers partagés pour le service sélectionné :</h3>
                     {% if dossiersPartages is not empty %}
-                        <ul>
-                            {% for dossier in dossiersPartages %}
-                                <li>{{ dossier }}</li>
-                            {% endfor %}
-                        </ul>
+                        {{ form_row(form.dossiers_partages) }}
                     {% else %}
-                        <h4>Pas de dossiers partagés<h4>
+                        <h4>Pas de dossiers partagés</h4>
                     {% endif %}
                 </div>
             </div>
