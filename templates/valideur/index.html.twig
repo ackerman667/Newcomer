@@ -31,7 +31,35 @@
         width: 100%;
         margin-bottom: 5px;
     }
-   
+    .toolbar {
+        text-align: right;
+        color: #1E90FF;
+    }
+    .toolbar a {
+        margin-left: 10px;
+        color: #1E90FF !important;
+    }
+    .toolbar a i {
+        color: #1E90FF !important;
+    }
+    .status-valide {
+        background-color: #28A745;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        display: inline-block;
+        min-width: 100px; 
+        margin: 5px 0;
+    }
+    .status-envoye {
+        background-color: #FFC107;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        display: inline-block;
+        min-width: 100px; 
+        margin: 5px 0;
+    }
 </style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
@@ -54,17 +82,15 @@
                             <th>Date de soumission</th>
                             <th>Heure de soumission</th>
                             <th>Statut</th>
-                            <th>Modifier la demande</th>
-                            <th>Visualiser</th>
                             <th>Commentaire</th>
                             <th>Ajouter un commentaire</th>
-                            <th>Valider</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% if demandes is empty %}
                             <tr>
-                                <td colspan="9">Vous n'avez aucune demande pour l'instant</td>
+                                <td colspan="7">Vous n'avez aucune demande pour l'instant</td>
                             </tr>
                         {% else %}
                             {% for demande in demandes %}
@@ -72,41 +98,41 @@
                                     <td>{{ demande.titre }}</td>
                                     <td>{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
                                     <td>{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
-                                    <td>{{ demande.statuts }}</td>
-                                    {% if demande.statuts == 'Envoyé' %}
-                                        <td>
-                                            <a href="{{ path('modifier_demandesvalideur_etape1', {id: demande.id}) }}" >
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                        </td>
-                                    {% else %}
-                                        <td>
-                                            <span class="btn-disabled" title="La demande ne peut pas être modifiée car elle a déjà été traitée">Modifier</span>
-                                        </td>
-                                    {% endif %}
                                     <td>
-                                        <a href="{{ path('visualiser_demande', {id: demande.id}) }}" >
-                                            <i class="fas fa-search"></i>
-                                        </a>
+                                        <span class="{% if demande.statuts == 'Validé' %}status-valide{% elseif demande.statuts == 'Envoyé' %}status-envoye{% endif %}">
+                                            {{ demande.statuts }}
+                                        </span>
                                     </td>
-                                    <td>
-                                        <span>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</span>
-                                    </td>
+                                    <td>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</td>
                                     <td>
                                         <form class="comment-form" method="post" action="{{ path('commenter_demande', {id: demande.id}) }}">
                                             <textarea name="commentaire" rows="2">{{ demande.commentaire ? demande.commentaire : '' }}</textarea>
-                                            <button type="submit" >Commenter</button>
+                                            <button type="submit">Commenter</button>
                                         </form>
                                     </td>
-                                    <td>
-                                        {% if demande.statuts != 'Validé' %}
-                                              <td style="text-align: center; padding: 8px;">
-                                        <a href="{{ path('valider_demande', {id: demande.id}) }}" >
-                                         <i class="fas fa-check"></i>
-                                        </a>
-                                    </td>
+                                    <td class="toolbar">
+                                        {% if demande.statuts == 'Envoyé' %}
+                                            <a href="{{ path('modifier_demandesvalideur_etape1', {id: demande.id}) }}">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{{ path('visualiser_demande', {id: demande.id}) }}">
+                                                <i class="fas fa-search"></i>
+                                            </a>
+                                            <a href="{{ path('valider_demande', {id: demande.id}) }}">
+                                                <i class="fas fa-thumbs-up"></i>
+                                            </a>
+                                            <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </a>
                                         {% else %}
-                                            <span class="btn-disabled">Déjà validé</span>
+                                           
+                                            <a href="{{ path('visualiser_demande', {id: demande.id}) }}">
+                                                <i class="fas fa-search"></i>
+                                            </a>
+                                            
+                                            <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </a>
                                         {% endif %}
                                     </td>
                                 </tr>

@@ -21,6 +21,8 @@ use App\Form\DemandeFormType;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class ValideurListeController extends AbstractController
 
@@ -136,6 +138,58 @@ class ValideurListeController extends AbstractController
             
         ]);
     }
+
+
+
+
+
+    #[Route('formulaireldap/demandepdf/{id}', name: 'demande_pdf_valideur')]
+    public function generatePdf($id, EntityManagerInterface $entityManager): Response
+    {
+        $demande = $entityManager->getRepository(Demandes::class)->find($id);
+
+        if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
+            throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
+        }
+
+        $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande->getId()]);
+        $user = $demande->getIDutilisateur();
+
+        // Configurer Dompdf selon vos besoins
+        $options = new Options();
+        $options->set('defaultFont', 'Arial');
+        $dompdf = new Dompdf($options);
+
+        // Récupérer le contenu HTML de votre template
+        $html = $this->renderView('consult/pdf.html.twig', [
+            'demande' => $demande,
+            'user' => $user,
+            'ressources' => $ressources,
+        ]);
+
+        // Charger le HTML dans Dompdf
+        $dompdf->loadHtml($html);
+
+        // (Optionnel) Définir le format du papier et l'orientation
+        $dompdf->setPaper('A4', 'portrait');
+
+        // Rendre le PDF
+        $dompdf->render();
+
+        // Envoyer le PDF au navigateur
+        return new Response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="demande.pdf"',
+        ]);
+    }
+
+
+
+
+
+
+
+
 
     #[Route('formulaireldap/modifierdemandes/etape1/{id}', name: 'modifier_demandesvalideur_etape1')]
     public function editDemandeEtape1(int $id, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, MonApplication $monApplication): Response
