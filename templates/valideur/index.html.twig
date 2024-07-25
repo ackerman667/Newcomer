@@ -63,90 +63,118 @@
     .col-demandeur {
         width: 15%; 
     }
+    .filter-container {
+        margin-bottom: 20px;
+    }
 </style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
 {% block header %}
-    <h3 class="page-title">Les demandes de votre Service : </h3>
+<h3 class="page-title">Les demandes de votre Service :</h3>
 {% endblock %}
 {% block main %}
-    <div class="container table-container">
-        <div class="row justify-content-center">
-            <div class="col-md-12">
-                {% for message in app.flashes('success') %}
-                    <div class="alert alert-success">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-                <table>
-                    <thead>
-                        <tr>
-                            <th class="col-demandeur">Demandeur</th>
-                            <th class="col-service">Service</th>
-                            <th>Date de soumission</th>
-                            <th>Heure de soumission</th>
-                            <th>Statut</th>
-                            <th>Commentaire</th>
-                            <th>Ajouter un commentaire</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if demandes is empty %}
-                            <tr>
-                                <td colspan="7">Vous n'avez aucune demande pour l'instant</td>
-                            </tr>
-                        {% else %}
-                            {% for demande in demandes %}
-                                <tr>
-                                     <td>{{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}</td>
-                                     <td>{{ demande.service }} </td>
-                                    
-                                    <td>{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
-                                    <td>{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
-                                    <td>
-                                        <span class="{% if demande.statuts == 'Validé' %}status-valide{% elseif demande.statuts == 'Envoyé' %}status-envoye{% endif %}">
-                                            {{ demande.statuts }}
-                                        </span>
-                                    </td>
-                                    <td>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</td>
-                                    <td>
-                                        <form class="comment-form" method="post" action="{{ path('commenter_demande', {id: demande.id}) }}">
-                                            <textarea name="commentaire" rows="2">{{ demande.commentaire ? demande.commentaire : '' }}</textarea>
-                                            <button type="submit">Commenter</button>
-                                        </form>
-                                    </td>
-                                    <td class="toolbar">
-                                        {% if demande.statuts == 'Envoyé' %}
-                                            <a href="{{ path('modifier_demandesvalideur_etape1', {id: demande.id}) }}">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a href="{{ path('visualiser_demande', {id: demande.id}) }}">
-                                                <i class="fas fa-search"></i>
-                                            </a>
-                                            <a href="{{ path('valider_demande', {id: demande.id}) }}">
-                                                <i class="fas fa-thumbs-up"></i>
-                                            </a>
-                                            <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}">
-                                                <i class="fas fa-file-pdf"></i>
-                                            </a>
-                                        {% else %}
-                                           
-                                            <a href="{{ path('visualiser_demande', {id: demande.id}) }}">
-                                                <i class="fas fa-search"></i>
-                                            </a>
-                                            
-                                            <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}">
-                                                <i class="fas fa-file-pdf"></i>
-                                            </a>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% endif %}
-                    </tbody>
-                </table>
+<div class="container table-container">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                    {{ message }}
+                </div>
+            {% endfor %}
+            <div class="filter-container">
+                <label for="filter-select">Filtrer par statut:</label>
+                <select id="filter-select" class="form-select">
+                    <option value="all">Tout</option>
+                    <option value="Validé">Traité</option>
+                    <option value="Envoyé">Non Traité</option>
+                </select>
             </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="col-demandeur">Demandeur</th>
+                        <th class="col-service">Service</th>
+                        <th>Date de soumission</th>
+                        <th>Heure de soumission</th>
+                        <th>Statut</th>
+                        <th>Commentaire</th>
+                        <th>Ajouter un commentaire</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if demandes is empty %}
+                        <tr>
+                            <td colspan="8">Vous n'avez aucune demande pour l'instant</td>
+                        </tr>
+                    {% else %}
+                        {% for demande in demandes %}
+                            <tr data-status="{{ demande.statuts }}">
+                                <td>{{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}</td>
+                                <td>{{ demande.service }}</td>
+                                <td>{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
+                                <td>{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
+                                <td>
+                                    <span class="{% if demande.statuts == 'Validé' %}status-valide{% elseif demande.statuts == 'Envoyé' %}status-envoye{% endif %}">
+                                        {{ demande.statuts }}
+                                    </span>
+                                </td>
+                                <td>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</td>
+                                <td>
+                                    <form class="comment-form" method="post" action="{{ path('commenter_demande', {id: demande.id}) }}">
+                                        <textarea name="commentaire" rows="2">{{ demande.commentaire ? demande.commentaire : '' }}</textarea>
+                                        <button type="submit">Commenter</button>
+                                    </form>
+                                </td>
+                                <td class="toolbar">
+                                    {% if demande.statuts == 'Envoyé' %}
+                                        <a href="{{ path('modifier_demandesvalideur_etape1', {id: demande.id}) }}">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{{ path('visualiser_demande', {id: demande.id}) }}">
+                                            <i class="fas fa-search"></i>
+                                        </a>
+                                        <a href="{{ path('valider_demande', {id: demande.id}) }}">
+                                            <i class="fas fa-thumbs-up"></i>
+                                        </a>
+                                        <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}">
+                                            <i class="fas fa-file-pdf"></i>
+                                        </a>
+                                    {% else %}
+                                        <a href="{{ path('visualiser_demande', {id: demande.id}) }}">
+                                            <i class="fas fa-search"></i>
+                                        </a>
+                                        <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}">
+                                            <i class="fas fa-file-pdf"></i>
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
         </div>
     </div>
+</div>
+
+<script>
+   document.addEventListener('DOMContentLoaded', function() {
+    const filterSelect = document.getElementById('filter-select');
+    const rows = document.querySelectorAll('tbody tr');
+
+    filterSelect.addEventListener('change', function() {
+        const filterValue = filterSelect.value;
+        rows.forEach(row => {
+            const status = row.getAttribute('data-status');
+            if (filterValue === 'all' || (filterValue === 'Validé' && status === 'Validé') || (filterValue === 'Envoyé' && status === 'Envoyé')) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+});
+
+</script>
 {% endblock %}
