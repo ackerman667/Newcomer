@@ -60,11 +60,14 @@
         min-width: 100px; 
         margin: 5px 0;
     }
+    .col-demandeur {
+        width: 15%; 
+    }
 </style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
 {% block header %}
-    <h3 class="page-title">Historique de vos demandes</h3>
+    <h3 class="page-title">Les demandes de votre Service : </h3>
 {% endblock %}
 {% block main %}
     <div class="container table-container">
@@ -78,7 +81,8 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Titre</th>
+                            <th class="col-demandeur">Demandeur</th>
+                            <th class="col-service">Service</th>
                             <th>Date de soumission</th>
                             <th>Heure de soumission</th>
                             <th>Statut</th>
@@ -95,7 +99,9 @@
                         {% else %}
                             {% for demande in demandes %}
                                 <tr>
-                                    <td>{{ demande.titre }}</td>
+                                     <td>{{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}</td>
+                                     <td>{{ demande.service }} </td>
+                                    
                                     <td>{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
                                     <td>{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
                                     <td>

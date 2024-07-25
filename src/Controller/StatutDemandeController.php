@@ -19,9 +19,9 @@ class StatutDemandeController extends AbstractController
     {
         $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
 
-        if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
-            throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
-        }
+        // if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
+        //     throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
+        // }
 
         $user = $demande->getIDutilisateur();
         $demandes = $entityManager->getRepository(Demandes::class)->findBy(['IDutilisateur' => $user]);
@@ -39,9 +39,9 @@ class StatutDemandeController extends AbstractController
         $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
 
 
-        if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
-            throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
-        }
+        // if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
+        //     throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
+        // }
 
         $user = $demande->getIDutilisateur();
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
@@ -59,9 +59,9 @@ class StatutDemandeController extends AbstractController
     {
         $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
 
-        if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
-            throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
-        }
+        // if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
+        //     throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
+        // }
 
         $user = $demande->getIDutilisateur();
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);

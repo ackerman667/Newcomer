@@ -230,14 +230,14 @@ class FormulaireLdapController extends AbstractController
                 $demande = new Demandes();
                 $token = bin2hex(random_bytes(32));
                 $demande->setToken($token);
-                $expiration = new \DateTimeImmutable('+24 hours');
-                $demande->setTokenExpiration($expiration);
+                // $expiration = new \DateTimeImmutable('+24 hours');
+                // $demande->setTokenExpiration($expiration);
                 $historique->setDemande($demande);
                 $historique->setStatut($demande->getStatuts());
                 $historique->setDate((new \DateTime('now', $this->timezone)));
                 $historique->setStatutOperation('Création');
                 $user1->setToken($token);
-                $user1->setTokenExpiration($expiration);
+                // $user1->setTokenExpiration($expiration);
                 $ressources = new Ressources();
                         $ressources->setNom('Dossier Partagés');
                         $ressources->setDemande($demande);

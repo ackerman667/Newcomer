@@ -1,0 +1,85 @@
+{% extends 'layout_ag.html.twig' %}
+{% block title %}<title>Demandes Validées - {{ monApplication.Appli }}</title>{% endblock %}
+{% block head_gene %}
+<style>
+    .table-container {
+        margin: 20px auto;
+        width: 90%;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        text-align: center;
+        padding: 12px;
+        border-bottom: 1px solid #ddd;
+    }
+    th {
+        background-color: #f8f8f8;
+    }
+    .status-valide {
+        background-color: #28A745;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        display: inline-block;
+        min-width: 100px; 
+        margin: 5px 0;
+    }
+</style>
+{% endblock %}
+{% block body %}<body class="page not-home">{% endblock %}
+{% block header %}
+    <h3 class="page-title">Demandes Validées</h3>
+{% endblock %}
+{% block main %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                {% for message in app.flashes('success') %}
+                    <div class="alert alert-success">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Titre</th>
+                            <th>Date de soumission</th>
+                            <th>Heure de soumission</th>
+                            <th>Statut</th>
+                            <th>Commentaire</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if demandes is empty %}
+                            <tr>
+                                <td colspan="6">Aucune demande validée pour l'instant</td>
+                            </tr>
+                        {% else %}
+                            {% for demande in demandes %}
+                                <tr>
+                                    <td>{{ demande.titre }}</td>
+                                    <td>{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
+                                    <td>{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
+                                    <td class="status-valide">{{ demande.statuts }}</td>
+                                    <td>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</td>
+                                    <td>
+                                        <a href="{{ path('visualiser_demande', {id: demande.id}) }}">
+                                            <i class="fas fa-search"></i>
+                                        </a>
+                                        <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}">
+                                            <i class="fas fa-file-pdf"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

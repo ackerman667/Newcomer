@@ -19,9 +19,9 @@ class StatutController extends AbstractController
     {
         $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
 
-        if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
-            throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
-        }
+        // if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
+        //     throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
+        // }
 
         $user = $demande->getIDutilisateur();
         $demandes = $entityManager->getRepository(Demandes::class)->findBy(['IDutilisateur' => $user]);
@@ -38,9 +38,9 @@ class StatutController extends AbstractController
     {
         $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
 
-        if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
-            throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
-        }
+        // if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
+        //     throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
+        // }
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
         $user = $demande->getIDutilisateur();
 
@@ -59,9 +59,9 @@ class StatutController extends AbstractController
     {
         $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
 
-        if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
-            throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
-        }
+        // if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
+        //     throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
+        // }
 
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
         $user = $demande->getIDutilisateur();

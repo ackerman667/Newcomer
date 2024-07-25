@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use App\Entity\HistoriqueDemande;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use App\Entity\User;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
@@ -48,10 +49,23 @@ class ValideurListeController extends AbstractController
             ->setParameter('statut', $statut)
             ->getQuery()
             ->getResult();
+
+            dump($demandes);
+
+            $userDemandes = [];
+
+            foreach ($demandes as $demande) {
+                $userDemandes[] = [
+                    'demande' => $demande,
+                    'user' => $demande->getIDutilisateur()
+                ];
+            }
+            dump($userDemandes);
         
         return $this->render('valideur/index.html.twig', [
             'demandes' => $demandes,
             'monApplication' => $monApplication,
+            'user' => $userDemandes,
         ]);
     }
 

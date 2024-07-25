@@ -22,9 +22,6 @@ class Demandes
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $statuts = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $dateAutorisation = null;
-
     #[ORM\ManyToOne(inversedBy: 'demandes')]
     #[ORM\JoinColumn(nullable: true)]
     private ?User $IDutilisateur = null;
@@ -38,20 +35,13 @@ class Demandes
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $uid_valideur = null;
 
-    #[ORM\Column(type: Types::BLOB, nullable: true)]
-    private $pdf = null;
-
     #[ORM\Column(length: 64, nullable: true)]
     private ?string $token = null;
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $tokenExpiration = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?bool $Adresse_academique = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $statut_demande = null;
+    
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $nom_remplacant = null;
@@ -68,11 +58,7 @@ class Demandes
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $affectation_remplacant = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?bool $charte = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?bool $imprimante = null;
 
     #[ORM\OneToMany(mappedBy: 'demande', targetEntity: HistoriqueDemande::class)]
     private Collection $historiqueDemandes;
@@ -124,17 +110,7 @@ class Demandes
         return $this;
     }
 
-    public function getDateAutorisation(): ?\DateTimeInterface
-    {
-        return $this->dateAutorisation;
-    }
-
-    public function setDateAutorisation(\DateTimeInterface $dateAutorisation): static
-    {
-        $this->dateAutorisation = $dateAutorisation;
-
-        return $this;
-    }
+    
 
     public function getIDutilisateur(): ?User
     {
@@ -184,17 +160,7 @@ class Demandes
         return $this;
     }
 
-    public function getPdf()
-    {
-        return $this->pdf;
-    }
-
-    public function setPdf($pdf): static
-    {
-        $this->pdf = $pdf;
-
-        return $this;
-    }
+  
 
     public function getToken(): ?string
     {
@@ -220,29 +186,7 @@ class Demandes
         return $this;
     }
 
-    public function isAdresseAcademique(): ?bool
-    {
-        return $this->Adresse_academique;
-    }
-
-    public function setAdresseAcademique(?bool $Adresse_academique): static
-    {
-        $this->Adresse_academique = $Adresse_academique;
-
-        return $this;
-    }
-
-    public function getStatutDemande(): ?string
-    {
-        return $this->statut_demande;
-    }
-
-    public function setStatutDemande(?string $statut_demande): static
-    {
-        $this->statut_demande = $statut_demande;
-
-        return $this;
-    }
+   
 
     public function getNomRemplacant(): ?string
     {
@@ -304,29 +248,7 @@ class Demandes
         return $this;
     }
 
-    public function isCharte(): ?bool
-    {
-        return $this->charte;
-    }
-
-    public function setCharte(?bool $charte): static
-    {
-        $this->charte = $charte;
-
-        return $this;
-    }
-
-    public function isImprimante(): ?bool
-    {
-        return $this->imprimante;
-    }
-
-    public function setImprimante(?bool $imprimante): static
-    {
-        $this->imprimante = $imprimante;
-
-        return $this;
-    }
+   
 
     /**
      * @return Collection<int, HistoriqueDemande>

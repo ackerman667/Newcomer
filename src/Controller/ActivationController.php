@@ -16,7 +16,8 @@ class ActivationController extends AbstractController
     {
         $user = $userRepository->findOneBy(['token' => $token]);
 
-        if ($user && $user->getTokenExpiration() >= new \DateTime()) {
+        // if ($user && $user->getTokenExpiration() >= new \DateTime()) {
+            if ($user) {
             // Activer le compte utilisateur
             $user->setCompteActif(true);
         
