@@ -146,6 +146,8 @@
                 <table style="width:100%; border-collapse: collapse;">
                     <thead>
                         <tr style="border-bottom: 1px solid #ddd;">
+                        <th style="text-align: center; padding: 8px;">Service</th>
+                      
                             <th style="text-align: center; padding: 8px;">Titre</th>
                             <th style="text-align: center; padding: 8px;">Date de soumission</th>
                             <th style="text-align: center; padding: 8px;">Heure de soumission</th>
@@ -161,6 +163,7 @@
                         {% else %}
                             {% for demande in demandes %}
                                 <tr style="border-bottom: 1px solid #ddd;">
+                                 <td style="text-align: center; padding: 8px;">{{ demande.service }}</td>
                                     <td style="text-align: center; padding: 8px;">{{ demande.titre }}</td>
                                     <td style="text-align: center; padding: 8px;">{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
                                     <td style="text-align: center; padding: 8px;">{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>

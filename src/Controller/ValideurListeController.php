@@ -39,8 +39,9 @@ class ValideurListeController extends AbstractController
     {
         $user = $security->getUser();
         $uid = $user->getUid();
-        $user = $security->getUser();
-        $uid = $user->getUid();
+        dump($uid);
+        // $user = $security->getUser();
+        // $uid = $user->getUid();
         $statut = 'En attente'; 
         $demandes = $entityManager->getRepository(Demandes::class)->createQueryBuilder('d')
             ->where('d.uid_valideur = :uid')

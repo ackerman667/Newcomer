@@ -17,6 +17,7 @@ class StatutController extends AbstractController
     #[Route('formulaireldap/statuts/{token}', name: 'statuts_token_ldap')]
     public function index(MonApplication $monApplication, EntityManagerInterface $entityManager, $token): Response
     {
+        
         $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
 
         // if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {

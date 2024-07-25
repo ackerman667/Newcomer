@@ -66,6 +66,14 @@
     .filter-container {
         margin-bottom: 20px;
     }
+ 
+    .service-column {
+        color: blue; 
+        font-weight: bold; 
+    }
+</style>
+
+    
 </style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
@@ -111,7 +119,8 @@
                         {% for demande in demandes %}
                             <tr data-status="{{ demande.statuts }}">
                                 <td>{{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}</td>
-                                <td>{{ demande.service }}</td>
+                                <td class="service-column">{{ demande.service }}</td>
+
                                 <td>{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
                                 <td>{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
                                 <td>
