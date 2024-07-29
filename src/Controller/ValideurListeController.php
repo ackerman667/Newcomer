@@ -42,7 +42,7 @@ class ValideurListeController extends AbstractController
         dump($uid);
         // $user = $security->getUser();
         // $uid = $user->getUid();
-        $statut = 'En attente'; 
+        $statut = 'Brouillons'; 
         $demandes = $entityManager->getRepository(Demandes::class)->createQueryBuilder('d')
             ->where('d.uid_valideur = :uid')
             ->andWhere('d.statuts <> :statut') 
@@ -78,12 +78,13 @@ class ValideurListeController extends AbstractController
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
         }
-
-        $demande->setStatuts('Validé');
+        $now = new \DateTime('now', $this->timezone);
+        $demande->setStatuts('Suivi dans LEKA');
+        $demande->setDateValidation($now);
         $historique = new HistoriqueDemande();
         $historique->setDemande($demande);
-        $historique->setStatut('Validée');
-        $historique->setStatutOperation('Validation');
+        $historique->setStatut('Suivi dans LEKA');
+        $historique->setStatutOperation('Envoi de la demande dans LEKA');
         $historique->setDate(new \DateTime());
         $entityManager->persist($historique);
 
@@ -94,6 +95,37 @@ class ValideurListeController extends AbstractController
             ->to($demande->getIDutilisateur()->getEmail())
             ->subject('Votre demande a été validée')
             ->html('<p>Votre demande a été validée.</p>');
+
+        $mailer->send($email);
+
+
+        return $this->redirectToRoute('listedemandes');
+    }
+
+    #[Route('formulaireldap/refuserdemande/{id}', name: 'refuser_demande')]
+    public function refuserDemande(int $id, EntityManagerInterface $entityManager,  MailerInterface $mailer): Response
+    {
+        $demande = $entityManager->getRepository(Demandes::class)->find($id);
+
+        if (!$demande) {
+            throw $this->createNotFoundException('Demande non trouvée.');
+        }
+
+        $demande->setStatuts('Refusée');
+        $historique = new HistoriqueDemande();
+        $historique->setDemande($demande);
+        $historique->setStatut('Refusée');
+        $historique->setStatutOperation('Refus');
+        $historique->setDate(new \DateTime());
+        $entityManager->persist($historique);
+
+        $entityManager->flush();
+
+        $email = (new Email())
+            ->from('noreply@ac-guadeloupe.fr')
+            ->to($demande->getIDutilisateur()->getEmail())
+            ->subject('Votre demande a été refusée')
+            ->html('<p>Votre demande a été refusée.</p>');
 
         $mailer->send($email);
 
@@ -163,9 +195,9 @@ class ValideurListeController extends AbstractController
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
 
-        if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
-            throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
-        }
+        // if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
+        //     throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
+        // }
 
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande->getId()]);
         $user = $demande->getIDutilisateur();
@@ -420,7 +452,11 @@ class ValideurListeController extends AbstractController
 
     private function transformServicesForDropdown(array $services, $niveau = 0): array
     {
-        $servicesDropdownData = [];
+        if ($niveau == 0) {
+            $servicesDropdownData = ['...' => ''];
+        } else {
+            $servicesDropdownData = [];
+        }
         foreach ($services as $service) {
             $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $niveau);
             $servicesDropdownData[html_entity_decode($indent) . $service['service']] = $service['id_service'];

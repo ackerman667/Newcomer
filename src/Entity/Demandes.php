@@ -75,6 +75,9 @@ class Demandes
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $service = null;
 
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $date_validation = null;
+
     public function __construct()
     {
         $this->historiqueDemandes = new ArrayCollection();
@@ -342,6 +345,18 @@ class Demandes
     public function setService(?string $service): static
     {
         $this->service = $service;
+
+        return $this;
+    }
+
+    public function getDateValidation(): ?\DateTimeInterface
+    {
+        return $this->date_validation;
+    }
+
+    public function setDateValidation(?\DateTimeInterface $date_validation): static
+    {
+        $this->date_validation = $date_validation;
 
         return $this;
     }

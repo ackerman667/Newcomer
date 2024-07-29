@@ -222,7 +222,7 @@ class FormulaireLdapController extends AbstractController
                         if (!empty($dossiersSelectionnes)) {
                             $ressources->setContenu(json_encode($dossiersSelectionnes));
                         } else {
-                            $ressources->setContenu('Pas de dossier partagés disponible pour ce Service.');
+                            $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
                         }
     
 
@@ -245,7 +245,7 @@ class FormulaireLdapController extends AbstractController
                         if (!empty($dossiersSelectionnes)) {
                             $ressources->setContenu(json_encode($dossiersSelectionnes));
                         } else {
-                            $ressources->setContenu('Pas de dossier partagés disponible pour ce Service.');
+                            $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
                         }
             }
        
@@ -291,7 +291,7 @@ class FormulaireLdapController extends AbstractController
             $demande->setDate((new \DateTime('now', $this->timezone)));
             $demande->setHeureSoumission((new \DateTime('now', $this->timezone)));
             $demande->setTitre('Demande d\'accès à un poste informatique');
-            $demande->setStatuts('En attente');
+            $demande->setStatuts('Brouillons');
             $demande->setUidValideur($nomValideur);
             $demande->setService($nomServiceSelectionne);
     
@@ -421,11 +421,11 @@ class FormulaireLdapController extends AbstractController
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
         }
-        $demande->setStatuts('Envoyé');
+        $demande->setStatuts('En attente');
         $entityManager->persist($demande);
         $historique = new HistoriqueDemande();
         $historique->setDemande($demande);
-                $historique->setStatut('Envoyé');
+                $historique->setStatut('Envoyée');
                 
                 $historique->setDate(new \DateTime('now', $this->timezone));
                 $historique->setStatutOperation('Envoie de la demande');
@@ -459,7 +459,11 @@ class FormulaireLdapController extends AbstractController
     
     private function transformServicesForDropdown(array $services, $niveau = 0): array
     {
-        $servicesDropdownData = [];
+        if ($niveau == 0) {
+            $servicesDropdownData = ['...' => ''];
+        } else {
+            $servicesDropdownData = [];
+        }
         foreach ($services as $service) {
             $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $niveau);
             $servicesDropdownData[html_entity_decode($indent) . $service['service']] = $service['id_service'];

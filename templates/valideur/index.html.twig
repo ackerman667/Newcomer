@@ -1,5 +1,5 @@
 {% extends 'layout_ag.html.twig' %}
-{% block title %}<title>Historique de vos demandes - {{ monApplication.Appli }}</title>{% endblock %}
+{% block title %}<title>Demandes Validées - {{ monApplication.Appli }}</title>{% endblock %}
 {% block head_gene %}
 <style>
     .page-title {
@@ -22,14 +22,41 @@
     th {
         background-color: #f8f8f8;
     }
-    
-    .btn-disabled {
-        color: gray;
-        cursor: not-allowed;
+    .status-leka {
+        background-color: #28A745;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        display: inline-block;
+        min-width: 100px;
+        margin: 5px 0;
+    }
+    .status-en-attente {
+        background-color: #FFC107;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        display: inline-block;
+        min-width: 100px;
+        margin: 5px 0;
+    }
+    .status-refuse {
+        background-color: #FF0000; /* Rouge pour refusé */
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        display: inline-block;
+        min-width: 100px;
+        margin: 5px 0;
     }
     .comment-form textarea {
         width: 100%;
         margin-bottom: 5px;
+    }
+    .comment-form textarea[disabled],
+    .comment-form button[disabled] {
+        background-color: #f1f1f1;
+        cursor: not-allowed;
     }
     .toolbar {
         text-align: right;
@@ -42,43 +69,21 @@
     .toolbar a i {
         color: #1E90FF !important;
     }
-    .status-valide {
-        background-color: #28A745;
-        color: white;
-        padding: 5px 10px;
-        border-radius: 20px;
-        display: inline-block;
-        min-width: 100px; 
-        margin: 5px 0;
-    }
-    .status-envoye {
-        background-color: #FFC107;
-        color: white;
-        padding: 5px 10px;
-        border-radius: 20px;
-        display: inline-block;
-        min-width: 100px; 
-        margin: 5px 0;
-    }
     .col-demandeur {
         width: 15%; 
     }
     .filter-container {
         margin-bottom: 20px;
     }
- 
     .service-column {
         color: blue; 
         font-weight: bold; 
     }
 </style>
-
-    
-</style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
 {% block header %}
-<h3 class="page-title">Les demandes de votre Service :</h3>
+<h3 class="page-title">Liste des demandes</h3>
 {% endblock %}
 {% block main %}
 <div class="container table-container">
@@ -93,8 +98,9 @@
                 <label for="filter-select">Filtrer par statut:</label>
                 <select id="filter-select" class="form-select">
                     <option value="all">Tout</option>
-                    <option value="Validé">Traité</option>
-                    <option value="Envoyé">Non Traité</option>
+                    <option value="Suivi dans LEKA">Suivi dans LEKA</option>
+                    <option value="En attente">En attente</option>
+                    <option value="Refusée">Refusée</option>
                 </select>
             </div>
             <table>
@@ -105,7 +111,6 @@
                         <th>Date de soumission</th>
                         <th>Heure de soumission</th>
                         <th>Statut</th>
-                        <th>Commentaire</th>
                         <th>Ajouter un commentaire</th>
                         <th>Actions</th>
                     </tr>
@@ -120,23 +125,21 @@
                             <tr data-status="{{ demande.statuts }}">
                                 <td>{{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}</td>
                                 <td class="service-column">{{ demande.service }}</td>
-
                                 <td>{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
                                 <td>{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
                                 <td>
-                                    <span class="{% if demande.statuts == 'Validé' %}status-valide{% elseif demande.statuts == 'Envoyé' %}status-envoye{% endif %}">
+                                    <span class="{% if demande.statuts == 'Suivi dans LEKA' %}status-leka{% elseif demande.statuts == 'En attente' %}status-en-attente{% elseif demande.statuts == 'Refusée' %}status-refuse{% endif %}">
                                         {{ demande.statuts }}
                                     </span>
                                 </td>
-                                <td>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</td>
                                 <td>
                                     <form class="comment-form" method="post" action="{{ path('commenter_demande', {id: demande.id}) }}">
-                                        <textarea name="commentaire" rows="2">{{ demande.commentaire ? demande.commentaire : '' }}</textarea>
-                                        <button type="submit">Commenter</button>
+                                        <textarea name="commentaire" rows="2" placeholder="Ajouter un commentaire en cas de refus ! " {% if demande.statuts == 'Suivi dans LEKA' %}disabled{% endif %}>{{ demande.commentaire ? demande.commentaire : '' }}</textarea>
+                                        <button type="submit" {% if demande.statuts is not same as('En attente') %}disabled{% endif %}>Commenter</button>
                                     </form>
                                 </td>
                                 <td class="toolbar">
-                                    {% if demande.statuts == 'Envoyé' %}
+                                    {% if demande.statuts == 'En attente' %}
                                         <a href="{{ path('modifier_demandesvalideur_etape1', {id: demande.id}) }}">
                                             <i class="fas fa-edit"></i>
                                         </a>
@@ -148,6 +151,9 @@
                                         </a>
                                         <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}">
                                             <i class="fas fa-file-pdf"></i>
+                                        </a>
+                                        <a href="{{ path('refuser_demande', {id: demande.id}) }}">
+                                            <i class="fas fa-thumbs-down"></i>
                                         </a>
                                     {% else %}
                                         <a href="{{ path('visualiser_demande', {id: demande.id}) }}">
@@ -176,7 +182,7 @@
         const filterValue = filterSelect.value;
         rows.forEach(row => {
             const status = row.getAttribute('data-status');
-            if (filterValue === 'all' || (filterValue === 'Validé' && status === 'Validé') || (filterValue === 'Envoyé' && status === 'Envoyé')) {
+            if (filterValue === 'all' || (filterValue === 'Suivi dans LEKA' && status === 'Suivi dans LEKA') || (filterValue === 'En attente' && status === 'En attente') || (filterValue === 'Refusée' && status === 'Refusée')) {
                 row.style.display = '';
             } else {
                 row.style.display = 'none';
@@ -184,6 +190,5 @@
         });
     });
 });
-
 </script>
 {% endblock %}

@@ -24,62 +24,77 @@
         padding: 5px 10px;
         border-radius: 20px;
         display: inline-block;
-        min-width: 100px; 
+        min-width: 100px;
         margin: 5px 0;
+    }
+    .input-group {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .input-group input {
+        margin-right: 10px;
     }
 </style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
 {% block header %}
-    <h3 class="page-title">Demandes Validées</h3>
+<h3 class="page-title">Demandes Validées</h3>
 {% endblock %}
 {% block main %}
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-10">
-                {% for message in app.flashes('success') %}
-                    <div class="alert alert-success">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-                <table>
-                    <thead>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                    {{ message }}
+                </div>
+            {% endfor %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Demandeur</th>
+               
+                        <th>Date de Validation</th>
+                       
+                        <th>Commentaire</th>
+                        <th>Actions</th>
+                        <th>UID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if demandesWithUsers is empty %}
                         <tr>
-                            <th>Titre</th>
-                            <th>Date de soumission</th>
-                            <th>Heure de soumission</th>
-                            <th>Statut</th>
-                            <th>Commentaire</th>
-                            <th>Actions</th>
+                            <td colspan="7">Aucune demande validée pour l'instant</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {% if demandes is empty %}
+                    {% else %}
+                        {% for demande in demandesWithUsers %}
                             <tr>
-                                <td colspan="6">Aucune demande validée pour l'instant</td>
+                                <td>{{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}</td>
+                               
+                                <td>{{ demande.datevalidation ? demande.datevalidation|date('d/m/Y') : '' }}</td>
+                                
+                                <td>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</td>
+                                <td>
+                                    <a href="{{ path('visualiser_demande', {id: demande.id}) }}">
+                                        <i class="fas fa-search"></i>
+                                    </a>
+                                    <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </a>
+                                </td>
+                                <td>
+                                    <form action="{{ path('ajouter_uid', {id: demande.IDutilisateur.id}) }}" method="post" class="input-group">
+                                        <input type="text" name="uid" placeholder="Entrer UID">
+                                        <button type="submit">Ajouter</button>
+                                    </form>
+                                </td>
                             </tr>
-                        {% else %}
-                            {% for demande in demandes %}
-                                <tr>
-                                    <td>{{ demande.titre }}</td>
-                                    <td>{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
-                                    <td>{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
-                                    <td class="status-valide">{{ demande.statuts }}</td>
-                                    <td>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</td>
-                                    <td>
-                                        <a href="{{ path('visualiser_demande', {id: demande.id}) }}">
-                                            <i class="fas fa-search"></i>
-                                        </a>
-                                        <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}">
-                                            <i class="fas fa-file-pdf"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
         </div>
     </div>
+</div>
 {% endblock %}

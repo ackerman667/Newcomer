@@ -21,8 +21,9 @@ class UserCreationController extends AbstractController
     #[Route('/create-user', name: 'user_creation')]
     public function createUser(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
+        $email = $request->query->get('email', '');
         
-        $form = $this->createForm(UserCreationFormType::class);
+        $form = $this->createForm(UserCreationFormType::class, ['email' => $email]);
 
         $form->handleRequest($request);
 

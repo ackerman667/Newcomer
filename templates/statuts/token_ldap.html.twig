@@ -51,7 +51,7 @@
             margin-top: 20px;
             text-align: center;
         }
-        .status-en-attente {
+        .status-brouillons {
             background-color: #FFC107;
             color: white;
             padding: 5px 10px;
@@ -60,7 +60,7 @@
             min-width: 100px; 
             margin: 5px 0;
         }
-        .status-valide {
+        .status-leka {
             background-color: #28A745;
             color: white;
             padding: 5px 10px;
@@ -69,7 +69,7 @@
             min-width: 100px; 
             margin: 5px 0;
         }
-        .status-envoye {
+        .status-en-attente {
             background-color: #D3D3D3;
             color: white;
             padding: 5px 10px;
@@ -78,21 +78,36 @@
             min-width: 100px; 
             margin: 5px 0;
         }
-        .toolbar {
-            text-align: right;
-            margin-bottom: 10px;
-            color: #1E90FF;
-        }
-        .toolbar a {
-            margin-left: 10px;
-            color: #1E90FF !important;
-            text-align: right;
-        }
-        .toolbar a i {
-            color: #1E90FF !important;
-             
-        }
        
+        .icon-edit {
+             color: #1E90FF !important;
+        }
+
+        .icon-search {
+             color: #1E90FF !important;
+        }
+
+        .icon-trash {
+            color: #1E90FF !important;
+        }
+
+        .icon-thumbs-up {
+             color: #1E90FF !important;
+        }
+
+        .icon-pdf {
+             color: #1E90FF !important;
+        }
+        .status-refuse {
+        background-color: #FF0000; /* Rouge pour refusé */
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        display: inline-block;
+        min-width: 100px;
+        margin: 5px 0;
+    }
+
     </style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
@@ -108,77 +123,68 @@
                         {{ message }}
                     </div>
                 {% endfor %}
-                <div class="toolbar">
-                    {% for demande in demandes %}
-                        {% if demande.statuts == 'En attente' %}
-                            <a href="{{ path('modifier_demandesldap', {id: demande.id}) }}">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
-                                <i class="fas fa-search"></i>
-                            </a>
-                            <a href="{{ path('formulaireldap_supprimer', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">
-                                <i class="fas fa-trash-alt"></i>
-                            </a>
-                            <a href="{{ path('valider_demandesldap', {id: demande.id}) }}">
-                                <i class="fas fa-thumbs-up"></i>
-                            </a>
-                            <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}">
-                                <i class="fas fa-file-pdf"></i>
-                            </a>
-                        {% else %}
-                            {# <span title="La demande ne peut pas être modifiée car elle a déjà été traitée">
-                                <i class="fas fa-edit"></i>
-                            </span> #}
-                            <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
-                                <i class="fas fa-search"></i>
-                            </a>
-                            {# <span title="La demande ne peut pas être supprimée car elle a déjà été traitée">
-                                <i class="fas fa-trash-alt"></i>
-                            </span> #}
-                            {# <i class="fas fa-check"></i> #}
-                            <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}">
-                                <i class="fas fa-file-pdf"></i>
-                            </a>
-                        {% endif %}
-                    {% endfor %}
-                </div>
                 <table style="width:100%; border-collapse: collapse;">
                     <thead>
                         <tr style="border-bottom: 1px solid #ddd;">
-                        <th style="text-align: center; padding: 8px;">Service</th>
-                      
+                            <th style="text-align: center; padding: 8px;">Service</th>
                             <th style="text-align: center; padding: 8px;">Titre</th>
                             <th style="text-align: center; padding: 8px;">Date de soumission</th>
                             <th style="text-align: center; padding: 8px;">Heure de soumission</th>
                             <th style="text-align: center; padding: 8px;">Statut</th>
                             <th style="text-align: center; padding: 8px;">Commentaire</th>
+                            <th style="text-align: center; padding: 8px;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% if demandes is empty %}
                             <tr>
-                                <td colspan="5" style="text-align: center; padding: 8px;">Vous n'avez aucune demande pour l'instant</td>
+                                <td colspan="7" style="text-align: center; padding: 8px;">Vous n'avez aucune demande pour l'instant</td>
                             </tr>
                         {% else %}
                             {% for demande in demandes %}
                                 <tr style="border-bottom: 1px solid #ddd;">
-                                 <td style="text-align: center; padding: 8px;">{{ demande.service }}</td>
+                                    <td style="text-align: center; padding: 8px;">{{ demande.service }}</td>
                                     <td style="text-align: center; padding: 8px;">{{ demande.titre }}</td>
                                     <td style="text-align: center; padding: 8px;">{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
                                     <td style="text-align: center; padding: 8px;">{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
                                     <td class="status-cell" style="text-align: center; padding: 8px;">
-                                        <span class="{% if demande.statuts == 'En attente' %}status-en-attente{% elseif demande.statuts == 'Validé' %}status-valide{% elseif demande.statuts == 'Envoyé' %}status-envoye{% endif %}">{{ demande.statuts }}</span>
+                                        <span class="{% if demande.statuts == 'Brouillons' %}status-brouillons{% elseif demande.statuts == 'Suivi dans LEKA' %}status-leka{% elseif demande.statuts == 'En attente' %}status-en-attente{% elseif demande.statuts == 'Refusée' %}status-refuse{% endif %}">{{ demande.statuts }}</span>
                                     </td>
                                     <td style="text-align: center; padding: 8px;">
                                         <span>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</span>
                                     </td>
+                                    <td style="text-align: center; padding: 8px;">
+                                    {% if demande.statuts == 'Brouillons' %}
+                                        <a href="{{ path('modifier_demandesldap', {id: demande.id}) }}">
+                                            <i class="fas fa-edit icon-edit"></i>
+                                        </a>
+                                        <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
+                                            <i class="fas fa-search icon-search"></i>
+                                        </a>
+                                        <a href="{{ path('formulaireldap_supprimer', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">
+                                            <i class="fas fa-trash-alt icon-trash"></i>
+                                        </a>
+                                        <a href="{{ path('valider_demandesldap', {id: demande.id}) }}">
+                                            <i class="fas fa-thumbs-up icon-thumbs-up"></i>
+                                        </a>
+                                        <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}">
+                                            <i class="fas fa-file-pdf icon-pdf"></i>
+                                        </a>
+                                    {% else %}
+                                        <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
+                                            <i class="fas fa-search icon-search"></i>
+                                        </a>
+                                        <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}">
+                                            <i class="fas fa-file-pdf icon-pdf"></i>
+                                        </a>
+                                    {% endif %}
+                                </td>
+
                                 </tr>
                             {% endfor %}
                         {% endif %}
                     </tbody>
                 </table>
-               
             </div>
         </div>
     </div>

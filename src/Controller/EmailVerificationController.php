@@ -31,6 +31,10 @@ class EmailVerificationController extends AbstractController
 
             $user = $userRepository->findOneBy(['email' => $email]);
             $demande = $demandesRepository->findOneBy(['IDutilisateur' => $user]);
+            if ($this->redirection($email)) {
+                $this->addFlash('warning', 'Votre compte a été redirigé vers la page de connexion car vous avez entrer une adresse email contenant @ac-guadeloupe.fr ce qui signifie que vous avez une adresse email académique.');
+                return $this->redirectToRoute('ldap'); // Redirection vers RSA si email avec @ac-guadeloupe.fr  
+            }
 
 
             if ($user && $demande) {
@@ -76,8 +80,9 @@ class EmailVerificationController extends AbstractController
                     $this->addFlash('creation', 'Nous allons commencer la création de votre compte.');
                     // Rediriger vers le formulaire de création d'utilisateur
                     return $this->render('email_verification/redirect.html.twig', [
-                        'redirect_url' => $this->generateUrl('user_creation'),
+                        'redirect_url' => $this->generateUrl('user_creation', ['email' => $email]),
                         'monApplication' => $monApplication,
+                        'email' => $email, // Inclure l'email pour l'afficher sur la page d'avertissement si nécessaire
                     ]);
                 }
             
@@ -87,5 +92,16 @@ class EmailVerificationController extends AbstractController
             'form' => $form->createView(),
             'monApplication' => $monApplication,
         ]);
+    }
+
+
+
+
+    private function redirection(string $email): bool
+    {
+        $domain = explode('@', $email)[1];
+    
+        // Domaine qui entrainera la redirection
+        return $domain === 'ac-guadeloupe.fr';
     }
 }
