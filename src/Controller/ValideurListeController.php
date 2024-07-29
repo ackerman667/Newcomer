@@ -405,13 +405,13 @@ class ValideurListeController extends AbstractController
             if (!$ressources) {
                 $ressources = new Ressources();
             }
-            $ressources->setNom('Dossier Partagés');
+            $ressources->setNom('Ressources');
             $ressources->setDemande($demande);
             $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
             if (!empty($dossiersSelectionnes)) {
                 $ressources->setContenu(json_encode($dossiersSelectionnes));
             } else {
-                $ressources->setContenu('Pas de dossier partagés disponible pour ce Service.');
+                $ressources->setContenu('Pas de Ressources disponible pour ce Service.');
             }
 
             $entityManager->persist($demande);

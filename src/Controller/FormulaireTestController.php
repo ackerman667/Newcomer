@@ -188,7 +188,7 @@ class FormulaireTestController extends AbstractController
                 if (!$ressources) {
                     $ressources = new Ressources();
                 }
-                $ressources->setNom('Dossier Partagés');
+                $ressources->setNom('Ressources');
                 $ressources->setDemande($demande);
                 $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
                 if (!empty($dossiersSelectionnes)) {
@@ -207,7 +207,7 @@ class FormulaireTestController extends AbstractController
                 $historique->setStatutOperation('Création');
 
                 $ressources = new Ressources();
-                $ressources->setNom('Dossier Partagés');
+                $ressources->setNom('Ressources');
                 $ressources->setDemande($demande);
                 $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
                 if (!empty($dossiersSelectionnes)) {
