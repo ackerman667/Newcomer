@@ -70,14 +70,14 @@
         color: #1E90FF !important;
     }
     .col-demandeur {
-        width: 15%; 
+        width: 15%;
     }
     .filter-container {
         margin-bottom: 20px;
     }
     .service-column {
-        color: blue; 
-        font-weight: bold; 
+        color: blue;
+        font-weight: bold;
     }
 </style>
 {% endblock %}
@@ -134,7 +134,7 @@
                                 </td>
                                 <td>
                                     <form class="comment-form" method="post" action="{{ path('commenter_demande', {id: demande.id}) }}">
-                                        <textarea name="commentaire" rows="2" placeholder="Ajouter un commentaire en cas de refus ! " {% if demande.statuts == 'Suivi dans LEKA' %}disabled{% endif %}>{{ demande.commentaire ? demande.commentaire : '' }}</textarea>
+                                        <textarea id="commentaire-{{ demande.id }}" name="commentaire" rows="2" placeholder="Ajouter un commentaire en cas de refus !" {% if demande.statuts == 'Suivi dans LEKA' %}disabled{% endif %}>{{ demande.commentaire ? demande.commentaire : '' }}</textarea>
                                         <button type="submit" {% if demande.statuts is not same as('En attente') %}disabled{% endif %}>Commenter</button>
                                     </form>
                                 </td>
@@ -152,7 +152,7 @@
                                         <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}">
                                             <i class="fas fa-file-pdf"></i>
                                         </a>
-                                        <a href="{{ path('refuser_demande', {id: demande.id}) }}">
+                                        <a href="{{ path('refuser_demande', {id: demande.id}) }}" onclick="return checkComment('{{ demande.id }}')">
                                             <i class="fas fa-thumbs-down"></i>
                                         </a>
                                     {% else %}
@@ -190,5 +190,14 @@
         });
     });
 });
+
+function checkComment(demandeId) {
+    const commentaire = document.getElementById('commentaire-' + demandeId).value.trim();
+    if (commentaire === '') {
+        alert('Veuillez ajouter un commentaire avant de refuser la demande.');
+        return false;
+    }
+    return true;
+}
 </script>
 {% endblock %}
