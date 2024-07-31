@@ -443,7 +443,7 @@ class FormulaireTestController extends AbstractController
             }
         }
         return $branch;
-    }
+    }  
     
     private function transformServicesForDropdown(array $services, $niveau = 0): array
     {

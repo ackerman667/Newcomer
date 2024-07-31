@@ -97,6 +97,13 @@ class ValideurListeController extends AbstractController
             ->html('<p>Votre demande a été validée.</p>');
 
         $mailer->send($email);
+    //     $leka = (new Email())
+    //     ->from('noreply@ac-guadeloupe.fr')
+    //     ->to($demande->getIDutilisateur()->getEmail())
+    //     ->subject('Votre demande a été validée')
+    //     ->html('<p>Votre demande a été validée.</p>');
+
+    // $mailer->send($leka);
 
 
         return $this->redirectToRoute('listedemandes');
