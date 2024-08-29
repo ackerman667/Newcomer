@@ -38,7 +38,11 @@ class EmailVerificationController extends AbstractController
 
 
             if ($user && $demande) {
-                $token = $demande->getToken();
+                $uid = $user->getUid();
+                if ($uid) {
+                    return $this->redirectToRoute('ldap');
+                }
+                $token = $user->getToken();
                 $url = $this->generateUrl('statuts_token', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
             
                 $email = (new Email())
@@ -58,7 +62,7 @@ class EmailVerificationController extends AbstractController
                 ]);
             } elseif ($user && !$demande) {
                 $token = $user->getToken();
-                $url = $this->generateUrl('formulairetest_etape1', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
+                $url = $this->generateUrl('statuts_token', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
             
                 $email = (new Email())
                     ->from('noreply@ac-guadeloupe.fr')

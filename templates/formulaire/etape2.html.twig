@@ -1,4 +1,3 @@
-{# templates/formulaire/etape2.html.twig #}
 {% extends 'layout_ag.html.twig' %}
 
 {% block title %}<title>Étape 2 - {{ monApplication.Appli }}</title>{% endblock %}
@@ -20,6 +19,10 @@
         .form-group label {
             font-weight: bold;
         }
+        .form-control {
+            box-sizing: border-box;
+            width: 100%;
+        }
         .form-group-inline {
             display: flex;
             align-items: center;
@@ -27,9 +30,7 @@
         .form-group-inline > div {
             margin-right: 15px;
         }
-        .btn-group {
-           
-        }
+      
     </style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
@@ -41,7 +42,6 @@
     <div class="title_image">
         <span>Rectorat</span>
     </div>
-     
 {% endblock %}
 {% block main %}
 <div class="container">
@@ -49,20 +49,19 @@
         <div class="col-md-10">
             {{ form_start(form) }}
             
-            <!-- Autres sections -->
             <div class="form-section">
                 <div class="form-section-title">Informations Personnelles</div>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
                             {{ form_label(form.nom) }}
-                            {{ form_widget(form.nom, { 'attr': {'class': 'form-control', 'readonly': form.nom.vars.value ? 'readonly' : null} }) }}
+                            {{ form_widget(form.nom, { 'attr': {'class': 'form-control'} }) }}
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             {{ form_label(form.prenom) }}
-                            {{ form_widget(form.prenom, { 'attr': {'class': 'form-control', 'readonly': form.prenom.vars.value ? 'readonly' : null} }) }}
+                            {{ form_widget(form.prenom, { 'attr': {'class': 'form-control'} }) }}
                         </div>
                     </div>
                 </div>
@@ -80,13 +79,13 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             {{ form_label(form.fonction) }}
-                            {{ form_widget(form.fonction, { 'attr': {'class': 'form-control', 'readonly': form.fonction.vars.value ? 'readonly' : null} }) }}
+                            {{ form_widget(form.fonction, { 'attr': {'class': 'form-control'} }) }}
                         </div>
                     </div>
                 </div>
                 <div class="form-group">
                     {{ form_label(form.date_de_naissance) }}
-                    {{ form_widget(form.date_de_naissance, { 'attr': {'class': 'form-control', 'readonly': form.date_de_naissance.vars.value ? 'readonly' : null} }) }}
+                    {{ form_widget(form.date_de_naissance, { 'attr': {'class': 'form-control'} }) }}
                 </div>
                 <div class="form-group">
                     {{ form_label(form.missions) }}
@@ -129,11 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     statutField.addEventListener('change', toggleContractDates);
-
-    // Initial state setup: hide contract dates
-    contractDates.forEach(field => {
-        field.style.display = 'none';
-    });
+    toggleContractDates(); // Pour s'assurer que l'état correct est appliqué au chargement
 });
 </script>
 {% endblock %}

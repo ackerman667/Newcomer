@@ -26,7 +26,7 @@ class Demandes
     #[ORM\JoinColumn(nullable: true)]
     private ?User $IDutilisateur = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $heureSoumission = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -77,6 +77,12 @@ class Demandes
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $date_validation = null;
+
+    #[ORM\Column(type: Types::BLOB, nullable: true)]
+    private $infos_complementaires = null;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $missions = null;
 
     public function __construct()
     {
@@ -357,6 +363,30 @@ class Demandes
     public function setDateValidation(?\DateTimeInterface $date_validation): static
     {
         $this->date_validation = $date_validation;
+
+        return $this;
+    }
+
+    public function getInfosComplementaires()
+    {
+        return $this->infos_complementaires;
+    }
+
+    public function setInfosComplementaires($infos_complementaires): static
+    {
+        $this->infos_complementaires = $infos_complementaires;
+
+        return $this;
+    }
+
+    public function getMissions(): ?string
+    {
+        return $this->missions;
+    }
+
+    public function setMissions(?string $missions): static
+    {
+        $this->missions = $missions;
 
         return $this;
     }

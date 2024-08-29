@@ -23,7 +23,7 @@ class LdapController extends AbstractController
     {
         $this->security = $security;
 
-    }
+    }  
 
     #[Route('/formulaireldap/statuts', name: 'ldap')]
     public function Ldap(MonApplication $monApplication, UserRepository $userRepository, EntityManagerInterface $entityManager): Response

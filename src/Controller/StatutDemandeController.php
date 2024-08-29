@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Entity\Demandes;
+use App\Entity\User;
 use App\Entity\Ressources;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -17,14 +18,19 @@ class StatutDemandeController extends AbstractController
     #[Route('/statuts/{token}', name: 'statuts_token')]
     public function index(MonApplication $monApplication, EntityManagerInterface $entityManager, $token): Response
     {
-        $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+
+        $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+        $demandes = $entityManager->getRepository(Demandes::class)->findBy(['IDutilisateur' => $user]);
+
+        dump($demandes);
 
         // if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
         //     throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
         // }
 
-        $user = $demande->getIDutilisateur();
-        $demandes = $entityManager->getRepository(Demandes::class)->findBy(['IDutilisateur' => $user]);
+        // $user = $demande->getIDutilisateur();
+        // $demandes = $entityManager->getRepository(Demandes::class)->findBy(['IDutilisateur' => $user]);
+        
 
         return $this->render('statuts/token.html.twig', [
             'demandes' => $demandes,

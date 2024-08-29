@@ -14,11 +14,17 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
+            <!-- Message d'information -->
+            <div class="info-box">
+                <p>Cette page est destinée aux utilisateurs qui n'ont pas d'adresse email académique. Veuillez entrer votre adresse email personnelle pour procéder.</p>
+            </div>
+            
             {% for message in app.flashes('error') %}
                 <div class="alert alert-danger">
                     {{ message }}
                 </div>
             {% endfor %}
+            
             {{ form_start(form) }}
             <div class="form-group">
                 {{ form_label(form.email) }}
@@ -28,13 +34,25 @@
                 <button type="submit" class="btn btn-primary">Vérifier</button>
             </div>
             {{ form_end(form) }}
+
             <div class="text-center mt-4">
                 {# <p>Vous n'avez pas de compte ? <a href="{{ path('user_creation') }}" class="create-account-link">Cliquez ici pour créer un compte</a></p> #}
             </div>
         </div>
     </div>
 </div>
+
 <style>
+    .info-box {
+        background-color: #e7f3fe;
+        border: 1px solid #b3d4fc;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        text-align: center;
+        font-size: 16px;
+        color: #31708f;
+    }
     .form-group {
         margin-bottom: 15px;
         text-align: left; 
@@ -76,4 +94,5 @@
         margin-top: 1.5rem !important;
     }
 </style>
+
 {% endblock %}

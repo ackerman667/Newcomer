@@ -93,8 +93,8 @@ class ValideurListeController extends AbstractController
         $email = (new Email())
             ->from('noreply@ac-guadeloupe.fr')
             ->to($demande->getIDutilisateur()->getEmail())
-            ->subject('Votre demande a été validée')
-            ->html('<p>Votre demande a été validée.</p>');
+            ->subject('Votre demande a été envoyée dans LEKA')
+            ->html('<p>Votre demande a été envoyée dans LEKA.</p>');
 
         $mailer->send($email);
     //     $leka = (new Email())
@@ -270,6 +270,8 @@ class ValideurListeController extends AbstractController
             'date_debut_contrat' => $user->getDateDebut(),
             'date_fin_contrat' => $user->getDateFin(),
             'statut' => $user->getStatutPersonne(),
+            'missions' => $demande->getMissions(),
+           
         ];
 
         $form = $this->createForm(DemandeEtape1FormType::class, $data);

@@ -25,8 +25,8 @@ class DetanController extends AbstractController
             'SELECT d, u
             FROM App\Entity\Demandes d
             JOIN d.IDutilisateur u
-            WHERE d.statuts = :statuts
-            AND u.uid IS NULL'
+            WHERE d.statuts = :statuts'
+            // -- AND u.uid IS NULL'
         )->setParameter('statuts', 'Suivi dans LEKA');
 
         $demandesWithUsers = $query->getResult();
@@ -56,4 +56,9 @@ class DetanController extends AbstractController
 
         return $this->redirectToRoute('demandes_validees');
     }
+
+
+    
+
+
 }

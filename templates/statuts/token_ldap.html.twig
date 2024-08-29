@@ -46,6 +46,14 @@
             font-style: italic;
             color: #04A0DB;
             margin-bottom: 30px;
+            position: relative;
+        }
+        .btn-new-request {
+            position: absolute;
+            right: 0;
+            top: 0;
+            margin-right: 20px;
+            margin-top: -10px;
         }
         .alert {
             margin-top: 20px;
@@ -78,41 +86,38 @@
             min-width: 100px; 
             margin: 5px 0;
         }
-       
         .icon-edit {
-             color: #1E90FF !important;
+            color: #1E90FF !important;
         }
-
         .icon-search {
-             color: #1E90FF !important;
+            color: #1E90FF !important;
         }
-
         .icon-trash {
             color: #1E90FF !important;
         }
-
         .icon-thumbs-up {
-             color: #1E90FF !important;
+            color: #1E90FF !important;
         }
-
         .icon-pdf {
-             color: #1E90FF !important;
+            color: #1E90FF !important;
         }
         .status-refuse {
-        background-color: #FF0000; /* Rouge pour refusé */
-        color: white;
-        padding: 5px 10px;
-        border-radius: 20px;
-        display: inline-block;
-        min-width: 100px;
-        margin: 5px 0;
-    }
-
+            background-color: #FF0000;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            min-width: 100px;
+            margin: 5px 0;
+        }
     </style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
 {% block header %}
-    <h3 class="page-title">Historique de vos demandes</h3>
+    <h3 class="page-title">
+        Historique de vos demandes
+        <a href="{{ path('nouvelle_demande') }}" class="btn btn-primary btn-new-request">Nouvelle Demande</a>
+    </h3>
 {% endblock %}
 {% block main %}
     <div class="container">
@@ -179,7 +184,6 @@
                                         </a>
                                     {% endif %}
                                 </td>
-
                                 </tr>
                             {% endfor %}
                         {% endif %}

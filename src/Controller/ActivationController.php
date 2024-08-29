@@ -24,7 +24,7 @@ class ActivationController extends AbstractController
             $entityManager->persist($user);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Votre compte a été activé avec succès.');
+            // $this->addFlash('success', 'Votre compte a été activé avec succès.');
 
             return $this->render('activation/success_activation.html.twig', [
                 'token' => $token,

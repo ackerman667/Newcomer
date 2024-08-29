@@ -79,34 +79,34 @@
             margin: 5px 0;
         }
         .icon-edit {
-             color: #1E90FF !important;
+            color: #1E90FF !important;
         }
-
         .icon-search {
-             color: #1E90FF !important;
+            color: #1E90FF !important;
         }
-
         .icon-trash {
             color: #1E90FF !important;
         }
-
         .icon-thumbs-up {
-             color: #1E90FF !important;
+            color: #1E90FF !important;
         }
-
         .icon-pdf {
-             color: #1E90FF !important;
+            color: #1E90FF !important;
         }
         .status-refuse {
-        background-color: #FF0000; /* Rouge pour refusé */
-        color: white;
-        padding: 5px 10px;
-        border-radius: 20px;
-        display: inline-block;
-        min-width: 100px;
-        margin: 5px 0;
-    }
-        
+            background-color: #FF0000;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            min-width: 100px;
+            margin: 5px 0;
+        }
+        .new-request-btn {
+            display: block;
+            margin: 20px auto;
+            text-align: center;
+        }
     </style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
@@ -122,6 +122,12 @@
                         {{ message }}
                     </div>
                 {% endfor %}
+
+                {# Bouton "Nouvelle Demande" placé en dehors de la boucle #}
+                <div class="new-request-btn">
+                    <a href="{{ path('nouvelle_demande', { token: user.token }) }}" class="btn btn-primary">Nouvelle Demande</a>
+                </div>
+
                 <table style="width:100%; border-collapse: collapse;">
                     <thead>
                         <tr style="border-bottom: 1px solid #ddd;">
@@ -149,7 +155,7 @@
                                     </td>
                                     <td style="text-align: center; padding: 8px;">
                                         <span>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</span>
-                                <td style="text-align: center; padding: 8px;">
+                                    <td style="text-align: center; padding: 8px;">
                                     {% if demande.statuts == 'Brouillons' %}
                                         <a href="{{ path('modifier_demandes', {id: demande.id}) }}">
                                             <i class="fas fa-edit icon-edit"></i>
@@ -175,7 +181,6 @@
                                         </a>
                                     {% endif %}
                                 </td>
-
                                 </tr>
                             {% endfor %}
                         {% endif %}
@@ -184,4 +189,16 @@
             </div>
         </div>
     </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        setTimeout(function () {
+            let alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function (alert) {
+                alert.classList.remove('show');
+                alert.classList.add('fade');
+            });
+        }, 5000); 
+    });
+    </script>
 {% endblock %}

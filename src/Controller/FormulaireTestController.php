@@ -35,8 +35,16 @@ class FormulaireTestController extends AbstractController
     #[Route('/formulairetest/etape1/{token}', name: 'formulairetest_etape1')]
     public function etape1(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, $token): Response
     {
-        // Retrieve user based on token
-        $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+    
+        $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+        if($demande) {
+            $id_user = $demande->getIDutilisateur();
+        $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
+        } else {
+            $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+
+        }
+        
 
         if (!$user) {
             throw $this->createNotFoundException('Utilisateur non trouvé.');
@@ -65,7 +73,15 @@ class FormulaireTestController extends AbstractController
     #[Route('/formulairetest/etape2/{token}', name: 'formulairetest_etape2')]
     public function etape2(MonApplication $monApplication, Request $request, SessionInterface $session, HttpClientInterface $httpClient, EntityManagerInterface $entityManager, $token): Response
     {
-        $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+       
+        $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+        if($demande) {
+            $id_user = $demande->getIDutilisateur();
+        $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
+        } else {
+            $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+
+        }
 
         if (!$user) {
             throw $this->createNotFoundException('Utilisateur non trouvé.');
@@ -153,56 +169,92 @@ class FormulaireTestController extends AbstractController
     }
 
     #[Route('/formulairetest/etape3/{token}', name: 'formulairetest_etape3')]
-    public function etape3(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, MailerInterface $mailer, $token): Response
-    {
-        $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+public function etape3(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, MailerInterface $mailer, $token): Response
+{
+    $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+        if($demande) {
+            $id_user = $demande->getIDutilisateur();
+        $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
+        } else {
+            $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
 
-        if (!$user) {
-            throw $this->createNotFoundException('Utilisateur non trouvé.');
         }
+    dump($user);
+    $testtoken = $user->getToken();
 
-        $data = $session->get('form_data', []);
-        $dossiersPartages = $session->get('dossiers_partages', []);
-        $nomServiceSelectionne = $session->get('nom_service_selectionne', '');
-        $nomValideur = $session->get('nom_valideur', '');
 
-        $form = $this->createForm(DemandeEtape3FormType::class, $data, [
-            'dossiers_partages' => $dossiersPartages,
-            'data_class' => null, 
-        ]);
-        $form->handleRequest($request);
+    if (!$user) {
+        throw $this->createNotFoundException('Utilisateur non trouvé.');
+    }
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
-            $historique = new HistoriqueDemande();
+    $data = $session->get('form_data', []);
+    $dossiersPartages = $session->get('dossiers_partages', []);
+    $nomServiceSelectionne = $session->get('nom_service_selectionne', '');
+    $nomValideur = $session->get('nom_valideur', '');
 
-            $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+    $form = $this->createForm(DemandeEtape3FormType::class, $data, [
+        'dossiers_partages' => $dossiersPartages,
+        'data_class' => null, 
+    ]);
+    $form->handleRequest($request);
 
-            if ($demande) {
-                $historique->setDemande($demande);
-                $historique->setStatut($demande->getStatuts());
-                $historique->setDate(new \DateTime('now', $this->timezone));
-                $historique->setStatutOperation('Modification');
+    if ($form->isSubmitted() && $form->isValid()) {
+        $data = $form->getData();
+        $historique = new HistoriqueDemande();
 
-                $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
-                if (!$ressources) {
-                    $ressources = new Ressources();
-                }
-                $ressources->setNom('Ressources');
-                $ressources->setDemande($demande);
-                $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
-                if (!empty($dossiersSelectionnes)) {
-                    $ressources->setContenu(json_encode($dossiersSelectionnes));
-                } else {
-                    $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
-                }
+        // Vérifier si une nouvelle demande doit être créée indépendamment des demandes existantes
+        $nouvelleDemande = $session->get('nouvelle_demande', false);
+        
+        // Créer une nouvelle demande si le flag est défini ou aucune demande existante n'est trouvée
+        if ($nouvelleDemande || !$entityManager->getRepository(Demandes::class)->findOneBy(['IDutilisateur' => $user])) {
+            dump(" Cas Nouvelle demande Ou  Demande Inexistante");
+            $demande = new Demandes();
+            $token = bin2hex(random_bytes(32)); // Générer un nouveau token pour la nouvelle demande
+            $demande->setToken($token);
+            $historique->setDemande($demande);
+            $historique->setStatut('Création');
+            $historique->setDate(new \DateTime('now', $this->timezone));
+            $historique->setStatutOperation('Création');
+
+            $ressources = new Ressources();
+            $ressources->setNom('Ressources');
+            $ressources->setDemande($demande);
+            $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
+            if (!empty($dossiersSelectionnes)) {
+                $ressources->setContenu(json_encode($dossiersSelectionnes));
             } else {
+                $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
+            }
+        } else {
+            // Si le flag nouvelle demande n'est pas défini, continuez avec la demande existante
+            $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+            $historique->setDemande($demande);
+            $historique->setStatut('Modification');
+            $historique->setDate(new \DateTime('now', $this->timezone));
+            $historique->setStatutOperation('Modification');
+            $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
+            if (!$ressources) {
+                $ressources = new Ressources();
+            }
+            $ressources->setNom('Ressources');
+            $ressources->setDemande($demande);
+            $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
+            if (!empty($dossiersSelectionnes)) {
+                $ressources->setContenu(json_encode($dossiersSelectionnes));
+            } else {
+                $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
+            }
+
+
+            dump("cas Demande existante");
+            if (!$demande) {
+                dump("test");
+                // Si aucune demande existante trouvée, toujours créer une nouvelle demande par sécurité
                 $demande = new Demandes();
+                $token = bin2hex(random_bytes(32)); // Générer un nouveau token pour la nouvelle demande
                 $demande->setToken($token);
-                // $expiration = new \DateTimeImmutable('+24 hours');
-                // $demande->setTokenExpiration($expiration);
                 $historique->setDemande($demande);
-                $historique->setStatut('En attente');
+                $historique->setStatut('Création');
                 $historique->setDate(new \DateTime('now', $this->timezone));
                 $historique->setStatutOperation('Création');
 
@@ -216,102 +268,179 @@ class FormulaireTestController extends AbstractController
                     $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
                 }
             }
-
-            $choix = $data['replace_someone'];
-            $statut_utilisateur = $data['statut'];
-            $nom = $data['nom'];
-            $prenom = $data['prenom'];
-
-            if ($choix === 'oui') {
-                $demande->setRemplacant(true);
-                $demande->setNomRemplacant($data['remplacement_nom']);
-                $demande->setPrenomRemplacant($data['remplacement_prenom']);
-                $demande->setTelephoneRemplacant($data['telephone_avant_service']);
-                $depart = $data['parti_rectorat'];
-                if ($depart == true) {
-                    $demande->setDepart(true);
-                    $demande->setAffectationRemplacant('Aucune');
-                } else {
-                    $demande->setDepart(false);
-                    $demande->setAffectationRemplacant($data['nouvelle_affectation_service']);
-                }
-            } else {
-                $demande->setRemplacant(false);
-                $demande->setNomRemplacant('Pas de remplacant.');
-                $demande->setPrenomRemplacant('Pas de remplacant.');
-                $demande->setTelephoneRemplacant('Pas de remplacant.');
-                $demande->setAffectationRemplacant('Pas de remplacant.');
-                $demande->setDepart(false);
-            }
-
-            if ($statut_utilisateur !== 'Titulaire') {
-                $date_debut_contrat = $data['date_debut_contrat'];
-                $date_fin_contrat = $data['date_fin_contrat'];
-                $statut_utilisateur = $data['statut'];
-                $user->setDateDebut($date_debut_contrat);
-                $user->setDateFin($date_fin_contrat);
-                $user->setStatutPersonne($statut_utilisateur);
-            } else {
-                $user->setStatutPersonne($statut_utilisateur);
-                $user->setDateDebut(null);
-                $user->setDateFin(null);
-            }
-
-            $demande->setIDutilisateur($user);
-            // $demande->setDate(new \DateTime());
-            // $demande->setHeureSoumission(new \DateTime());
-            $demande->setDate(new \DateTime('now', $this->timezone));
-            $demande->setHeureSoumission(new \DateTime('now', $this->timezone));
-            $demande->setTitre('Demande d\'accès à un poste informatique');
-            $demande->setStatuts('Brouillons');
-            $demande->setUidValideur($nomValideur);
-            $demande->setService($nomServiceSelectionne);
-
-            $entityManager->persist($user);
-            $entityManager->persist($demande);
-            $entityManager->persist($historique);
-            $entityManager->persist($ressources);
-            $entityManager->flush();
-
-            $url = $this->generateUrl('statuts_token', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
-            $session->clear();
-
-            $email = (new Email())
-                ->from('noreply@ac-guadeloupe.fr')
-                ->to($user->getEmail())
-                ->subject('Votre lien de connexion')
-                ->cc('Nicolas.Barbeu@ac-guadeloupe.fr')
-                ->text('Voici votre lien de connexion :')
-                ->html('
-                <p>Bonjour ' . $nom . ' ' . $prenom . ',</p>
-                <p>Nous avons bien reçu votre demande d\'accès à un poste de travail informatique.</p>
-                <p>Pour accéder à votre compte, veuillez cliquer sur le lien ci-dessous :</p>
-                <p><a href="' . $url . '">Cliquez ici pour vous connecter</a></p>
-                <p>Ce lien est valable pour une durée de 24 heures. Si vous n\'avez pas demandé cet accès, veuillez ignorer cet e-mail.</p>
-                <p>Bien cordialement,</p>
-                <p><strong>Votre équipe informatique</strong></p>
-            ');
-            $this->addFlash('success', 'Vous êtes redirigé. Vous pouvez accéder à cette page n\'importe quand depuis le lien dans votre boîte mail.');
-            $mailer->send($email);
-
-            return $this->redirectToRoute('statuts_token', ['token' => $token]);
         }
 
-        return $this->render('formulaire/etape3.html.twig', [
-            'form' => $form->createView(),
-            'monApplication' => $monApplication,
-            'dossiersPartages' => $dossiersPartages,
-            'current_step' => 3,
-            'total_steps' => 3,
-            'nomServiceSelectionne' => $nomServiceSelectionne,
-            'token' => $token
-        ]);
+        // Logique partagée pour les deux cas (nouvelle ou modification)
+        $choix = $data['replace_someone'];
+        $statut_utilisateur = $data['statut'];
+        $nom = $data['nom'];
+        $prenom = $data['prenom'];
+        $fonction = $data['fonction'];
+        $missions = $data['missions'];
+        $datedenaissance = $data['date_de_naissance'];
+        $user->setNom($nom);
+        $user->setPrenom($prenom);
+        $user->setFonction($fonction);
+        $demande->setMissions($missions);
+        $user->setFonction($fonction);
+        $user->setDateDeNaissance($datedenaissance);
+       
+        if ($choix === 'oui') {
+            $demande->setRemplacant(true);
+            $demande->setNomRemplacant($data['remplacement_nom']);
+            $demande->setPrenomRemplacant($data['remplacement_prenom']);
+            $demande->setTelephoneRemplacant($data['telephone_avant_service']);
+            $depart = $data['parti_rectorat'];
+            if ($depart == true) {
+                $demande->setDepart(true);
+                $demande->setAffectationRemplacant('Aucune');
+            } else {
+                $demande->setDepart(false);
+                $demande->setAffectationRemplacant($data['nouvelle_affectation_service']);
+            }
+        } else {
+            $demande->setRemplacant(false);
+            $demande->setNomRemplacant('Pas de remplacant.');
+            $demande->setPrenomRemplacant('Pas de remplacant.');
+            $demande->setTelephoneRemplacant('Pas de remplacant.');
+            $demande->setAffectationRemplacant('Pas de remplacant.');
+            $demande->setDepart(false);
+        }
+
+        if ($statut_utilisateur !== 'Titulaire') {
+            $date_debut_contrat = $data['date_debut_contrat'];
+            $date_fin_contrat = $data['date_fin_contrat'];
+            $user->setDateDebut($date_debut_contrat);
+            $user->setDateFin($date_fin_contrat);
+            $user->setStatutPersonne($statut_utilisateur);
+        } else {
+            $user->setStatutPersonne($statut_utilisateur);
+            $user->setDateDebut(null);
+            $user->setDateFin(null);
+        }
+
+        $demande->setIDutilisateur($user);
+        $demande->setDate(new \DateTime('now', $this->timezone));
+        $demande->setHeureSoumission(new \DateTime('now', $this->timezone));
+        $demande->setTitre('Demande d\'accès à un poste informatique');
+        $demande->setStatuts('Brouillons');
+        $demande->setUidValideur($nomValideur);
+        $demande->setService($nomServiceSelectionne);
+
+        $entityManager->persist($user);
+        $entityManager->persist($demande);
+        $entityManager->persist($historique);
+         $entityManager->persist($ressources);
+        $entityManager->flush();
+
+        // Réinitialiser le flag de nouvelle demande
+        $session->remove('nouvelle_demande');
+
+        $url = $this->generateUrl('statuts_token', ['token' => $testtoken], UrlGeneratorInterface::ABSOLUTE_URL);
+        $session->clear();
+
+        $email = (new Email())
+            ->from('noreply@ac-guadeloupe.fr')
+            ->to($user->getEmail())
+            ->subject('Votre lien de connexion')
+            ->cc('Nicolas.Barbeu@ac-guadeloupe.fr')
+            ->text('Voici votre lien de connexion :')
+            ->html('
+            <p>Bonjour ' . $nom . ' ' . $prenom . ',</p>
+            <p>Nous avons bien reçu votre demande d\'accès à un poste de travail informatique.</p>
+            <p>Pour accéder à votre compte, veuillez cliquer sur le lien ci-dessous :</p>
+            <p><a href="' . $url . '">Cliquez ici pour vous connecter</a></p>
+            <p>Ce lien est valable pour une durée de 24 heures. Si vous n\'avez pas demandé cet accès, veuillez ignorer cet e-mail.</p>
+            <p>Bien cordialement,</p>
+            <p><strong>Votre équipe informatique</strong></p>
+        ');
+        $this->addFlash('success', 'Votre formulaire a été soumis. Pensez à le valider si vous n\'avez plus de modifications à y apporter.');
+        $mailer->send($email);
+
+        return $this->redirectToRoute('statuts_token', ['token' => $testtoken]);
     }
+
+    return $this->render('formulaire/etape3.html.twig', [
+        'form' => $form->createView(),
+        'monApplication' => $monApplication,
+        'dossiersPartages' => $dossiersPartages,
+        'current_step' => 3,
+        'total_steps' => 3,
+        'nomServiceSelectionne' => $nomServiceSelectionne,
+        'token' => $token
+    ]);
+}
+
+
+    #[Route('/formulairetest/nouvelle_demande/{token}', name: 'nouvelle_demande')]
+    public function nouvelleDemande(SessionInterface $session, $token): Response
+    {
+        // Réinitialiser les données de la session pour démarrer une nouvelle demande
+        $session->remove('form_data');
+        $session->remove('demande_id');
+        $session->set('nouvelle_demande', true); // Indiquer explicitement qu'une nouvelle demande doit être créée
+    
+        // Rediriger vers la première étape du formulaire pour une nouvelle demande
+        return $this->redirectToRoute('formulairetest_etape1', ['token' => $token]);
+    }
+    
+
+    
+    // #[Route('/formulairetest/nouvelle-demande', name: 'formulairetest_nouvelle_demande')]
+    // public function nouvelleDemande(MonApplication $monApplication, EntityManagerInterface $entityManager, SessionInterface $session): Response
+    // {
+    //     // Récupérer l'utilisateur par son token actuel
+    //     $token = $session->get('user_token');
+    //     $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+    
+    //     if (!$user) {
+    //         throw $this->createNotFoundException('Utilisateur non trouvé.');
+    //     }
+    
+    //     // Vérifier s'il y a une demande existante pour cet utilisateur
+    //     $existingDemande = $entityManager->getRepository(Demandes::class)->findOneBy(['IDutilisateur' => $user]);
+    
+    //     if ($existingDemande) {
+    //         // Cloner la demande existante
+    //         $newDemande = clone $existingDemande;
+    //         $newToken = bin2hex(random_bytes(16)); // Générer un nouveau token unique pour cette demande
+    //         $newDemande->setToken($newToken);
+    
+    //         // Sauvegarder la nouvelle demande
+    //         $entityManager->persist($newDemande);
+    //         $entityManager->flush();
+    
+    //         // Rediriger l'utilisateur vers l'étape 1 avec le nouveau token
+    //         return $this->redirectToRoute('formulairetest_etape1', ['token' => $newToken]);
+    //     } else {
+    //         // Créer une nouvelle demande vierge
+    //         $newToken = bin2hex(random_bytes(16));
+    //         $demande = new Demandes();
+    //         $demande->setToken($newToken);
+    //         $demande->setIDutilisateur($user);
+    
+    //         // Sauvegarder la nouvelle demande
+    //         $entityManager->persist($demande);
+    //         $entityManager->flush();
+    
+    //         // Rediriger l'utilisateur vers l'étape 1 avec le nouveau token
+    //         return $this->redirectToRoute('formulairetest_etape1', ['token' => $newToken]);
+    //     }
+    // }
+    
+    
+
 
     #[Route('/formulairetest/supprimer/{id}', name: 'formulairetest_supprimer')]
     public function supprimerDemande(Request $request, EntityManagerInterface $entityManager, $id): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
+        //   $x = $demande.getIDUtilisateur();
+        $id_user = $demande->getIDutilisateur();
+        $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
+        $token = $user->getToken();
+
+
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
         }
@@ -329,7 +458,7 @@ class FormulaireTestController extends AbstractController
         $entityManager->remove($demande);
         $entityManager->flush();
 
-        return $this->redirectToRoute('home'); 
+        return $this->redirectToRoute('statuts_token' , ['token' => $token]); 
     }
 
     #[Route('/formulairetest/modifier/{id}', name: 'modifier_demandes')]
@@ -359,7 +488,8 @@ class FormulaireTestController extends AbstractController
             'date_debut_contrat' => $user->getDateDebut(),
             'date_fin_contrat' => $user->getDateFin(),
             'statut' => $user->getStatutPersonne(),
-            'fonction' => $user->getFonction(),
+            'missions' => $demande->getMissions(),
+            
         ];
 
         $session->set('form_data', $data);
@@ -403,6 +533,10 @@ class FormulaireTestController extends AbstractController
     public function validerDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
+        $id_user = $demande->getIDutilisateur();
+        $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
+        $token= $user->getToken();
+        
 
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
@@ -418,8 +552,7 @@ class FormulaireTestController extends AbstractController
 
                 $entityManager->persist($historique);
         $entityManager->flush();
-        $token = $demande->getToken();
-    
+       
 
         return $this->redirectToRoute('statuts_token', ['token' => $token]);
     }

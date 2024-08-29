@@ -2,6 +2,10 @@
 {% block title %}<title>Demandes Validées - {{ monApplication.Appli }}</title>{% endblock %}
 {% block head_gene %}
 <style>
+    .page-title {
+        text-align: center;
+        margin: 20px 0;
+    }
     .table-container {
         margin: 20px auto;
         width: 90%;
@@ -18,7 +22,7 @@
     th {
         background-color: #f8f8f8;
     }
-    .status-valide {
+    .status-leka {
         background-color: #28A745;
         color: white;
         padding: 5px 10px;
@@ -27,14 +31,61 @@
         min-width: 100px;
         margin: 5px 0;
     }
-    .input-group {
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    .status-en-attente {
+        background-color: #FFC107;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        display: inline-block;
+        min-width: 100px;
+        margin: 5px 0;
     }
-    .input-group input {
-        margin-right: 10px;
+    .status-refuse {
+        background-color: #FF0000; 
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        display: inline-block;
+        min-width: 100px;
+        margin: 5px 0;
     }
+    .comment-form textarea {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+    .comment-form textarea[disabled],
+    .comment-form button[disabled] {
+        background-color: #f1f1f1;
+        cursor: not-allowed;
+    }
+    .toolbar {
+        text-align: right;
+        color: #1E90FF;
+    }
+    .toolbar a {
+        margin-left: 10px;
+        color: #1E90FF !important;
+    }
+    .toolbar a i {
+        color: #1E90FF !important;
+    }
+    .col-demandeur {
+        width: 15%;
+    }
+    .filter-container {
+        margin-bottom: 20px;
+    }
+    .service-column {
+        color: blue;
+        font-weight: bold;
+    }
+    .input-uid {
+        width: 80px; 
+    }
+    .text-danger {
+    color: red;
+}
+
 </style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
@@ -42,51 +93,60 @@
 <h3 class="page-title">Demandes Validées</h3>
 {% endblock %}
 {% block main %}
-<div class="container">
+<div class="container table-container">
     <div class="row justify-content-center">
-        <div class="col-md-10">
+        <div class="col-md-12">
             {% for message in app.flashes('success') %}
                 <div class="alert alert-success">
                     {{ message }}
                 </div>
             {% endfor %}
+            <div class="filter-container">
+                <label for="filter-select">Filtrer par UID:</label>
+                <select id="filter-select" class="form-select">
+                    <option value="all">Tout</option>
+                    <option value="no-uid">Pas d'UID</option>
+                    <option value="has-uid">Modifier UID</option>
+                </select>
+            </div>
             <table>
                 <thead>
                     <tr>
-                        <th>Demandeur</th>
-               
+                        <th> ID Demande </th>
+                        <th class="col-demandeur">Demandeur</th>
+                        <th> Mail Utilisateur </th>
                         <th>Date de Validation</th>
-                       
                         <th>Commentaire</th>
-                        <th>Actions</th>
                         <th>UID</th>
+                        <th>Entrer UID</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% if demandesWithUsers is empty %}
                         <tr>
-                            <td colspan="7">Aucune demande validée pour l'instant</td>
+                            <td colspan="7">Vous n'avez aucune demande pour l'instant</td>
                         </tr>
                     {% else %}
                         {% for demande in demandesWithUsers %}
-                            <tr>
+                        
+                            <tr data-status="{{ demande.statuts }}" data-uid="{{ demande.IDutilisateur.uid }}">
+                                <td>{{ demande.id }} </td>
                                 <td>{{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}</td>
-                               
+                                <td>{{ demande.IDutilisateur.email }} </td>
                                 <td>{{ demande.datevalidation ? demande.datevalidation|date('d/m/Y') : '' }}</td>
-                                
                                 <td>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</td>
                                 <td>
-                                    <a href="{{ path('visualiser_demande', {id: demande.id}) }}">
-                                        <i class="fas fa-search"></i>
-                                    </a>
-                                    <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}">
-                                        <i class="fas fa-file-pdf"></i>
-                                    </a>
+                                    {% if not demande.IDutilisateur.uid %}
+                                        <span class="text-danger">Pas d'UID</span>
+                                    {% else %}
+                                        {{ demande.IDutilisateur.uid }}
+                                    {% endif %}
                                 </td>
+
                                 <td>
                                     <form action="{{ path('ajouter_uid', {id: demande.IDutilisateur.id}) }}" method="post" class="input-group">
-                                        <input type="text" name="uid" placeholder="Entrer UID">
-                                        <button type="submit">Ajouter</button>
+                                        <input type="text" name="uid" placeholder="Entrer UID" class="form-control input-uid">
+                                        <button type="submit" class="btn btn-primary">Ajouter</button>
                                     </form>
                                 </td>
                             </tr>
@@ -96,5 +156,42 @@
             </table>
         </div>
     </div>
+    
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterSelect = document.getElementById('filter-select');
+        const rows = document.querySelectorAll('tbody tr');
+
+        filterSelect.addEventListener('change', function() {
+            const filterValue = filterSelect.value;
+            rows.forEach(row => {
+                const uid = row.getAttribute('data-uid');
+                
+                if (filterValue === 'all' && row.getAttribute('data-status') === 'Suivi dans LEKA') {
+                    row.style.display = '';
+                } else if (filterValue === 'no-uid' && (uid === '' || uid === 'null' || uid === null)) {
+                    row.style.display = '';
+                } else if (filterValue === 'has-uid' && uid !== '' && uid !== 'null' && uid !== null) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
+      
+   
+        setTimeout(function () {
+            let alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function (alert) {
+                alert.classList.remove('show');
+                alert.classList.add('fade');
+            });
+        }, 5000); 
+    
+
+
+</script>
 {% endblock %}
