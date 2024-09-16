@@ -4,7 +4,12 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Entity\Demandes;
+use App\Entity\HistoriqueDemande;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use App\Entity\User;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use App\Entity\Ressources;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -15,6 +20,14 @@ use Dompdf\Options;
 
 class StatutDemandeController extends AbstractController
 {
+
+    private $timezone;
+
+    public function __construct()
+    {
+        
+        $this->timezone = new \DateTimeZone('America/Guadeloupe'); 
+    }
     #[Route('/statuts/{token}', name: 'statuts_token')]
     public function index(MonApplication $monApplication, EntityManagerInterface $entityManager, $token): Response
     {
@@ -23,13 +36,6 @@ class StatutDemandeController extends AbstractController
         $demandes = $entityManager->getRepository(Demandes::class)->findBy(['IDutilisateur' => $user]);
 
         dump($demandes);
-
-        // if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
-        //     throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
-        // }
-
-        // $user = $demande->getIDutilisateur();
-        // $demandes = $entityManager->getRepository(Demandes::class)->findBy(['IDutilisateur' => $user]);
         
 
         return $this->render('statuts/token.html.twig', [
@@ -100,6 +106,114 @@ class StatutDemandeController extends AbstractController
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="demande.pdf"',
         ]);
+    }
+
+    #[Route('/formulairetest/nouvelle_demande/{token}', name: 'nouvelle_demande')]
+    public function nouvelleDemande(SessionInterface $session, $token): Response
+    {
+        // Réinitialiser les données de la session pour démarrer une nouvelle demande
+        $session->remove('form_data');
+        $session->remove('demande_id');
+        $session->set('nouvelle_demande', true); // Indiquer explicitement qu'une nouvelle demande doit être créée
+    
+        // Rediriger vers la première étape du formulaire pour une nouvelle demande
+        return $this->redirectToRoute('formulairetest_etape1', ['token' => $token]);
+    }
+    
+
+    #[Route('/formulairetest/supprimer/{id}', name: 'formulairetest_supprimer')]
+    public function supprimerDemande(Request $request, EntityManagerInterface $entityManager, $id): Response
+    {
+        $demande = $entityManager->getRepository(Demandes::class)->find($id);
+        //   $x = $demande.getIDUtilisateur();
+        $id_user = $demande->getIDutilisateur();
+        $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
+        $token = $user->getToken();
+
+
+        if (!$demande) {
+            throw $this->createNotFoundException('Demande non trouvée.');
+        }
+
+        $historiques = $entityManager->getRepository(HistoriqueDemande::class)->findBy(['demande' => $demande]);
+        foreach ($historiques as $historique) {
+            $entityManager->remove($historique);
+        }
+
+        $ressources = $entityManager->getRepository(Ressources::class)->findBy(['demande' => $demande]);
+        foreach ($ressources as $ressource) {
+            $entityManager->remove($ressource);
+        }
+
+        $entityManager->remove($demande);
+        $entityManager->flush();
+
+        return $this->redirectToRoute('statuts_token' , ['token' => $token]); 
+    }
+
+    #[Route('/formulairetest/modifier/{id}', name: 'modifier_demandes')]
+    public function modifierDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
+    {
+        $demande = $entityManager->getRepository(Demandes::class)->find($id);
+
+        if (!$demande) {
+            throw $this->createNotFoundException('Demande non trouvée.');
+        }
+
+        $user = $demande->getIDutilisateur();
+        $token = $demande->getToken();
+
+        $data = [
+            'nom' => $user->getNom(),
+            'prenom' => $user->getPrenom(),
+            'email' => $user->getEmail(),
+            'date_de_naissance' => $user->getDateDeNaissance(),
+            'fonction' => $user->getFonction(),
+            'replace_someone' => $demande->isRemplacant() ? 'oui' : 'non',
+            'remplacement_nom' => $demande->getNomRemplacant(),
+            'remplacement_prenom' => $demande->getPrenomRemplacant(),
+            'telephone_avant_service' => $demande->getTelephoneRemplacant(),
+            'parti_rectorat' => $demande->isDepart(),
+            'nouvelle_affectation_service' => $demande->getAffectationRemplacant(),
+            'date_debut_contrat' => $user->getDateDebut(),
+            'date_fin_contrat' => $user->getDateFin(),
+            'statut' => $user->getStatutPersonne(),
+            'missions' => $demande->getMissions(),
+            
+        ];
+
+        $session->set('form_data', $data);
+        $session->set('demande_id', $id);
+
+        return $this->redirectToRoute('formulairetest_etape1', ['token' => $token]);
+    }
+
+    #[Route('/formulairetest/valider/{id}', name: 'valider_demandes')]
+    public function validerDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
+    {
+        $demande = $entityManager->getRepository(Demandes::class)->find($id);
+        $id_user = $demande->getIDutilisateur();
+        $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
+        $token= $user->getToken();
+        
+
+        if (!$demande) {
+            throw $this->createNotFoundException('Demande non trouvée.');
+        }
+        $demande->setStatuts('En attente');
+        $entityManager->persist($demande);
+        $historique = new HistoriqueDemande();
+        $historique->setDemande($demande);
+                $historique->setStatut('Envoyée');
+                
+                $historique->setDate(new \DateTime('now', $this->timezone));
+                $historique->setStatutOperation('Envoie de la demande');
+
+                $entityManager->persist($historique);
+        $entityManager->flush();
+       
+
+        return $this->redirectToRoute('statuts_token', ['token' => $token]);
     }
 
 

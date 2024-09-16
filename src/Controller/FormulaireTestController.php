@@ -112,6 +112,8 @@ class FormulaireTestController extends AbstractController
 
         $services = $response->toArray();
 
+        dump($services);
+
        
 
         // Organiser les services en une structure arborescente
@@ -191,6 +193,8 @@ public function etape3(MonApplication $monApplication, Request $request, Session
 
     $data = $session->get('form_data', []);
     $dossiersPartages = $session->get('dossiers_partages', []);
+  
+
     $nomServiceSelectionne = $session->get('nom_service_selectionne', '');
     $nomValideur = $session->get('nom_valideur', '');
 
@@ -204,10 +208,9 @@ public function etape3(MonApplication $monApplication, Request $request, Session
         $data = $form->getData();
         $historique = new HistoriqueDemande();
 
-        // Vérifier si une nouvelle demande doit être créée indépendamment des demandes existantes
+
         $nouvelleDemande = $session->get('nouvelle_demande', false);
-        
-        // Créer une nouvelle demande si le flag est défini ou aucune demande existante n'est trouvée
+
         if ($nouvelleDemande || !$entityManager->getRepository(Demandes::class)->findOneBy(['IDutilisateur' => $user])) {
             dump(" Cas Nouvelle demande Ou  Demande Inexistante");
             $demande = new Demandes();
@@ -228,7 +231,7 @@ public function etape3(MonApplication $monApplication, Request $request, Session
                 $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
             }
         } else {
-            // Si le flag nouvelle demande n'est pas défini, continuez avec la demande existante
+   
             $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
             $historique->setDemande($demande);
             $historique->setStatut('Modification');
@@ -372,198 +375,6 @@ public function etape3(MonApplication $monApplication, Request $request, Session
         'token' => $token
     ]);
 }
-
-
-    #[Route('/formulairetest/nouvelle_demande/{token}', name: 'nouvelle_demande')]
-    public function nouvelleDemande(SessionInterface $session, $token): Response
-    {
-        // Réinitialiser les données de la session pour démarrer une nouvelle demande
-        $session->remove('form_data');
-        $session->remove('demande_id');
-        $session->set('nouvelle_demande', true); // Indiquer explicitement qu'une nouvelle demande doit être créée
-    
-        // Rediriger vers la première étape du formulaire pour une nouvelle demande
-        return $this->redirectToRoute('formulairetest_etape1', ['token' => $token]);
-    }
-    
-
-    
-    // #[Route('/formulairetest/nouvelle-demande', name: 'formulairetest_nouvelle_demande')]
-    // public function nouvelleDemande(MonApplication $monApplication, EntityManagerInterface $entityManager, SessionInterface $session): Response
-    // {
-    //     // Récupérer l'utilisateur par son token actuel
-    //     $token = $session->get('user_token');
-    //     $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
-    
-    //     if (!$user) {
-    //         throw $this->createNotFoundException('Utilisateur non trouvé.');
-    //     }
-    
-    //     // Vérifier s'il y a une demande existante pour cet utilisateur
-    //     $existingDemande = $entityManager->getRepository(Demandes::class)->findOneBy(['IDutilisateur' => $user]);
-    
-    //     if ($existingDemande) {
-    //         // Cloner la demande existante
-    //         $newDemande = clone $existingDemande;
-    //         $newToken = bin2hex(random_bytes(16)); // Générer un nouveau token unique pour cette demande
-    //         $newDemande->setToken($newToken);
-    
-    //         // Sauvegarder la nouvelle demande
-    //         $entityManager->persist($newDemande);
-    //         $entityManager->flush();
-    
-    //         // Rediriger l'utilisateur vers l'étape 1 avec le nouveau token
-    //         return $this->redirectToRoute('formulairetest_etape1', ['token' => $newToken]);
-    //     } else {
-    //         // Créer une nouvelle demande vierge
-    //         $newToken = bin2hex(random_bytes(16));
-    //         $demande = new Demandes();
-    //         $demande->setToken($newToken);
-    //         $demande->setIDutilisateur($user);
-    
-    //         // Sauvegarder la nouvelle demande
-    //         $entityManager->persist($demande);
-    //         $entityManager->flush();
-    
-    //         // Rediriger l'utilisateur vers l'étape 1 avec le nouveau token
-    //         return $this->redirectToRoute('formulairetest_etape1', ['token' => $newToken]);
-    //     }
-    // }
-    
-    
-
-
-    #[Route('/formulairetest/supprimer/{id}', name: 'formulairetest_supprimer')]
-    public function supprimerDemande(Request $request, EntityManagerInterface $entityManager, $id): Response
-    {
-        $demande = $entityManager->getRepository(Demandes::class)->find($id);
-        //   $x = $demande.getIDUtilisateur();
-        $id_user = $demande->getIDutilisateur();
-        $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
-        $token = $user->getToken();
-
-
-        if (!$demande) {
-            throw $this->createNotFoundException('Demande non trouvée.');
-        }
-
-        $historiques = $entityManager->getRepository(HistoriqueDemande::class)->findBy(['demande' => $demande]);
-        foreach ($historiques as $historique) {
-            $entityManager->remove($historique);
-        }
-
-        $ressources = $entityManager->getRepository(Ressources::class)->findBy(['demande' => $demande]);
-        foreach ($ressources as $ressource) {
-            $entityManager->remove($ressource);
-        }
-
-        $entityManager->remove($demande);
-        $entityManager->flush();
-
-        return $this->redirectToRoute('statuts_token' , ['token' => $token]); 
-    }
-
-    #[Route('/formulairetest/modifier/{id}', name: 'modifier_demandes')]
-    public function modifierDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
-    {
-        $demande = $entityManager->getRepository(Demandes::class)->find($id);
-
-        if (!$demande) {
-            throw $this->createNotFoundException('Demande non trouvée.');
-        }
-
-        $user = $demande->getIDutilisateur();
-        $token = $demande->getToken();
-
-        $data = [
-            'nom' => $user->getNom(),
-            'prenom' => $user->getPrenom(),
-            'email' => $user->getEmail(),
-            'date_de_naissance' => $user->getDateDeNaissance(),
-            'fonction' => $user->getFonction(),
-            'replace_someone' => $demande->isRemplacant() ? 'oui' : 'non',
-            'remplacement_nom' => $demande->getNomRemplacant(),
-            'remplacement_prenom' => $demande->getPrenomRemplacant(),
-            'telephone_avant_service' => $demande->getTelephoneRemplacant(),
-            'parti_rectorat' => $demande->isDepart(),
-            'nouvelle_affectation_service' => $demande->getAffectationRemplacant(),
-            'date_debut_contrat' => $user->getDateDebut(),
-            'date_fin_contrat' => $user->getDateFin(),
-            'statut' => $user->getStatutPersonne(),
-            'missions' => $demande->getMissions(),
-            
-        ];
-
-        $session->set('form_data', $data);
-        $session->set('demande_id', $id);
-
-        return $this->redirectToRoute('formulairetest_etape1', ['token' => $token]);
-    }
-
-    #[Route('/login', name: 'login')]
-    public function requestLoginLink(MonApplication $monApplication, LoginLinkHandlerInterface $loginLinkHandler, UserRepository $userRepository, Request $request, MailerInterface $mailer): Response
-    {
-        if ($request->isMethod('POST')) {
-            $email = $request->request->get('email');
-            $user = $userRepository->findOneBy(['email' => $email]);
-
-            if ($user) {
-                $loginLinkDetails = $loginLinkHandler->createLoginLink($user);
-                $loginLink = $loginLinkDetails->getUrl();
-
-                $email = (new Email())
-                    ->from('noreply@ac-guadeloupe.fr')
-                    ->to($email)
-                    ->subject('Votre lien de connexion')
-                    ->cc('Nicolas.Barbeu@ac-guadeloupe.fr')
-                    ->text('Voici votre lien de connexion :')
-                    ->html('<p>Voici votre lien de connexion :</p><p><a href="' . $loginLink . '">Cliquez ici pour vous connecter</a></p>');
-
-                $mailer->send($email);
-
-                return $this->render('security/lien.html.twig', [
-                    'monApplication' => $monApplication,
-                ]);
-            }
-        }
-
-        return $this->render('security/demande_connexion.html.twig', [
-            'monApplication' => $monApplication,
-        ]);
-    }
-    #[Route('/formulairetest/valider/{id}', name: 'valider_demandes')]
-    public function validerDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
-    {
-        $demande = $entityManager->getRepository(Demandes::class)->find($id);
-        $id_user = $demande->getIDutilisateur();
-        $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
-        $token= $user->getToken();
-        
-
-        if (!$demande) {
-            throw $this->createNotFoundException('Demande non trouvée.');
-        }
-        $demande->setStatuts('En attente');
-        $entityManager->persist($demande);
-        $historique = new HistoriqueDemande();
-        $historique->setDemande($demande);
-                $historique->setStatut('Envoyée');
-                
-                $historique->setDate(new \DateTime('now', $this->timezone));
-                $historique->setStatutOperation('Envoie de la demande');
-
-                $entityManager->persist($historique);
-        $entityManager->flush();
-       
-
-        return $this->redirectToRoute('statuts_token', ['token' => $token]);
-    }
-
-    #[Route('/login_check', name: 'login_check')]
-    public function check(): never
-    {
-        throw new \LogicException('Ce code ne devrait jamais être atteint');
-    }
 
     private function buildTree(array &$services, $parentId = 0) {
         $branch = [];

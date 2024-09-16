@@ -202,6 +202,7 @@ class FormulaireLdapController extends AbstractController
             $data = $form->getData();
             $historique = new HistoriqueDemande();
             $fonction = $data['fonction'];
+           
             $demandeId = $session->get('demande_id');
             $nouvelleDemande = $session->get('nouvelle_demande', false);
         
@@ -330,6 +331,7 @@ class FormulaireLdapController extends AbstractController
                 $user1->setDateFin(null);
             }
             $user1->setFonction($fonction);
+            $missions = $data['missions'];
     
             $demande->setIDutilisateur($user1);
             $demande->setDate((new \DateTime('now', $this->timezone)));
@@ -338,6 +340,7 @@ class FormulaireLdapController extends AbstractController
             $demande->setStatuts('Brouillons');
             $demande->setUidValideur($nomValideur);
             $demande->setService($nomServiceSelectionne);
+            $demande->setMissions($missions);
     
             $entityManager->persist($demande);
             $entityManager->persist($user1);
@@ -381,108 +384,6 @@ class FormulaireLdapController extends AbstractController
             'dossiersPartages' => $dossiersPartages,
         ]);
     }
-
-
-    #[Route('/formulaireldap/supprimer/{id}', name: 'formulaireldap_supprimer')]
-    public function supprimerDemande($id, EntityManagerInterface $entityManager): RedirectResponse
-    {
-        $demande = $entityManager->getRepository(Demandes::class)->find($id);
-    
-        if (!$demande) {
-            throw $this->createNotFoundException('Demande non trouvée.');
-        }
-    
-     
-        $historiques = $entityManager->getRepository(HistoriqueDemande::class)->findBy(['demande' => $demande]);
-        foreach ($historiques as $historique) {
-            $entityManager->remove($historique);
-        }
-    
- 
-        $ressources = $entityManager->getRepository(Ressources::class)->findBy(['demande' => $demande]);
-        foreach ($ressources as $ressource) {
-            $entityManager->remove($ressource);
-        }
-    
-        $entityManager->remove($demande);
-        $entityManager->flush();
-    
-        $this->addFlash('success', 'La demande a été supprimée avec succès.');
-    
-        return $this->redirectToRoute('statuts_token_ldap');
-    }
-
-
-
-
-
-
-    #[Route('/formulaireldap/modifier/{id}', name: 'modifier_demandesldap')]
-    public function modifierDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
-    {
-        $demande = $entityManager->getRepository(Demandes::class)->find($id);
-
-        if (!$demande) {
-            throw $this->createNotFoundException('Demande non trouvée.');
-        }
-        $user = $this->security->getUser();
-        $userInformation = new UserInformation();
-        $infos_user = $userInformation->getUserInformation($user);
-        $email_utilisateur= $infos_user['mail'];
-        $user1 = $entityManager->getRepository(User::class)->findOneBy(['email' => $email_utilisateur]);
-        $token = $demande->getToken();
-
-        // Pré-remplir les données pour le formulaire
-        $data = [
-            'nom' => $user1->getNom(),
-            'prenom' => $user1->getPrenom(),
-            'email' => $user1->getEmail(),
-            'date_de_naissance' => $user1->getDateDeNaissance(),
-            'fonction' => $user1->getFonction(),
-            'replace_someone' => $demande->isRemplacant() ? 'oui' : 'non',
-            'remplacement_nom' => $demande->getNomRemplacant(),
-            'remplacement_prenom' => $demande->getPrenomRemplacant(),
-            'telephone_avant_service' => $demande->getTelephoneRemplacant(),
-            'parti_rectorat' => $demande->isDepart(),
-            'nouvelle_affectation_service' => $demande->getAffectationRemplacant(),
-            'statut' => $user1->getStatutPersonne(),
-            'fonction' => $user1->getFonction(),
-            'date_debut_contrat' => $user1->getDateDebut(),
-            'date_fin_contrat' => $user1->getDateFin(),
-        ];
-
-        $session->set('form_data', $data);
-        $session->set('demande_id', $id);
-
-        return $this->redirectToRoute('formulaireldap_etape1', ['id' => $id]);
-    }
-
-
-    #[Route('/formulaireldap/valider/{id}', name: 'valider_demandesldap')]
-    public function validerDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
-    {
-        $demande = $entityManager->getRepository(Demandes::class)->find($id);
-
-        if (!$demande) {
-            throw $this->createNotFoundException('Demande non trouvée.');
-        }
-        $demande->setStatuts('En attente');
-        $entityManager->persist($demande);
-        $historique = new HistoriqueDemande();
-        $historique->setDemande($demande);
-                $historique->setStatut('Envoyée');
-                
-                $historique->setDate(new \DateTime('now', $this->timezone));
-                $historique->setStatutOperation('Envoie de la demande');
-
-                $entityManager->persist($historique);
-        $entityManager->flush();
-        $token = $demande->getToken();
-    
-
-        return $this->redirectToRoute('statuts_token_ldap');
-    }
-
 
 
 

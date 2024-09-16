@@ -120,49 +120,67 @@
 document.addEventListener('DOMContentLoaded', function () {
     const statutField = document.querySelector('.statut-select');
     const contractDates = document.querySelectorAll('.contract-dates');
-    const dateDebutContrat = document.querySelector('#form_date_debut_contrat'); // Remplacez par l'ID correct de votre champ
-    const dateFinContrat = document.querySelector('#form_date_fin_contrat'); // Remplacez par l'ID correct de votre champ
-    const form = document.querySelector('form[name="demande_etape2_form"]'); // Remplacez par le nom de votre formulaire
+    const dateDebutContrat = document.querySelector('#{{ form.date_debut_contrat.vars.id }}');
+    const dateFinContrat = document.querySelector('#{{ form.date_fin_contrat.vars.id }}');
+    const form = document.querySelector('form[name="{{ form.vars.name }}"]');
 
     function toggleContractDates() {
         const selectedValue = statutField.value;
-        contractDates.forEach(field => {
-            field.style.display = (selectedValue !== 'Titulaire' && selectedValue !== '') ? 'block' : 'none';
-        });
+
+        if (selectedValue !== 'Titulaire' && selectedValue !== '') {
+         
+            contractDates.forEach(field => {
+                field.style.display = 'block';
+            });
+        } else {
+          
+            contractDates.forEach(field => {
+                field.style.display = 'none';
+            });
+         
+            dateDebutContrat.value = ''; 
+            dateFinContrat.value = ''; 
+            dateFinContrat.setCustomValidity(''); 
+        }
     }
 
-    // Initial state setup: hide contract dates 
     toggleContractDates();
 
     statutField.addEventListener('change', toggleContractDates);
 
-    // Validation des dates de contrat
+
     function validateDateRange() {
-        const dateDebut = new Date(dateDebutContrat.value);
-        const dateFin = new Date(dateFinContrat.value);
-        
-        // Vérifie si les deux dates sont valides
+        const selectedValue = statutField.value; 
+        if (selectedValue === 'Titulaire' || selectedValue === '') {
+            
+            dateFinContrat.setCustomValidity('');
+            return; 
+        }
+
+        const dateDebut = new Date(dateDebutContrat.value); 
+        const dateFin = new Date(dateFinContrat.value); 
+
         if (dateDebutContrat.value && dateFinContrat.value && dateFin < dateDebut) {
+   
             dateFinContrat.setCustomValidity('La date de fin de contrat ne peut pas être antérieure à la date de début de contrat.');
         } else {
-            dateFinContrat.setCustomValidity('');
+            dateFinContrat.setCustomValidity(''); 
         }
     }
 
-    // Ajoute les écouteurs d'événements pour vérifier les dates en direct
-    dateDebutContrat.addEventListener('change', validateDateRange);
-    dateFinContrat.addEventListener('change', validateDateRange);
+    dateDebutContrat.addEventListener('input', validateDateRange);
+    dateFinContrat.addEventListener('input', validateDateRange);
 
-    // Validation finale lors de l'envoi du formulaire
     form.addEventListener('submit', function (event) {
-        validateDateRange();
+        validateDateRange(); 
         if (!form.checkValidity()) {
-            event.preventDefault();
-            event.stopPropagation();
+            event.preventDefault(); 
             alert('Veuillez corriger les erreurs dans le formulaire.');
         }
-    }, false);
+    });
 });
 </script>
+
+
 
 {% endblock %}

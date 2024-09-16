@@ -119,16 +119,64 @@
 document.addEventListener('DOMContentLoaded', function () {
     const statutField = document.querySelector('.statut-select');
     const contractDates = document.querySelectorAll('.contract-dates');
+    const dateDebutContrat = document.querySelector('#{{ form.date_debut_contrat.vars.id }}');
+    const dateFinContrat = document.querySelector('#{{ form.date_fin_contrat.vars.id }}');
+    const form = document.querySelector('form[name="{{ form.vars.name }}"]');
 
     function toggleContractDates() {
         const selectedValue = statutField.value;
-        contractDates.forEach(field => {
-            field.style.display = (selectedValue !== 'Titulaire' && selectedValue !== '') ? 'block' : 'none';
-        });
+
+        if (selectedValue !== 'Titulaire' && selectedValue !== '') {
+         
+            contractDates.forEach(field => {
+                field.style.display = 'block';
+            });
+        } else {
+          
+            contractDates.forEach(field => {
+                field.style.display = 'none';
+            });
+         
+            dateDebutContrat.value = ''; 
+            dateFinContrat.value = ''; 
+            dateFinContrat.setCustomValidity(''); 
+        }
     }
 
+    toggleContractDates();
+
     statutField.addEventListener('change', toggleContractDates);
-    toggleContractDates(); // Pour s'assurer que l'état correct est appliqué au chargement
+
+
+    function validateDateRange() {
+        const selectedValue = statutField.value; 
+        if (selectedValue === 'Titulaire' || selectedValue === '') {
+            
+            dateFinContrat.setCustomValidity('');
+            return; 
+        }
+
+        const dateDebut = new Date(dateDebutContrat.value); 
+        const dateFin = new Date(dateFinContrat.value); 
+
+        if (dateDebutContrat.value && dateFinContrat.value && dateFin < dateDebut) {
+   
+            dateFinContrat.setCustomValidity('La date de fin de contrat ne peut pas être antérieure à la date de début de contrat.');
+        } else {
+            dateFinContrat.setCustomValidity(''); 
+        }
+    }
+
+    dateDebutContrat.addEventListener('input', validateDateRange);
+    dateFinContrat.addEventListener('input', validateDateRange);
+
+    form.addEventListener('submit', function (event) {
+        validateDateRange(); 
+        if (!form.checkValidity()) {
+            event.preventDefault(); 
+            alert('Veuillez corriger les erreurs dans le formulaire.');
+        }
+    });
 });
 </script>
 {% endblock %}

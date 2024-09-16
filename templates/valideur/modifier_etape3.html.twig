@@ -64,7 +64,7 @@
                 <div class="dossiers">
                     <h3>Ressources pour le service sélectionné :</h3>
                     {% if dossiersPartages is not empty %}
-                        {{ form_row(form.dossiers_partages) }}
+                       {{ form_widget(form.dossiers_partages) }}
                     {% else %}
                         <h4>Pas de Ressources</h4>
                     {% endif %}
