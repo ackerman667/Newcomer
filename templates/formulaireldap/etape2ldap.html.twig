@@ -120,6 +120,9 @@
 document.addEventListener('DOMContentLoaded', function () {
     const statutField = document.querySelector('.statut-select');
     const contractDates = document.querySelectorAll('.contract-dates');
+    const dateDebutContrat = document.querySelector('#form_date_debut_contrat'); // Remplacez par l'ID correct de votre champ
+    const dateFinContrat = document.querySelector('#form_date_fin_contrat'); // Remplacez par l'ID correct de votre champ
+    const form = document.querySelector('form[name="demande_etape2_form"]'); // Remplacez par le nom de votre formulaire
 
     function toggleContractDates() {
         const selectedValue = statutField.value;
@@ -128,12 +131,38 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Initial state setup: hide contract dates 
+    toggleContractDates();
+
     statutField.addEventListener('change', toggleContractDates);
 
-    // Initial state setup: hide contract dates
-    contractDates.forEach(field => {
-        field.style.display = 'none';
-    });
+    // Validation des dates de contrat
+    function validateDateRange() {
+        const dateDebut = new Date(dateDebutContrat.value);
+        const dateFin = new Date(dateFinContrat.value);
+        
+        // Vérifie si les deux dates sont valides
+        if (dateDebutContrat.value && dateFinContrat.value && dateFin < dateDebut) {
+            dateFinContrat.setCustomValidity('La date de fin de contrat ne peut pas être antérieure à la date de début de contrat.');
+        } else {
+            dateFinContrat.setCustomValidity('');
+        }
+    }
+
+    // Ajoute les écouteurs d'événements pour vérifier les dates en direct
+    dateDebutContrat.addEventListener('change', validateDateRange);
+    dateFinContrat.addEventListener('change', validateDateRange);
+
+    // Validation finale lors de l'envoi du formulaire
+    form.addEventListener('submit', function (event) {
+        validateDateRange();
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+            alert('Veuillez corriger les erreurs dans le formulaire.');
+        }
+    }, false);
 });
 </script>
+
 {% endblock %}

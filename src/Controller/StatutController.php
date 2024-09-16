@@ -10,22 +10,55 @@ use App\Classe\MonApplication;
 use App\Entity\Ressources;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use App\Entity\User;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Security\UserInformation;
+use Symfony\Component\Security\Core\Security;
+
 
 class StatutController extends AbstractController
 {
-    #[Route('formulaireldap/statuts/{token}', name: 'statuts_token_ldap')]
-    public function index(MonApplication $monApplication, EntityManagerInterface $entityManager, $token): Response
+    private $security;
+  
+
+    public function __construct(Security $security)
     {
-        
-        $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+        $this->security = $security;
+
+    }  
+
+
+    #[Route('formulaireldap/statuts', name: 'statuts_token_ldap')]
+    public function index(MonApplication $monApplication, EntityManagerInterface $entityManager): Response
+    {
+
+        $user_ldap = $this->security->getUser();
+        $userInformation = new UserInformation();
+        $infos_user = $userInformation->getUserInformation($user_ldap);
+        //  dump($infos_user);
+        $uid_ldap = $infos_user['uid'];
+        $user_bdd= $entityManager->getRepository(User::class)->findBy(['uid' => $uid_ldap]);
+
+        $demandes = $entityManager->getRepository(Demandes::class)->findBy(['IDutilisateur' => $user_bdd]);
 
         // if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
         //     throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
         // }
-
-        $user = $demande->getIDutilisateur();
-        $demandes = $entityManager->getRepository(Demandes::class)->findBy(['IDutilisateur' => $user]);
+        $query = $entityManager->createQuery(
+            'SELECT u
+            FROM App\Entity\User u
+            WHERE u.uid = :uid
+            AND u.email LIKE :email'
+        )->setParameters([
+            'uid' => $uid_ldap,
+            'email' => '%@ac-guadeloupe.fr'
+        ]);
+        
+        $user= $query->getOneOrNullResult();
+        
+        // $user = $demande->getIDutilisateur();
+        // $demandes = $entityManager->getRepository(Demandes::class)->findBy(['IDutilisateur' => $user]);
 
         return $this->render('statuts/token_ldap.html.twig', [
             'demandes' => $demandes,
@@ -94,6 +127,20 @@ class StatutController extends AbstractController
             'Content-Disposition' => 'inline; filename="demande.pdf"',
         ]);
     }
+
+    #[Route('/formulaireldap/nouvelle_demande', name: 'nouvelle_demande_ldap')]
+public function nouvelleDemande(SessionInterface $session, EntityManagerInterface $entityManager): Response
+{
+    // Réinitialiser les données de la session pour démarrer une nouvelle demande
+    $session->remove('form_data');
+    $session->remove('demande_id');
+
+    $session->set('nouvelle_demande', true);
+    
+
+    return $this->redirectToRoute('formulaireldap_etape1');
+}
+
 
 
 }

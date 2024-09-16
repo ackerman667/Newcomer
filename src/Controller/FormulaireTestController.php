@@ -29,7 +29,7 @@ class FormulaireTestController extends AbstractController
     public function __construct()
     {
         
-        $this->timezone = new \DateTimeZone('America/Guadeloupe'); // Définir la timezone
+        $this->timezone = new \DateTimeZone('America/Guadeloupe'); 
     }
 
     #[Route('/formulairetest/etape1/{token}', name: 'formulairetest_etape1')]
@@ -119,9 +119,11 @@ class FormulaireTestController extends AbstractController
 
         // Transform services for dropdown
         $servicesDropdownData = $this->transformServicesForDropdown($servicesTree);
+        dump($servicesDropdownData);
 
         $form = $this->createForm(DemandeEtape2FormType::class, $data, [
             'services' => $servicesDropdownData,
+            
         ]);
 
         $form->handleRequest($request);

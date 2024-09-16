@@ -26,9 +26,9 @@ class DemandeEtape3FormType extends AbstractType
                 'choices' => array_combine($options['dossiers_partages'], $options['dossiers_partages']),
                 'multiple' => true,
                 'expanded' => true,
-                'label' => 'Sélectionnez les dossiers partagés que vous souhaitez garder',
+                // 'label' => 'Sélectionnez les ressources que vous souhaitez garder',
             ]);
-        // Ajoutez les autres champs du formulaire ici...
+       
     }
     
     public function configureOptions(OptionsResolver $resolver)

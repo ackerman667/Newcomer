@@ -25,7 +25,7 @@ class LdapController extends AbstractController
 
     }  
 
-    #[Route('/formulaireldap/statuts', name: 'ldap')]
+    #[Route('/formulaireldap/statuts/1', name: 'ldap')]
     public function Ldap(MonApplication $monApplication, UserRepository $userRepository, EntityManagerInterface $entityManager): Response
     {
 
@@ -42,10 +42,15 @@ class LdapController extends AbstractController
         if($user_bdd) {
              $id_demandes=$user_bdd->getId();
              $demande = $entityManager->getRepository(Demandes::class)->findBy(['IDutilisateur' => $id_demandes]);
-             dump($demande);$token = $demande[0]->getToken();
+                if($demande) {
+                //    $token = $demande[0]->getToken();
+                    return $this->redirectToRoute('statuts_token_ldap');
 
-            dump($token);
-            return $this->redirectToRoute('statuts_token_ldap', ['token' => $token]);
+                } else {
+                    return $this->redirectToRoute('formulaireldap_etape1');
+
+                }
+             
 
         } else {
             return $this->redirectToRoute('formulaireldap_etape1');

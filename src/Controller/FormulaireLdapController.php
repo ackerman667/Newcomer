@@ -160,6 +160,7 @@ class FormulaireLdapController extends AbstractController
     #[Route('/formulaireldap/etape3', name: 'formulaireldap_etape3')]
     public function etape3(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
+        dump($session);
         $user = $this->security->getUser();
         $userInformation = new UserInformation();
         $infos_user = $userInformation->getUserInformation($user);
@@ -173,6 +174,7 @@ class FormulaireLdapController extends AbstractController
         $dossiersPartages = $session->get('dossiers_partages', []);
         $nomServiceSelectionne = $session->get('nom_service_selectionne', '');
         $nomValideur = $session->get('nom_valideur', '');
+       
        
     
         // Rechercher l'utilisateur par UID
@@ -196,61 +198,103 @@ class FormulaireLdapController extends AbstractController
             'data_class' => null, 
         ]);
         $form->handleRequest($request);
-    
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $historique = new HistoriqueDemande();
             $fonction = $data['fonction'];
-
-
-            $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['IDutilisateur' => $user1]);
-
-            if ($demande) {
-                $historique->setDemande($demande);
-                $historique->setStatut($demande->getStatuts());
-                $historique->setDate((new \DateTime('now', $this->timezone)));
-                $historique->setStatutOperation('Modification');
-               
-
-                $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
-                        if (!$ressources) {
-                            $ressources = new Ressources();
-                        }
-                        $ressources->setNom('Dossier Partagés');
-                        $ressources->setDemande($demande);
-                        $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
-                        if (!empty($dossiersSelectionnes)) {
-                            $ressources->setContenu(json_encode($dossiersSelectionnes));
-                        } else {
-                            $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
-                        }
-    
-
-            } else {
+            $demandeId = $session->get('demande_id');
+            $nouvelleDemande = $session->get('nouvelle_demande', false);
+        
+            if ($nouvelleDemande) {
+                // Création d'une nouvelle demande
                 $demande = new Demandes();
                 $token = bin2hex(random_bytes(32));
                 $demande->setToken($token);
-                // $expiration = new \DateTimeImmutable('+24 hours');
-                // $demande->setTokenExpiration($expiration);
                 $historique->setDemande($demande);
                 $historique->setStatut($demande->getStatuts());
-                $historique->setDate((new \DateTime('now', $this->timezone)));
+                $historique->setDate(new \DateTime('now', $this->timezone));
                 $historique->setStatutOperation('Création');
                 $user1->setToken($token);
-                // $user1->setTokenExpiration($expiration);
+        
                 $ressources = new Ressources();
-                        $ressources->setNom('Dossier Partagés');
-                        $ressources->setDemande($demande);
-                        $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
-                        if (!empty($dossiersSelectionnes)) {
-                            $ressources->setContenu(json_encode($dossiersSelectionnes));
-                        } else {
-                            $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
-                        }
+                $ressources->setNom('Dossier Partagés');
+                $ressources->setDemande($demande);
+                $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
+                if (!empty($dossiersSelectionnes)) {
+                    $ressources->setContenu(json_encode($dossiersSelectionnes));
+                } else {
+                    $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
+                }
+        
+            } elseif (!$nouvelleDemande && $demandeId) {
+                // Modification d'une demande existante
+                $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['id' => $demandeId]);
+        
+                if ($demande) {
+                    $historique->setDemande($demande);
+                    $historique->setStatut($demande->getStatuts());
+                    $historique->setDate(new \DateTime('now', $this->timezone));
+                    $historique->setStatutOperation('Modification');
+        
+                    $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
+                    if (!$ressources) {
+                        $ressources = new Ressources();
+                    }
+                    $ressources->setNom('Dossier Partagés');
+                    $ressources->setDemande($demande);
+                    $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
+                    if (!empty($dossiersSelectionnes)) {
+                        $ressources->setContenu(json_encode($dossiersSelectionnes));
+                    } else {
+                        $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
+                    }
+                } else {
+                    // Cas où la demande n'est pas trouvée, créer une nouvelle demande
+                    $demande = new Demandes();
+                    $token = bin2hex(random_bytes(32));
+                    $demande->setToken($token);
+                    $historique->setDemande($demande);
+                    $historique->setStatut($demande->getStatuts());
+                    $historique->setDate(new \DateTime('now', $this->timezone));
+                    $historique->setStatutOperation('Création');
+                    $user1->setToken($token);
+        
+                    $ressources = new Ressources();
+                    $ressources->setNom('Dossier Partagés');
+                    $ressources->setDemande($demande);
+                    $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
+                    if (!empty($dossiersSelectionnes)) {
+                        $ressources->setContenu(json_encode($dossiersSelectionnes));
+                    } else {
+                        $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
+                    }
+                }
+            } else {
+                // Cas par défaut où aucune demande n'est détectée, création d'une nouvelle demande
+                $demande = new Demandes();
+                $token = bin2hex(random_bytes(32));
+                $demande->setToken($token);
+                $historique->setDemande($demande);
+                $historique->setStatut($demande->getStatuts());
+                $historique->setDate(new \DateTime('now', $this->timezone));
+                $historique->setStatutOperation('Création');
+                $user1->setToken($token);
+        
+                $ressources = new Ressources();
+                $ressources->setNom('Dossier Partagés');
+                $ressources->setDemande($demande);
+                $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
+                if (!empty($dossiersSelectionnes)) {
+                    $ressources->setContenu(json_encode($dossiersSelectionnes));
+                } else {
+                    $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
+                }
             }
-       
+        
+            // Maintenant que $demande est toujours défini, vous pouvez utiliser ses méthodes
             $choix = $data['replace_someone'];
             $statut_utilisateur = $data['statut'];
+        
     
             if ($choix === 'oui') {
                 $demande->setRemplacant(true);
@@ -303,7 +347,8 @@ class FormulaireLdapController extends AbstractController
             $token1 = $demande->getToken();
             $nom = $user1->getNom();
             $prenom = $user1->getPrenom();
-            $url = $this->generateUrl('statuts_token_ldap', ['token' => $token1], UrlGeneratorInterface::ABSOLUTE_URL);
+            $url = $this->generateUrl('statuts_token_ldap', [], UrlGeneratorInterface::ABSOLUTE_URL);
+
             $session->clear();
     
             $email = (new Email())
@@ -324,7 +369,7 @@ class FormulaireLdapController extends AbstractController
     
             $mailer->send($email);
     
-            return $this->redirectToRoute('statuts_token_ldap', ['token' => $token1]);
+            return $this->redirectToRoute('statuts_token_ldap');
         }
     
         return $this->render('formulaireldap/etape3ldap.html.twig', [
@@ -364,7 +409,7 @@ class FormulaireLdapController extends AbstractController
     
         $this->addFlash('success', 'La demande a été supprimée avec succès.');
     
-        return $this->redirectToRoute('formulaireldap_etape1');
+        return $this->redirectToRoute('statuts_token_ldap');
     }
 
 
@@ -409,7 +454,7 @@ class FormulaireLdapController extends AbstractController
         $session->set('form_data', $data);
         $session->set('demande_id', $id);
 
-        return $this->redirectToRoute('formulaireldap_etape1', ['token' => $token]);
+        return $this->redirectToRoute('formulaireldap_etape1', ['id' => $id]);
     }
 
 
@@ -435,7 +480,7 @@ class FormulaireLdapController extends AbstractController
         $token = $demande->getToken();
     
 
-        return $this->redirectToRoute('statuts_token_ldap', ['token' => $token]);
+        return $this->redirectToRoute('statuts_token_ldap');
     }
 
 
