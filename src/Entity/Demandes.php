@@ -87,6 +87,9 @@ class Demandes
     #[ORM\Column(nullable: true)]
     private ?array $infos_personne = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?bool $AutrePersonne = null;
+
     public function __construct()
     {
         $this->historiqueDemandes = new ArrayCollection();
@@ -402,6 +405,18 @@ class Demandes
     public function setInfosPersonne(?array $infos_personne): static
     {
         $this->infos_personne = $infos_personne;
+
+        return $this;
+    }
+
+    public function isAutrePersonne(): ?bool
+    {
+        return $this->AutrePersonne;
+    }
+
+    public function setAutrePersonne(?bool $AutrePersonne): static
+    {
+        $this->AutrePersonne = $AutrePersonne;
 
         return $this;
     }

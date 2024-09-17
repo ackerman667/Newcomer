@@ -72,46 +72,75 @@
                 </div>
                 <div class="details-section">
                     <div class="details-section-title">Détails de l'Utilisateur</div>
+                    {% if demande.AutrePersonne %}
+                        <!-- Affichage des informations à partir du champ JSON -->
+                        <div class="details-group">
+                            <label>Nom :</label>
+                            <span>{{ user.nom }}</span>
+                        </div>
+                        <div class="details-group">
+                            <label>Prénom :</label>
+                            <span>{{ user.prenom }}</span>
+                        </div>
+                        <div class="details-group">
+                            <label>Email :</label>
+                            <span>{{ user.email }}</span>
+                        </div>
+                        <div class="details-group">
+                            <label>Fonction :</label>
+                            <span>{{ user.fonction }}</span>
+                        </div>
+                        <div class="details-group">
+                            <label>Statut :</label>
+                            <span>{{ user.statut }}</span>
+                        </div>
+                        <div class="details-group">
+                            <label>Date de Naissance :</label>
+                             <span>{{ user.date_de_naissance.date ? (user.date_de_naissance.date|date('d/m/Y')) : '' }}</span>
+                        </div>
+                    {% else %}
+                        <!-- Affichage des informations à partir de l'objet user -->
+                        <div class="details-group">
+                            <label>Nom :</label>
+                            <span>{{ user.nom }}</span>
+                        </div>
+                        <div class="details-group">
+                            <label>Prénom :</label>
+                            <span>{{ user.prenom }}</span>
+                        </div>
+                        <div class="details-group">
+                            <label>Email :</label>
+                            <span>{{ user.email }}</span>
+                        </div>
+                        <div class="details-group">
+                            <label>Fonction :</label>
+                            <span>{{ user.fonction }}</span>
+                        </div>
+                        <div class="details-group">
+                            <label>Statut :</label>
+                            <span>{{ user.statutPersonne }}</span>
+                        </div>
+                        <div class="details-group">
+                            <label>Date de Naissance :</label>
+                            <span>{{ user.dateDeNaissance ? user.dateDeNaissance|date('d/m/Y') : '' }}</span>
+                        </div>
+                        <div class="details-group" {% if user.statutPersonne == 'Titulaire' %} style="display:none" {% endif %}>
+                            <label>Date de Début de Contrat :</label>
+                            <span>{{ user.dateDebut ? user.dateDebut|date('d/m/Y') : '' }}</span>
+                        </div>
+                        <div class="details-group" {% if user.statutPersonne == 'Titulaire' %} style="display:none" {% endif %}>
+                            <label>Date de Fin de Contrat :</label>
+                            <span>{{ user.dateFin ? user.dateFin|date('d/m/Y') : '' }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="details-section">
+                    <div class="details-section-title">Ressources Associées</div>
                     <div class="details-group">
-                        <label>Nom :</label>
-                        <span>{{ user.nom }}</span>
-                    </div>
-                    <div class="details-group">
-                        <label>Prénom :</label>
-                        <span>{{ user.prenom }}</span>
-                    </div>
-                    <div class="details-group">
-                        <label>Email :</label>
-                        <span>{{ user.email }}</span>
-                    </div>
-                    <div class="details-group">
-                        <label>Fonction :</label>
-                        <span>{{ user.fonction }}</span>
-                    </div>
-                    <div class="details-group">
-                        <label>Statut :</label>
-                        <span>{{ user.statutPersonne }}</span>
-                    </div>
-                    <div class="details-group">
-                        <label>Date de Naissance :</label>
-                        <span>{{ user.dateDeNaissance ? user.dateDeNaissance|date('d/m/Y') : '' }}</span>
-                    </div>
-                    <div class="details-group" {% if user.statutPersonne == 'Titulaire' %} style="display:none" {% endif %}>
-                        <label>Date de Début de Contrat :</label>
-                        <span>{{ user.dateDebut ? user.dateDebut|date('d/m/Y') : '' }}</span>
-                    </div>
-                    <div class="details-group" {% if user.statutPersonne == 'Titulaire' %} style="display:none" {% endif %}>
-                        <label>Date de Fin de Contrat :</label>
-                        <span>{{ user.dateFin ? user.dateFin|date('d/m/Y') : '' }}</span>
+                        <label>{{ ressources.nom }} :</label>
+                        <span>{{ ressources.contenu }}</span>
                     </div>
                 </div>
-                 <div class="details-section">
-                    <div class="details-section-title">Ressources Associées</div>
-                    
-                        <div class="details-group">
-                            <label>{{ ressources.nom }} :</label>
-                            <span>{{ ressources.contenu }}</span>
-                        </div>
             </div>
         </div>
     </div>

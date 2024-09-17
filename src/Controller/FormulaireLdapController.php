@@ -333,6 +333,7 @@ class FormulaireLdapController extends AbstractController
             $missions = $data['missions'];
     
             $demande->setIDutilisateur($user1);
+            $demande->setAutrePersonne(false);
             $demande->setDate((new \DateTime('now', $this->timezone)));
             $demande->setHeureSoumission((new \DateTime('now', $this->timezone)));
             $demande->setTitre('Demande d\'accès à un poste informatique');

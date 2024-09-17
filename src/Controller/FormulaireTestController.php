@@ -276,6 +276,7 @@ public function etape3(MonApplication $monApplication, Request $request, Session
         }
 
         // Logique partagée pour les deux cas (nouvelle ou modification)
+
         $choix = $data['replace_someone'];
         $statut_utilisateur = $data['statut'];
         $nom = $data['nom'];
@@ -325,6 +326,7 @@ public function etape3(MonApplication $monApplication, Request $request, Session
         }
 
         $demande->setIDutilisateur($user);
+        $demande->setAutrePersonne(false);
         $demande->setDate(new \DateTime('now', $this->timezone));
         $demande->setHeureSoumission(new \DateTime('now', $this->timezone));
         $demande->setTitre('Demande d\'accès à un poste informatique');

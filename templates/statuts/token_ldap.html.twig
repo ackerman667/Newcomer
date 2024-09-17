@@ -128,7 +128,7 @@
                         {{ message }}
                     </div>
                 {% endfor %}
-                 <a href="{{ path('formulaireldap-etape1') }}" class="btn btn-primary btn-new-request">Nouvelle Demande(qlq d'autre)</a>
+                 <a href="{{ path('nouvelle-demande-ldap') }}" class="btn btn-primary btn-new-request">Nouvelle Demande (qlq d'autre)</a>
                  <a href="{{ path('nouvelle_demande_ldap') }}" class="btn btn-primary btn-new-request">Nouvelle Demande</a>
                 <table style="width:100%; border-collapse: collapse;">
                     <thead>
@@ -161,31 +161,60 @@
                                         <span>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</span>
                                     </td>
                                     <td style="text-align: center; padding: 8px;">
-                                    {% if demande.statuts == 'Brouillons' %}
-                                        <a href="{{ path('modifier_demandesldap', {id: demande.id}) }}">
-                                            <i class="fas fa-edit icon-edit"></i>
-                                        </a>
-                                        <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
-                                            <i class="fas fa-search icon-search"></i>
-                                        </a>
-                                        <a href="{{ path('formulaireldap_supprimer', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">
-                                            <i class="fas fa-trash-alt icon-trash"></i>
-                                        </a>
-                                        <a href="{{ path('valider_demandesldap', {id: demande.id}) }}">
-                                            <i class="fas fa-thumbs-up icon-thumbs-up"></i>
-                                        </a>
-                                        <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}">
-                                            <i class="fas fa-file-pdf icon-pdf"></i>
-                                        </a>
-                                    {% else %}
-                                        <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
-                                            <i class="fas fa-search icon-search"></i>
-                                        </a>
-                                        <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}">
-                                            <i class="fas fa-file-pdf icon-pdf"></i>
-                                        </a>
-                                    {% endif %}
-                                </td>
+                                        {% if demande.AutrePersonne %}
+                                            {# Actions pour les demandes pour une autre personne #}
+                                            {% if demande.statuts == 'Brouillons' %}
+                                                <a href="{{ path('modifier_demandespourautre', {id: demande.id}) }}">
+                                                    <i class="fas fa-edit icon-edit"></i>
+                                                </a>
+                                                <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
+                                                    <i class="fas fa-search icon-search"></i>
+                                                </a>
+                                                <a href="{{ path('supprimer_demandespourautre', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">
+                                                    <i class="fas fa-trash-alt icon-trash"></i>
+                                                </a>
+                                                <a href="{{ path('valider_demandespourautre', {id: demande.id}) }}">
+                                                    <i class="fas fa-thumbs-up icon-thumbs-up"></i>
+                                                </a>
+                                                <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}">
+                                                    <i class="fas fa-file-pdf icon-pdf"></i>
+                                                </a>
+                                            {% else %}
+                                                <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
+                                                    <i class="fas fa-search icon-search"></i>
+                                                </a>
+                                                <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}">
+                                                    <i class="fas fa-file-pdf icon-pdf"></i>
+                                                </a>
+                                            {% endif %}
+                                        {% else %}
+                                            {# Actions pour les demandes pour soi-même #}
+                                            {% if demande.statuts == 'Brouillons' %}
+                                                <a href="{{ path('modifier_demandesldap', {id: demande.id}) }}">
+                                                    <i class="fas fa-edit icon-edit"></i>
+                                                </a>
+                                                <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
+                                                    <i class="fas fa-search icon-search"></i>
+                                                </a>
+                                                <a href="{{ path('formulaireldap_supprimer', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">
+                                                    <i class="fas fa-trash-alt icon-trash"></i>
+                                                </a>
+                                                <a href="{{ path('valider_demandesldap', {id: demande.id}) }}">
+                                                    <i class="fas fa-thumbs-up icon-thumbs-up"></i>
+                                                </a>
+                                                <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}">
+                                                    <i class="fas fa-file-pdf icon-pdf"></i>
+                                                </a>
+                                            {% else %}
+                                                <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
+                                                    <i class="fas fa-search icon-search"></i>
+                                                </a>
+                                                <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}">
+                                                    <i class="fas fa-file-pdf icon-pdf"></i>
+                                                </a>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
                                 </tr>
                             {% endfor %}
                         {% endif %}

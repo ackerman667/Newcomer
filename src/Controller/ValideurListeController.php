@@ -32,17 +32,17 @@ class ValideurListeController extends AbstractController
 
     public function __construct()
     {
-        $this->timezone = new \DateTimeZone('America/Guadeloupe'); // Définir la timezone
+        $this->timezone = new \DateTimeZone('America/Guadeloupe'); 
     }
+   
     #[Route('formulaireldap/listedemandes', name: 'listedemandes')]
     public function index(MonApplication $monApplication, EntityManagerInterface $entityManager, Security $security): Response
     {
         $user = $security->getUser();
         $uid = $user->getUid();
-        dump($uid);
-        // $user = $security->getUser();
-        // $uid = $user->getUid();
         $statut = 'Brouillons'; 
+    
+       
         $demandes = $entityManager->getRepository(Demandes::class)->createQueryBuilder('d')
             ->where('d.uid_valideur = :uid')
             ->andWhere('d.statuts <> :statut') 
@@ -50,18 +50,44 @@ class ValideurListeController extends AbstractController
             ->setParameter('statut', $statut)
             ->getQuery()
             ->getResult();
-
-            dump($demandes);
-
-            $userDemandes = [];
-
-            foreach ($demandes as $demande) {
-                $userDemandes[] = [
-                    'demande' => $demande,
-                    'user' => $demande->getIDutilisateur()
+    
+        // Préparer les données utilisateur pour chaque demande
+        $userDemandes = [];
+        foreach ($demandes as $demande) {
+            // Si la demande est faite pour une autre personne, utiliser les infos JSON, sinon utiliser les infos de l'utilisateur lié
+            if ($demande->isAutrePersonne()) {
+                $infos_personne = $demande->getInfosPersonne();
+    
+                // Si $infos_personne est déjà un tableau, l'utiliser directement, sinon le décoder du JSON
+                if (!is_array($infos_personne)) {
+                    $infos_personne = json_decode($infos_personne, true) ?? []; // Décoder JSON en tableau
+                }
+    
+                // Préparer les informations de l'utilisateur à partir des données JSON
+                $userData = [
+                    'nom' => $infos_personne['nom'] ?? '',
+                    'prenom' => $infos_personne['prenom'] ?? '',
+                    'email' => $infos_personne['email'] ?? '',
+                    'date_de_naissance' => $infos_personne['date_de_naissance'] ?? '',
+                    'fonction' => $infos_personne['fonction'] ?? '',
+                    'statut' => $infos_personne['statut'] ?? ''
+                ];
+            } else {
+                // Si la demande n'est pas pour une autre personne, utiliser les infos de l'utilisateur associé à la demande
+                $userEntity = $demande->getIDutilisateur();
+                $userData = [
+                    'nom' => $userEntity ? $userEntity->getNom() : '',
+                    'prenom' => $userEntity ? $userEntity->getPrenom() : '',
+                    'email' => $userEntity ? $userEntity->getEmail() : '',
                 ];
             }
-            dump($userDemandes);
+    
+            // Ajouter les informations de la demande et de l'utilisateur à la liste
+            $userDemandes[] = [
+                'demande' => $demande,
+                'user' => $userData,
+            ];
+        }
         
         return $this->render('valideur/index.html.twig', [
             'demandes' => $demandes,
@@ -69,227 +95,289 @@ class ValideurListeController extends AbstractController
             'user' => $userDemandes,
         ]);
     }
+    
+    
 
+
+    
     #[Route('formulaireldap/validerdemande/{id}', name: 'valider_demande')]
-    public function validerDemande(int $id, EntityManagerInterface $entityManager,  MailerInterface $mailer): Response
-    {
-        $demande = $entityManager->getRepository(Demandes::class)->find($id);
+public function validerDemande(int $id, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
+{
+    $demande = $entityManager->getRepository(Demandes::class)->find($id);
 
-        if (!$demande) {
-            throw $this->createNotFoundException('Demande non trouvée.');
-        }
-        $now = new \DateTime('now', $this->timezone);
-        $demande->setStatuts('Suivi dans LEKA');
-        $demande->setDateValidation($now);
-        $historique = new HistoriqueDemande();
-        $historique->setDemande($demande);
-        $historique->setStatut('Suivi dans LEKA');
-        $historique->setStatutOperation('Envoi de la demande dans LEKA');
-        $historique->setDate(new \DateTime());
-        $entityManager->persist($historique);
-
-        $entityManager->flush();
-
-        $email = (new Email())
-            ->from('noreply@ac-guadeloupe.fr')
-            ->to($demande->getIDutilisateur()->getEmail())
-            ->subject('Votre demande a été envoyée dans LEKA')
-            ->html('<p>Votre demande a été envoyée dans LEKA.</p>');
-
-        $mailer->send($email);
-    //     $leka = (new Email())
-    //     ->from('noreply@ac-guadeloupe.fr')
-    //     ->to($demande->getIDutilisateur()->getEmail())
-    //     ->subject('Votre demande a été validée')
-    //     ->html('<p>Votre demande a été validée.</p>');
-
-    // $mailer->send($leka);
-
-
-        return $this->redirectToRoute('listedemandes');
+    if (!$demande) {
+        throw $this->createNotFoundException('Demande non trouvée.');
     }
 
-    #[Route('formulaireldap/refuserdemande/{id}', name: 'refuser_demande')]
-    public function refuserDemande(int $id, EntityManagerInterface $entityManager,  MailerInterface $mailer): Response
-    {
-        $demande = $entityManager->getRepository(Demandes::class)->find($id);
+    $now = new \DateTime('now', $this->timezone);
+    $demande->setStatuts('Suivi dans LEKA');
+    $demande->setDateValidation($now);
 
-        if (!$demande) {
-            throw $this->createNotFoundException('Demande non trouvée.');
-        }
+    // Créer un historique de la demande
+    $historique = new HistoriqueDemande();
+    $historique->setDemande($demande);
+    $historique->setStatut('Suivi dans LEKA');
+    $historique->setStatutOperation('Envoi de la demande dans LEKA');
+    $historique->setDate(new \DateTime());
+    $entityManager->persist($historique);
+    $entityManager->flush();
 
-        $demande->setStatuts('Refusée');
-        $historique = new HistoriqueDemande();
-        $historique->setDemande($demande);
-        $historique->setStatut('Refusée');
-        $historique->setStatutOperation('Refus');
-        $historique->setDate(new \DateTime());
-        $entityManager->persist($historique);
+    // Récupérer l'email de l'utilisateur ou de la personne cible
+   // Récupérer les informations de la demande
+$infosPersonne = $demande->getInfosPersonne();
 
-        $entityManager->flush();
+// Vérifiez si les informations sont déjà un tableau ou non
+if ($demande->isAutrePersonne() && is_string($infosPersonne)) {
+    // Décoder le JSON seulement si c'est une chaîne
+    $infosPersonne = json_decode($infosPersonne, true);
+}
 
-        $email = (new Email())
-            ->from('noreply@ac-guadeloupe.fr')
-            ->to($demande->getIDutilisateur()->getEmail())
-            ->subject('Votre demande a été refusée')
-            ->html('<p>Votre demande a été refusée.</p>');
+// Récupérez l'email en fonction du type de demande
+$email = $demande->isAutrePersonne() ? ($infosPersonne['email'] ?? '') : $demande->getIDutilisateur()->getEmail();
 
-        $mailer->send($email);
+    $emailMessage = (new Email())
+        ->from('noreply@ac-guadeloupe.fr')
+        ->to($email)
+        ->subject('Votre demande a été envoyée dans LEKA')
+        ->html('<p>Votre demande a été envoyée dans LEKA.</p>');
+
+    $mailer->send($emailMessage);
+
+    return $this->redirectToRoute('listedemandes');
+}
 
 
-        return $this->redirectToRoute('listedemandes');
+#[Route('formulaireldap/refuserdemande/{id}', name: 'refuser_demande')]
+public function refuserDemande(int $id, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
+{
+    $demande = $entityManager->getRepository(Demandes::class)->find($id);
+
+    if (!$demande) {
+        throw $this->createNotFoundException('Demande non trouvée.');
     }
 
+    $demande->setStatuts('Refusée');
+    $historique = new HistoriqueDemande();
+    $historique->setDemande($demande);
+    $historique->setStatut('Refusée');
+    $historique->setStatutOperation('Refus');
+    $historique->setDate(new \DateTime());
+    $entityManager->persist($historique);
+    $entityManager->flush();
 
-    #[Route('formulaireldap/commenterdemande/{id}', name: 'commenter_demande', methods: ['POST'])]
-    public function commenterDemande(int $id, Request $request, EntityManagerInterface $entityManager,  MailerInterface $mailer): Response
-    {
-        $demande = $entityManager->getRepository(Demandes::class)->find($id);
+    $email = $demande->isAutrePersonne() ? json_decode($demande->getInfosPersonne(), true)['email'] : $demande->getIDutilisateur()->getEmail();
 
-        if (!$demande) {
-            throw $this->createNotFoundException('Demande non trouvée.');
-        }
+    $emailMessage = (new Email())
+        ->from('noreply@ac-guadeloupe.fr')
+        ->to($email)
+        ->subject('Votre demande a été refusée')
+        ->html('<p>Votre demande a été refusée.</p>');
 
-        $commentaire = $request->request->get('commentaire');
-        $demande->setCommentaire($commentaire);
-        
-        $historique = new HistoriqueDemande();
-        $historique->setDemande($demande);
-        $historique->setStatut($demande->getStatuts());
-        $historique->setStatutOperation('Commentaire');
-        $historique->setDate(new \DateTime());
-        $entityManager->persist($historique);
+    $mailer->send($emailMessage);
 
-        $entityManager->flush();
-          // Envoyer un email de notification
-          $email = (new Email())
-          ->from('noreply@ac-guadeloupe.fr')
-          ->to($demande->getIDutilisateur()->getEmail())
-          ->subject('Votre demande a reçu un commentaire')
-          ->html('<p>Votre demande a reçu un commentaire : ' . $commentaire . '</p>');
+    return $this->redirectToRoute('listedemandes');
+}
 
-      $mailer->send($email);
 
-        return $this->redirectToRoute('listedemandes');
+#[Route('formulaireldap/commenterdemande/{id}', name: 'commenter_demande', methods: ['POST'])]
+public function commenterDemande(int $id, Request $request, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
+{
+    $demande = $entityManager->getRepository(Demandes::class)->find($id);
+
+    if (!$demande) {
+        throw $this->createNotFoundException('Demande non trouvée.');
     }
 
-    #[Route('formulaireldap/demande/visualiser/{id}', name: 'visualiser_demande')]
-    public function visualiserDemande(MonApplication $monApplication, int $id, EntityManagerInterface $entityManager): Response
-    {
-        $demande = $entityManager->getRepository(Demandes::class)->find($id);
+    $commentaire = $request->request->get('commentaire');
+    $demande->setCommentaire($commentaire);
+    
+    $historique = new HistoriqueDemande();
+    $historique->setDemande($demande);
+    $historique->setStatut($demande->getStatuts());
+    $historique->setStatutOperation('Commentaire');
+    $historique->setDate(new \DateTime());
+    $entityManager->persist($historique);
+    $entityManager->flush();
 
-        if (!$demande) {
-            throw $this->createNotFoundException('Demande non trouvée.');
+   // Vérifiez si infos_personne est déjà un tableau ou non
+$infosPersonne = $demande->getInfosPersonne();
+if ($demande->isAutrePersonne() && is_string($infosPersonne)) {
+    // Décoder le JSON seulement si c'est une chaîne
+    $infosPersonne = json_decode($infosPersonne, true);
+}
+
+// Récupérez l'email en fonction du type de demande
+$email = $demande->isAutrePersonne() ? $infosPersonne['email'] ?? '' : $demande->getIDutilisateur()->getEmail();
+
+
+    $emailMessage = (new Email())
+        ->from('noreply@ac-guadeloupe.fr')
+        ->to($email)
+        ->subject('Votre demande a reçu un commentaire')
+        ->html('<p>Votre demande a reçu un commentaire : ' . $commentaire . '</p>');
+
+    $mailer->send($emailMessage);
+
+    return $this->redirectToRoute('listedemandes');
+}
+
+
+#[Route('formulaireldap/demande/visualiser/{id}', name: 'visualiser_demande')]
+public function visualiserDemande(MonApplication $monApplication, int $id, EntityManagerInterface $entityManager): Response
+{
+    $demande = $entityManager->getRepository(Demandes::class)->find($id);
+
+    if (!$demande) {
+        throw $this->createNotFoundException('Demande non trouvée.');
+    }
+
+    $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande->getId()]);
+
+    // Vérifier si la demande est pour une autre personne
+    if ($demande->isAutrePersonne()) {
+        $infos_personne = $demande->getInfosPersonne();
+
+        // Si infos_personne n'est pas déjà un tableau, décoder JSON
+        if (!is_array($infos_personne)) {
+            $user = json_decode($infos_personne, true);
+        } else {
+            $user = $infos_personne;
         }
-        $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande->getId()]);
-        dump($ressources);
+    } else {
+        // Sinon, récupérer les informations de l'utilisateur associé à la demande
         $user = $demande->getIDutilisateur();
-        return $this->render('valideur/visualiser.html.twig', [
-            'demande' => $demande,
-            'monApplication' => $monApplication,
-            'user' => $user,
-            'ressources' => $ressources,
-            
-        ]);
     }
 
+    return $this->render('valideur/visualiser.html.twig', [
+        'demande' => $demande,
+        'monApplication' => $monApplication,
+        'user' => $user,
+        'ressources' => $ressources,
+    ]);
+}
 
 
 
 
-    #[Route('formulaireldap/demandepdf/{id}', name: 'demande_pdf_valideur')]
-    public function generatePdf($id, EntityManagerInterface $entityManager): Response
-    {
-        $demande = $entityManager->getRepository(Demandes::class)->find($id);
 
-        // if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
-        //     throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
-        // }
 
-        $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande->getId()]);
-        $user = $demande->getIDutilisateur();
+#[Route('formulaireldap/demandepdf/{id}', name: 'demande_pdf_valideur')]
+public function generatePdf($id, EntityManagerInterface $entityManager): Response
+{
+    $demande = $entityManager->getRepository(Demandes::class)->find($id);
 
-        // Configurer Dompdf selon vos besoins
-        $options = new Options();
-        $options->set('defaultFont', 'Arial');
-        $dompdf = new Dompdf($options);
-
-        // Récupérer le contenu HTML de votre template
-        $html = $this->renderView('consult/pdf.html.twig', [
-            'demande' => $demande,
-            'user' => $user,
-            'ressources' => $ressources,
-        ]);
-
-        // Charger le HTML dans Dompdf
-        $dompdf->loadHtml($html);
-
-        // (Optionnel) Définir le format du papier et l'orientation
-        $dompdf->setPaper('A4', 'portrait');
-
-        // Rendre le PDF
-        $dompdf->render();
-
-        // Envoyer le PDF au navigateur
-        return new Response($dompdf->output(), 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="demande.pdf"',
-        ]);
+    if (!$demande) {
+        throw $this->createNotFoundException('Demande non trouvée.');
     }
 
+    $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande->getId()]);
+    $user = $demande->isAutrePersonne() ? json_decode($demande->getInfosPersonne(), true) : $demande->getIDutilisateur();
+
+    // Configurer Dompdf
+    $options = new Options();
+    $options->set('defaultFont', 'Arial');
+    $dompdf = new Dompdf($options);
+
+    $html = $this->renderView('consult/pdf.html.twig', [
+        'demande' => $demande,
+        'user' => $user,
+        'ressources' => $ressources,
+    ]);
+
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+
+    return new Response($dompdf->output(), 200, [
+        'Content-Type' => 'application/pdf',
+        'Content-Disposition' => 'inline; filename="demande.pdf"',
+    ]);
+}
 
 
 
 
 
+#[Route('formulaireldap/modifierdemandes/etape1/{id}', name: 'modifier_demandesvalideur_etape1')]
+public function editDemandeEtape1(int $id, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, MonApplication $monApplication): Response
+{
+    $demande = $entityManager->getRepository(Demandes::class)->find($id);
 
+    if (!$demande) {
+        throw $this->createNotFoundException('Demande non trouvée.');
+    }
 
+    // Préparer les données en fonction du type de demande (pour soi-même ou pour une autre personne)
+    if ($demande->isAutrePersonne()) {
+        $infos_personne = $demande->getInfosPersonne();
 
-    #[Route('formulaireldap/modifierdemandes/etape1/{id}', name: 'modifier_demandesvalideur_etape1')]
-    public function editDemandeEtape1(int $id, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, MonApplication $monApplication): Response
-    {
-        $demande = $entityManager->getRepository(Demandes::class)->find($id);
-
-        if (!$demande) {
-            throw $this->createNotFoundException('Demande non trouvée.');
+        // Décoder les informations JSON si nécessaire
+        if (!is_array($infos_personne)) {
+            $infos_personne = json_decode($infos_personne, true) ?? [];
+        }
+        $dateNaissance = null;
+        if (!empty($infos_personne['date_de_naissance']) && is_string($infos_personne['date_de_naissance'])) {
+            $dateNaissance = \DateTime::createFromFormat('Y-m-d', $infos_personne['date_de_naissance']);
+            if (!$dateNaissance) {
+                // Si la date n'a pas pu être convertie, affecter null pour éviter une erreur
+                $dateNaissance = null;
+            }
         }
 
-        $user = $demande->getIDutilisateur();
         $data = [
-            'nom' => $user->getNom(),
-            'prenom' => $user->getPrenom(),
-            'email' => $user->getEmail(),
-            'date_de_naissance' => $user->getDateDeNaissance(),
-            'fonction' => $user->getFonction(),
+            'nom' => $infos_personne['nom'] ?? '',
+            'prenom' => $infos_personne['prenom'] ?? '',
+            'email' => $infos_personne['email'] ?? '',
+            'date_de_naissance' => $dateNaissance,
+            'fonction' => $infos_personne['fonction'] ?? '',
             'replace_someone' => $demande->isRemplacant() ? 'oui' : 'non',
             'remplacement_nom' => $demande->getNomRemplacant(),
             'remplacement_prenom' => $demande->getPrenomRemplacant(),
             'telephone_avant_service' => $demande->getTelephoneRemplacant(),
             'parti_rectorat' => $demande->isDepart(),
             'nouvelle_affectation_service' => $demande->getAffectationRemplacant(),
-            'date_debut_contrat' => $user->getDateDebut(),
-            'date_fin_contrat' => $user->getDateFin(),
-            'statut' => $user->getStatutPersonne(),
+            'date_debut_contrat' => $infos_personne['date_debut_contrat'] ?? null,
+            'date_fin_contrat' => $infos_personne['date_fin_contrat'] ?? null,
+            'statut' => $infos_personne['statut'] ?? '',
             'missions' => $demande->getMissions(),
-           
         ];
-
-        $form = $this->createForm(DemandeEtape1FormType::class, $data);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
-            $session->set('form_data', $data);
-
-            return $this->redirectToRoute('modifier_demandesvalideur_etape2', ['id' => $id]);
-        }
-
-        return $this->render('valideur/modifier_etape1.html.twig', [
-            'form' => $form->createView(),
-            'monApplication' => $monApplication,
-            'demande' => $demande
-        ]);
+    } else {
+        $user = $demande->getIDutilisateur();
+        $data = [
+            'nom' => $user ? $user->getNom() : '',
+            'prenom' => $user ? $user->getPrenom() : '',
+            'email' => $user ? $user->getEmail() : '',
+            'date_de_naissance' => $user ? $user->getDateDeNaissance() : '',
+            'fonction' => $user ? $user->getFonction() : '',
+            'replace_someone' => $demande->isRemplacant() ? 'oui' : 'non',
+            'remplacement_nom' => $demande->getNomRemplacant(),
+            'remplacement_prenom' => $demande->getPrenomRemplacant(),
+            'telephone_avant_service' => $demande->getTelephoneRemplacant(),
+            'parti_rectorat' => $demande->isDepart(),
+            'nouvelle_affectation_service' => $demande->getAffectationRemplacant(),
+            'date_debut_contrat' => $user ? $user->getDateDebut() : null,
+            'date_fin_contrat' => $user ? $user->getDateFin() : null,
+            'statut' => $user ? $user->getStatutPersonne() : '',
+            'missions' => $demande->getMissions(),
+        ];
     }
+
+    $form = $this->createForm(DemandeEtape1FormType::class, $data);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $data = $form->getData();
+        $session->set('form_data', $data);
+
+        return $this->redirectToRoute('modifier_demandesvalideur_etape2', ['id' => $id]);
+    }
+
+    return $this->render('valideur/modifier_etape1.html.twig', [
+        'form' => $form->createView(),
+        'monApplication' => $monApplication,
+        'demande' => $demande
+    ]);
+}
 
     #[Route('formulaireldap/modifierdemandes/etape2/{id}', name: 'modifier_demandesvalideur_etape2')]
     public function editDemandeEtape2(int $id, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, HttpClientInterface $httpClient, MonApplication $monApplication): Response
@@ -363,26 +451,26 @@ class ValideurListeController extends AbstractController
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande->getId()]);
-
+    
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
         }
-
+    
         $data = $session->get('form_data', []);
         $dossiersPartages = $session->get('dossiers_partages', []);
         $nomServiceSelectionne = $session->get('nom_service_selectionne', '');
         $nomValideur = $session->get('nom_valideur', '');
-
+    
         $form = $this->createForm(DemandeEtape3FormType::class, $data, [
             'dossiers_partages' => $dossiersPartages,
             'data_class' => null,
         ]);
         $form->handleRequest($request);
-
+    
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $choix = $data['replace_someone'];
-
+    
             if ($choix === 'oui') {
                 $demande->setRemplacant(true);
                 $demande->setNomRemplacant($data['remplacement_nom']);
@@ -410,7 +498,7 @@ class ValideurListeController extends AbstractController
             $historique->setStatut($demande->getStatuts());
             $historique->setDate(new \DateTime('now', $this->timezone));
             $historique->setStatutOperation('Modification Valideur');
-
+    
             if (!$ressources) {
                 $ressources = new Ressources();
             }
@@ -422,17 +510,17 @@ class ValideurListeController extends AbstractController
             } else {
                 $ressources->setContenu('Pas de Ressources disponible pour ce Service.');
             }
-
+            $demande->setAutrePersonne(false);
             $entityManager->persist($demande);
             $entityManager->persist($historique);
             $entityManager->persist($ressources);
             $entityManager->flush();
-
+    
             $this->addFlash('success', 'La demande a été modifiée avec succès.');
-
+    
             return $this->redirectToRoute('listedemandes');
         }
-
+    
         return $this->render('valideur/modifier_etape3.html.twig', [
             'form' => $form->createView(),
             'monApplication' => $monApplication,
@@ -442,7 +530,7 @@ class ValideurListeController extends AbstractController
             'demande' => $demande
         ]);
     }
-
+    
     private function buildTree(array &$services, $parentId = 0)
     {
         $branch = [];

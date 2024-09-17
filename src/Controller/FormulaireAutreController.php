@@ -10,6 +10,7 @@ use App\Entity\Ressources;
 use App\Form\DemandeEtape1FormType;
 use App\Form\DemandeEtape2FormType;
 use App\Form\DemandeEtape3FormType;
+use App\Security\UserInformation;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -20,6 +21,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Mime\Email;
 
 class FormulaireAutreController extends AbstractController
@@ -60,6 +62,7 @@ class FormulaireAutreController extends AbstractController
     #[Route('/formulaireldap/a/etape2', name: 'formulaireldap-etape2')]
     public function etape2PourAutre(MonApplication $monApplication, Request $request, SessionInterface $session, HttpClientInterface $httpClient, EntityManagerInterface $entityManager): Response
     {
+      
         $data = $session->get('form_data', []);
 
         $apiUrl = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/services';
@@ -120,23 +123,76 @@ class FormulaireAutreController extends AbstractController
     #[Route('/formulaireldap/a/etape3', name: 'formulaireldap-etape3')]
     public function etape3PourAutre(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
-        
+        // Récupérer l'utilisateur actuel et ses informations
+       
+    
+        // Récupérer les données de session
         $data = $session->get('form_data', []);
         $dossiersPartages = $session->get('dossiers_partages', []);
         $nomServiceSelectionne = $session->get('nom_service_selectionne', '');
         $nomValideur = $session->get('nom_valideur', '');
-
+        
+    
+        // Création du formulaire
         $form = $this->createForm(DemandeEtape3FormType::class, $data, [
             'dossiers_partages' => $dossiersPartages,
-            'data_class' => null, 
+            'data_class' => null,
         ]);
         $form->handleRequest($request);
-
+    
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
-            $demande = new Demandes();
+            $demandeId = $session->get('demande_id');
+            $nouvelleDemande = $session->get('nouvelle_demande', false);
             $historique = new HistoriqueDemande();
+            $user = $this->security->getUser();
+            $userInformation = new UserInformation();
+            $infos_user = $userInformation->getUserInformation($user);
+            $uid = $infos_user['uid'];
+            $user_bdd = $entityManager->getRepository(User::class)->findOneBy(['uid' => $uid]);
+            dump($user_bdd);
             
+            if ($nouvelleDemande) {
+                // Création d'une nouvelle demande
+                $demande = new Demandes();
+                $token = bin2hex(random_bytes(32));
+                $demande->setToken($token);
+                $demande->setIDutilisateur($user_bdd);
+                $demande->setTitre('Demande pour une autre personne');
+                $historique->setStatut('Création');
+                $historique->setStatutOperation('Création');
+            } elseif (!$nouvelleDemande && $demandeId) {
+                // Modification d'une demande existante
+                $demande = $entityManager->getRepository(Demandes::class)->find($demandeId);
+            
+                if ($demande) {
+                    $historique->setDemande($demande);
+                    $historique->setStatut('Modification');
+                    $historique->setDate(new \DateTime('now', $this->timezone));
+                    $historique->setStatutOperation('Modification');
+                } else {
+                    // Cas où la demande n'est pas trouvée, créer une nouvelle demande
+                    $demande = new Demandes();
+                    $token = bin2hex(random_bytes(32));
+                    $demande->setToken($token);
+                    $demande->setIDutilisateur($user_bdd);
+                    $demande->setTitre('Demande pour une autre personne');
+                    $historique->setStatut('Création');
+                    $historique->setStatutOperation('Création');
+                }
+            } else {
+                // Cas par défaut où aucune demande n'est détectée, création d'une nouvelle demande
+                $demande = new Demandes();
+                $token = bin2hex(random_bytes(32));
+                $demande->setToken($token);
+                $demande->setIDutilisateur($user_bdd);
+                $demande->setTitre('Demande pour une autre personne');
+                $historique->setStatut('Création');
+                $historique->setStatutOperation('Création');
+            }
+            
+    
+           
             $demande->setInfosPersonne([
                 'nom' => $data['nom'],
                 'prenom' => $data['prenom'],
@@ -144,28 +200,24 @@ class FormulaireAutreController extends AbstractController
                 'date_de_naissance' => $data['date_de_naissance'],
                 'statut' => $data['statut'],
                 'fonction' => $data['fonction'],
-               
             ]);
-
-            $token = bin2hex(random_bytes(32));
-            $demande->setToken($token);
-            
-            $demande->setTitre('Demande pour une autre personne');
             $demande->setService($nomServiceSelectionne);
             $demande->setStatuts('Brouillons');
             $demande->setUidValideur($nomValideur);
             $demande->setMissions($data['missions']);
+            $demande->setDate((new \DateTime('now', $this->timezone)));
+            $demande->setHeureSoumission((new \DateTime('now', $this->timezone)));
+            $demande->setAutrePersonne(true);
+            
+            // Gestion des informations de remplaçant
             $choix = $data['replace_someone'];
-            $statut_utilisateur = $data['statut'];
-        
-    
             if ($choix === 'oui') {
                 $demande->setRemplacant(true);
                 $demande->setNomRemplacant($data['remplacement_nom']);
                 $demande->setPrenomRemplacant($data['remplacement_prenom']);
                 $demande->setTelephoneRemplacant($data['telephone_avant_service']);
                 $depart = $data['parti_rectorat'];
-                if ($depart == true) {
+                if ($depart) {
                     $demande->setDepart(true);
                     $demande->setAffectationRemplacant('Aucune');
                 } else {
@@ -180,26 +232,31 @@ class FormulaireAutreController extends AbstractController
                 $demande->setAffectationRemplacant('Pas de remplacant.');
                 $demande->setDepart(false);
             }
-
+    
+            // Mise à jour de l'historique
             $historique->setDemande($demande);
-            $historique->setStatut('Création');
             $historique->setDate(new \DateTime('now', $this->timezone));
-            $historique->setStatutOperation('Création');
-
-            $ressources = new Ressources();
+    
+            // Gestion des ressources associées
+            $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]) ?? new Ressources();
             $ressources->setNom('Dossiers Partagés');
             $ressources->setDemande($demande);
             $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
             $ressources->setContenu(!empty($dossiersSelectionnes) ? json_encode($dossiersSelectionnes) : 'Pas de ressources sélectionnées / disponible pour ce Service.');
-
+    
+            // Persister les changements dans la base de données
             $entityManager->persist($demande);
             $entityManager->persist($historique);
             $entityManager->persist($ressources);
             $entityManager->flush();
-
+    
+            // Nettoyage de la session
             $session->remove('form_data');
             $session->remove('dossiers_partages');
-
+            $session->remove('nouvelle_demande');
+            $session->clear();
+    
+            // Envoi d'e-mail de notification
             $email = (new Email())
                 ->from('noreply@ac-guadeloupe.fr')
                 ->to($data['email'])
@@ -212,12 +269,12 @@ class FormulaireAutreController extends AbstractController
                     <p>Cordialement,</p>
                     <p><strong>Votre équipe informatique</strong></p>
                 ');
-
+    
             $mailer->send($email);
-
+    
             return $this->redirectToRoute('statuts_token_ldap');
         }
-
+    
         return $this->render('formulaireautre/etape3.html.twig', [
             'form' => $form->createView(),
             'monApplication' => $monApplication,
@@ -227,6 +284,21 @@ class FormulaireAutreController extends AbstractController
             'nomServiceSelectionne' => $nomServiceSelectionne,
         ]);
     }
+    
+
+    #[Route('/formulaireldap/a/nouvelle_demande', name: 'nouvelle-demande-ldap')]
+    public function nouvelleDemande(SessionInterface $session, EntityManagerInterface $entityManager): Response
+    {
+        // Réinitialiser les données de la session pour démarrer une nouvelle demande
+        $session->remove('form_data');
+        $session->remove('demande_id');
+    
+        $session->set('nouvelle_demande', true);
+        
+    
+        return $this->redirectToRoute('formulaireldap-etape1');
+    }
+    
 
     
     #[Route('/formulaireldap/a/modifier/{id}', name: 'modifier_demandespourautre')]
@@ -237,7 +309,12 @@ class FormulaireAutreController extends AbstractController
             throw $this->createNotFoundException('Demande non trouvée.');
         }
 
-        $data = $demande->getInformationsPersonneCible();
+        $data = $demande->getInfosPersonne();
+        if (isset($data['date_de_naissance']) && is_array($data['date_de_naissance'])) {
+            $dateString = $data['date_de_naissance']['date']; // Extraction de la chaîne de date
+            $dateNaissance = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s.u', $dateString);
+            $data['date_de_naissance'] = $dateNaissance; // Remplacer dans le tableau de données
+        }
         $session->set('form_data', $data);
         $session->set('demande_id', $id);
 

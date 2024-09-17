@@ -73,13 +73,34 @@ class StatutController extends AbstractController
     public function consult(MonApplication $monApplication, $token, EntityManagerInterface $entityManager): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
-
-        // if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
-        //     throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
-        // }
+    
+        if (!$demande) {
+            throw $this->createNotFoundException('Demande non trouvée.');
+        }
+    
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
-        $user = $demande->getIDutilisateur();
-
+    
+        // Faire la distinction si la demande est pour une autre personne ou non
+        if ($demande->isAutrePersonne()) {
+            // Récupérer les informations de l'autre personne à partir du JSON
+            $infos_personne = $demande->getInfosPersonne();
+            if (!is_array($infos_personne)) {
+                $infos_personne = json_decode($infos_personne, true) ?? [];
+            }
+    
+            // Formatage de la date de naissance
+            if (isset($infos_personne['date_de_naissance']) && is_array($infos_personne['date_de_naissance'])) {
+                $dateString = $infos_personne['date_de_naissance']['date'];
+                $dateNaissance = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s.u', $dateString);
+                $infos_personne['date_de_naissance'] = $dateNaissance;
+            }
+    
+            $user = $infos_personne; // Utiliser les infos du JSON pour l'affichage
+        } else {
+            // Si la demande n'est pas pour une autre personne, utiliser l'utilisateur lié à la demande
+            $user = $demande->getIDutilisateur();
+        }
+    
         return $this->render('consult/index.html.twig', [
             'demande' => $demande,
             'user' => $user,
@@ -87,6 +108,7 @@ class StatutController extends AbstractController
             'ressources' => $ressources,
         ]);
     }
+    
 
 
 
@@ -94,42 +116,77 @@ class StatutController extends AbstractController
     public function generatePdf($token, EntityManagerInterface $entityManager): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
-
-        // if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
-        //     throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
-        // }
-
+    
+        // Vérifier si la demande est valide
+        if (!$demande) {
+            throw $this->createNotFoundException('Demande non trouvée.');
+        }
+    
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
-        $user = $demande->getIDutilisateur();
-
+    
+        // Vérifier si la demande est faite pour une autre personne
+        if ($demande->isAutrePersonne()) {
+            // Récupérer les informations à partir du JSON
+            $infosPersonne = $demande->getInfosPersonne();
+    
+            // Vérifier que le contenu est une chaîne JSON avant d'appeler json_decode
+            if (is_string($infosPersonne)) {
+                $userInfos = json_decode($infosPersonne, true);
+            } else {
+                // Si ce n'est pas une chaîne, on considère que c'est déjà un tableau
+                $userInfos = $infosPersonne;
+            }
+    
+            // Convertir la date de naissance si elle est présente et au bon format
+            if (!empty($userInfos['date_de_naissance']) && is_array($userInfos['date_de_naissance'])) {
+                $userInfos['date_de_naissance'] = \DateTime::createFromFormat('Y-m-d H:i:s.u', $userInfos['date_de_naissance']['date']);
+            } elseif (!empty($userInfos['date_de_naissance']) && is_string($userInfos['date_de_naissance'])) {
+                // Si la date est une chaîne, essayez de la convertir
+                $userInfos['date_de_naissance'] = \DateTime::createFromFormat('Y-m-d', $userInfos['date_de_naissance']);
+            }
+        } else {
+            // Récupérer les informations de l'utilisateur lié
+            $user = $demande->getIDutilisateur();
+            $userInfos = [
+                'nom' => $user->getNom(),
+                'prenom' => $user->getPrenom(),
+                'email' => $user->getEmail(),
+                'date_de_naissance' => $user->getDateDeNaissance(),
+                'fonction' => $user->getFonction(),
+                'statut' => $user->getStatutPersonne(),
+                'date_debut' => $user->getDateDebut(),
+                'date_fin' => $user->getDateFin(),
+            ];
+        }
+    
         // Configurer Dompdf selon vos besoins
         $options = new Options();
         $options->set('defaultFont', 'Arial');
         $dompdf = new Dompdf($options);
-
+    
         // Récupérer le contenu HTML de votre template
         $html = $this->renderView('consult/pdf.html.twig', [
             'demande' => $demande,
-            'user' => $user,
+            'user' => $userInfos,
             'ressources' => $ressources,
         ]);
-
+    
         // Charger le HTML dans Dompdf
         $dompdf->loadHtml($html);
-
-        // (Optionnel) Définir le format du papier et l'orientation
+    
+        // Définir le format du papier et l'orientation
         $dompdf->setPaper('A4', 'portrait');
-
+    
         // Rendre le PDF
         $dompdf->render();
-
+    
         // Envoyer le PDF au navigateur
         return new Response($dompdf->output(), 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="demande.pdf"',
         ]);
     }
-
+    
     #[Route('/formulaireldap/nouvelle_demande', name: 'nouvelle_demande_ldap')]
 public function nouvelleDemande(SessionInterface $session, EntityManagerInterface $entityManager): Response
 {

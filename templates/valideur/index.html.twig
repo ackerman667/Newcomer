@@ -123,7 +123,13 @@
                     {% else %}
                         {% for demande in demandes %}
                             <tr data-status="{{ demande.statuts }}">
-                                <td>{{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}</td>
+                                {% if demande.AutrePersonne %}
+                                    {% set infosPersonne = demande.infosPersonne %}
+
+                                    <td>{{ infosPersonne.nom }} {{ infosPersonne.prenom }}</td>
+                                {% else %}
+                                    <td>{{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}</td>
+                                {% endif %}
                                 <td class="service-column">{{ demande.service }}</td>
                                 <td>{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
                                 <td>{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
