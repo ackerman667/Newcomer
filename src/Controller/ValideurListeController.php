@@ -470,6 +470,7 @@ public function editDemandeEtape1(int $id, Request $request, EntityManagerInterf
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $choix = $data['replace_someone'];
+           
     
             if ($choix === 'oui') {
                 $demande->setRemplacant(true);
@@ -510,7 +511,13 @@ public function editDemandeEtape1(int $id, Request $request, EntityManagerInterf
             } else {
                 $ressources->setContenu('Pas de Ressources disponible pour ce Service.');
             }
-            $demande->setAutrePersonne(false);
+
+            if ($demande->isAutrePersonne()) { // Corrigez ici pour appeler la méthode correctement
+                $demande->setAutrePersonne(true);
+            } else {
+                $demande->setAutrePersonne(false);
+            }
+            
             $entityManager->persist($demande);
             $entityManager->persist($historique);
             $entityManager->persist($ressources);
