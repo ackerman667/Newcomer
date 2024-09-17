@@ -1,0 +1,81 @@
+{% extends 'layout_ag.html.twig' %}
+
+{% block title %}<title>Étape 3 - {{ monApplication.Appli }}</title>{% endblock %}
+{% block head_gene %}
+    <style>
+        .form-section {
+            border: 1px solid #000;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .form-section-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            font-weight: bold;
+        }
+        .form-group-inline {
+            display: flex;
+            align-items: center;
+        }
+        .form-group-inline > div {
+            margin-right: 15px;
+        }
+        .service-dossier-container {
+            border: 1px solid #000;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        .service-dossier-container .service, .service-dossier-container .dossiers {
+            width: 48%;
+        }
+    </style>
+{% endblock %}
+{% block body %}<body class="page not-home">{% endblock %}
+{% block header %}
+    <div class="title_app" id="title">
+        <h1 class="title">{{ monApplication.Appli }}</h1>
+        <h2 class="desc">{{ monApplication.LibAppli }}</h2>
+    </div>
+    <div class="title_image">
+        <span>Rectorat</span>
+    </div>
+{% endblock %}
+{% block main %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            {{ form_start(form) }}
+
+            <div class="service-dossier-container">
+                <div class="service">
+                    <h3>Service sélectionné : {{ nomServiceSelectionne }}</h3>
+                </div>
+                <div class="dossiers">
+                    <h3>Ressources partagés pour le service sélectionné :</h3>
+                    {% if dossiersPartages is not empty %}
+                        {{ form_widget(form.dossiers_partages) }}
+                    {% else %}
+                        <h4>Pas de Ressources</h4>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <a href="{{ path('formulaireldap-etape2') }}" class="btn btn-secondary">Précédent</a>
+                <button class="btn btn-primary">Soumettre</button>
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,197 @@
+{% extends 'layout_ag.html.twig' %}
+
+{% block title %}<title>Étape 1 - {{ monApplication.Appli }}</title>{% endblock %}
+{% block head_gene %}
+    <style>
+        .form-section {
+            border: 1px solid #000;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .form-section-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            font-weight: bold;
+        }
+        .form-group-inline {
+            display: flex;
+            align-items: center;
+        }
+        .form-group-inline > div {
+            margin-right: 15px;
+        }
+        .btn-primary {
+            margin-top: 20px;
+        }
+        .title-page {
+            text-align: center;
+            font-style: italic;
+            color: #04A0DB;
+        }
+        .page-counter {
+            font-weight: bold;
+        }
+        .inline-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+    </style>
+{% endblock %}
+{% block body %}<body class="page not-home">{% endblock %}
+{% block header %}
+    <div class="title_app" id="title">
+        <h1 class="title">{{ monApplication.Appli }}</h1>
+        <h2 class="desc">{{ monApplication.LibAppli }}</h2>
+    </div>
+    <div class="title_image">
+        <span>Rectorat</span>
+    </div>
+    <div class="title-page" id="title2">
+        <h2 class="title-page">Demande d'un accès à un poste de travail informatique</h2>
+    </div>
+{% endblock %}
+{% block main %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            {{ form_start(form) }}
+
+            <!-- Question Remplacez-vous quelqu'un -->
+            <div class="form-group replace-someone-group">
+                {{ form_label(form.replace_someone, null, {'label_attr': {'class': 'bold-label'}}) }}
+                <div class="form-group-inline">
+                    {{ form_widget(form.replace_someone) }}
+                </div>
+            </div>
+
+            <!-- Bloc Remplacement De -->
+            <div id="remplacement-section" class="form-section" style="display: none;">
+                <div class="form-section-title">Remplacement de</div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form_label(form.remplacement_nom) }}
+                            {{ form_widget(form.remplacement_nom, { 'attr': {'class': 'remplacement-nom-input form-control'} }) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form_label(form.remplacement_prenom) }}
+                            {{ form_widget(form.remplacement_prenom, { 'attr': {'class': 'remplacement-prenom-input form-control'} }) }}
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.telephone_avant_service) }}
+                    {{ form_widget(form.telephone_avant_service, { 'attr': {'class': 'telephone-avant-service-input form-control'} }) }}
+                </div>
+                <div class="form-group parti-rectorat-group">
+                    {{ form_label(form.parti_rectorat) }}
+                    <div class="form-group-inline">
+                        {{ form_widget(form.parti_rectorat) }}
+                    </div>
+                </div>
+                <div class="form-group" id="nouvelle-affectation-service-section" style="display: none;">
+                    {{ form_label(form.nouvelle_affectation_service) }}
+                    {{ form_widget(form.nouvelle_affectation_service, { 'attr': {'class': 'nouvelle-affectation-service-input form-control'} }) }}
+                </div>
+            </div>
+
+            <div class="inline-container">
+                <button id="next-button" class="btn btn-primary">Suivant</button>
+                <div class="page-counter">
+                    {{ current_step }} / {{ total_steps }}
+                </div>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const replaceSomeoneYes = document.querySelector('[name="demande_etape1_form[replace_someone]"][value="oui"]');
+    const replaceSomeoneNo = document.querySelector('[name="demande_etape1_form[replace_someone]"][value="non"]');
+    const partiRectoratYes = document.querySelector('[name="demande_etape1_form[parti_rectorat]"][value="1"]');
+    const partiRectoratNo = document.querySelector('[name="demande_etape1_form[parti_rectorat]"][value="0"]');
+    const remplacementSection = document.getElementById('remplacement-section');
+    const nouvelleAffectationServiceSection = document.getElementById('nouvelle-affectation-service-section');
+    const nextButton = document.getElementById('next-button');
+    const remplacementNomInput = document.querySelector('.remplacement-nom-input');
+    const remplacementPrenomInput = document.querySelector('.remplacement-prenom-input');
+    const telephoneAvantServiceInput = document.querySelector('.telephone-avant-service-input');
+    const nouvelleAffectationServiceInput = document.querySelector('.nouvelle-affectation-service-input');
+
+    function toggleRemplacementSection() {
+        if (replaceSomeoneYes.checked) {
+            remplacementSection.style.display = 'block';
+            remplacementNomInput.required = true;
+            remplacementPrenomInput.required = true;
+            telephoneAvantServiceInput.required = true;
+        } else {
+            remplacementSection.style.display = 'none';
+            remplacementNomInput.required = false;
+            remplacementPrenomInput.required = false;
+            telephoneAvantServiceInput.required = false;
+            remplacementNomInput.value = '';
+            remplacementPrenomInput.value = '';
+            telephoneAvantServiceInput.value = '';
+        }
+    }
+
+    function toggleNouvelleAffectationServiceSection() {
+        if (partiRectoratNo.checked) {
+            nouvelleAffectationServiceSection.style.display = 'block';
+            nouvelleAffectationServiceInput.required = true;
+        } else {
+            nouvelleAffectationServiceSection.style.display = 'none';
+            nouvelleAffectationServiceInput.required = false;
+            nouvelleAffectationServiceInput.value = '';
+        }
+    }
+
+    function validateRemplacementFields() {
+        let allFilled = true;
+        if (replaceSomeoneYes.checked) {
+            if (!remplacementNomInput.value || !remplacementPrenomInput.value || !telephoneAvantServiceInput.value) {
+                allFilled = false;
+            }
+            if (partiRectoratNo.checked && !nouvelleAffectationServiceInput.value) {
+                allFilled = false;
+            }
+        }
+        return allFilled;
+    }
+
+    replaceSomeoneYes.addEventListener('change', function() {
+        toggleRemplacementSection();
+        toggleNouvelleAffectationServiceSection();
+    });
+
+    replaceSomeoneNo.addEventListener('change', function() {
+        toggleRemplacementSection();
+        toggleNouvelleAffectationServiceSection();
+    });
+
+    partiRectoratYes.addEventListener('change', toggleNouvelleAffectationServiceSection);
+    partiRectoratNo.addEventListener('change', toggleNouvelleAffectationServiceSection);
+
+    nextButton.addEventListener('click', function(event) {
+        if (!validateRemplacementFields()) {
+            event.preventDefault();
+        }
+    });
+
+    // Initial check on page load
+    toggleRemplacementSection();
+    toggleNouvelleAffectationServiceSection();
+});
+</script>
+{% endblock %}

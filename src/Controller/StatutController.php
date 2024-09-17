@@ -46,9 +46,7 @@ class StatutController extends AbstractController
 
         $demandes = $entityManager->getRepository(Demandes::class)->findBy(['IDutilisateur' => $user_bdd]);
 
-        // if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
-        //     throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
-        // }
+  
         $query = $entityManager->createQuery(
             'SELECT u
             FROM App\Entity\User u

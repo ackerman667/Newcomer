@@ -84,6 +84,9 @@ class Demandes
     #[ORM\Column(length: 500, nullable: true)]
     private ?string $missions = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?array $infos_personne = null;
+
     public function __construct()
     {
         $this->historiqueDemandes = new ArrayCollection();
@@ -387,6 +390,18 @@ class Demandes
     public function setMissions(?string $missions): static
     {
         $this->missions = $missions;
+
+        return $this;
+    }
+
+    public function getInfosPersonne(): ?array
+    {
+        return $this->infos_personne;
+    }
+
+    public function setInfosPersonne(?array $infos_personne): static
+    {
+        $this->infos_personne = $infos_personne;
 
         return $this;
     }

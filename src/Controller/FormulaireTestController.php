@@ -338,7 +338,6 @@ public function etape3(MonApplication $monApplication, Request $request, Session
          $entityManager->persist($ressources);
         $entityManager->flush();
 
-        // Réinitialiser le flag de nouvelle demande
         $session->remove('nouvelle_demande');
 
         $url = $this->generateUrl('statuts_token', ['token' => $testtoken], UrlGeneratorInterface::ABSOLUTE_URL);

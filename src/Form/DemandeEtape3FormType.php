@@ -26,7 +26,7 @@ class DemandeEtape3FormType extends AbstractType
                 'choices' => array_combine($options['dossiers_partages'], $options['dossiers_partages']),
                 'multiple' => true,
                 'expanded' => true,
-                // 'label' => 'Sélectionnez les ressources que vous souhaitez garder',
+                'label' => false,
             ]);
        
     }

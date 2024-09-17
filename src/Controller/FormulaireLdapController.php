@@ -292,7 +292,6 @@ class FormulaireLdapController extends AbstractController
                 }
             }
         
-            // Maintenant que $demande est toujours défini, vous pouvez utiliser ses méthodes
             $choix = $data['replace_someone'];
             $statut_utilisateur = $data['statut'];
         
