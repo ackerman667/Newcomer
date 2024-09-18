@@ -177,11 +177,9 @@ class FormulaireLdapController extends AbstractController
        
        
     
-        // Rechercher l'utilisateur par UID
         $user1 = $entityManager->getRepository(User::class)->findOneBy(['uid' => $uid]);
     
         if (!$user1) {
-            // Si l'utilisateur n'existe pas, créer un nouvel utilisateur
             $user1 = new User();
             $user1->setNom($nom_utilisateur);
             $user1->setPrenom($prenom_utilisateur);

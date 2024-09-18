@@ -19,6 +19,7 @@ class DemandeEtape2FormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+        $disabledServices = explode(',', getenv('DISABLED_SERVICES'));
         $builder
             ->add('nom', TextType::class, [
                 'label' => 'Nom :',
@@ -41,9 +42,9 @@ class DemandeEtape2FormType extends AbstractType
                 'label' => 'Choisissez un service :',
                 'choices' => $options['services'],
                 'required' => true,
-                'choice_attr' => function ($choice, $key, $value) {
-                    // Désactiver un service au hasard, par exemple, avec l'ID '1234'
-                    if ($value === '74') { // Remplacez '1234' par l'ID ou critère que vous souhaitez désactiver
+                'choice_attr' => function ($choice, $key, $value) use ($disabledServices) {
+                    // Désactiver les services qui sont dans la liste des services désactivés
+                    if (in_array($value, $disabledServices)) {
                         return ['disabled' => 'disabled'];
                     }
                     return [];

@@ -266,33 +266,67 @@ public function generatePdf($id, EntityManagerInterface $entityManager): Respons
 {
     $demande = $entityManager->getRepository(Demandes::class)->find($id);
 
+    // Vérifier si la demande est valide
     if (!$demande) {
         throw $this->createNotFoundException('Demande non trouvée.');
     }
 
     $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande->getId()]);
-    $user = $demande->isAutrePersonne() ? json_decode($demande->getInfosPersonne(), true) : $demande->getIDutilisateur();
 
-    // Configurer Dompdf
+    // Vérifier si la demande est faite pour une autre personne
+    if ($demande->isAutrePersonne()) {
+        // Récupérer les informations à partir du JSON
+        $infosPersonne = $demande->getInfosPersonne();
+
+        // Vérifier que le contenu est une chaîne JSON avant d'appeler json_decode
+        if (is_string($infosPersonne)) {
+            $userInfos = json_decode($infosPersonne, true);
+        } else {
+            // Si ce n'est pas une chaîne, on considère que c'est déjà un tableau
+            $userInfos = $infosPersonne;
+        }
+
+        if (!empty($userInfos['date_de_naissance']) && is_array($userInfos['date_de_naissance'])) {
+            $userInfos['date_de_naissance'] = \DateTime::createFromFormat('Y-m-d H:i:s.u', $userInfos['date_de_naissance']['date']);
+        }
+    } else {
+        // Récupérer les informations de l'utilisateur lié
+        $userInfos = [
+            'nom' => $demande->getIDutilisateur()->getNom(),
+            'prenom' => $demande->getIDutilisateur()->getPrenom(),
+            'email' => $demande->getIDutilisateur()->getEmail(),
+            'date_de_naissance' => $demande->getIDutilisateur()->getDateDeNaissance(),
+            'fonction' => $demande->getIDutilisateur()->getFonction(),
+            'statut' => $demande->getIDutilisateur()->getStatutPersonne(),
+            'date_debut' => $demande->getIDutilisateur()->getDateDebut(),
+            'date_fin' => $demande->getIDutilisateur()->getDateFin(),
+        ];
+    }
+
+    // Configurer Dompdf selon vos besoins
     $options = new Options();
     $options->set('defaultFont', 'Arial');
     $dompdf = new Dompdf($options);
 
+    // Récupérer le contenu HTML de votre template
     $html = $this->renderView('consult/pdf.html.twig', [
         'demande' => $demande,
-        'user' => $user,
+        'user' => $userInfos,
         'ressources' => $ressources,
     ]);
 
+    // Charger le HTML dans Dompdf
     $dompdf->loadHtml($html);
     $dompdf->setPaper('A4', 'portrait');
     $dompdf->render();
 
+    // Envoyer le PDF au navigateur
     return new Response($dompdf->output(), 200, [
         'Content-Type' => 'application/pdf',
         'Content-Disposition' => 'inline; filename="demande.pdf"',
     ]);
 }
+
 
 
 

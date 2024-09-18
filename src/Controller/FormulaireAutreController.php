@@ -150,6 +150,11 @@ class FormulaireAutreController extends AbstractController
             $infos_user = $userInformation->getUserInformation($user);
             $uid = $infos_user['uid'];
             $user_bdd = $entityManager->getRepository(User::class)->findOneBy(['uid' => $uid]);
+            if ($user_bdd){
+                $demande->setIDutilisateur($user_bdd);
+            } else {
+
+            }
             dump($user_bdd);
             
             if ($nouvelleDemande) {
@@ -157,7 +162,7 @@ class FormulaireAutreController extends AbstractController
                 $demande = new Demandes();
                 $token = bin2hex(random_bytes(32));
                 $demande->setToken($token);
-                $demande->setIDutilisateur($user_bdd);
+                // $demande->setIDutilisateur($user_bdd);
                 $demande->setTitre('Demande pour une autre personne');
                 $historique->setStatut('Création');
                 $historique->setStatutOperation('Création');
@@ -175,7 +180,7 @@ class FormulaireAutreController extends AbstractController
                     $demande = new Demandes();
                     $token = bin2hex(random_bytes(32));
                     $demande->setToken($token);
-                    $demande->setIDutilisateur($user_bdd);
+                    // $demande->setIDutilisateur($user_bdd);
                     $demande->setTitre('Demande pour une autre personne');
                     $historique->setStatut('Création');
                     $historique->setStatutOperation('Création');
@@ -185,7 +190,7 @@ class FormulaireAutreController extends AbstractController
                 $demande = new Demandes();
                 $token = bin2hex(random_bytes(32));
                 $demande->setToken($token);
-                $demande->setIDutilisateur($user_bdd);
+                // $demande->setIDutilisateur($user_bdd);
                 $demande->setTitre('Demande pour une autre personne');
                 $historique->setStatut('Création');
                 $historique->setStatutOperation('Création');
