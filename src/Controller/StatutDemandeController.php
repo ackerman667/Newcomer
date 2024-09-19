@@ -58,7 +58,7 @@ class StatutDemandeController extends AbstractController
         $user = $demande->getIDutilisateur();
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
 
-        return $this->render('consult/index.html.twig', [
+        return $this->render('consult/visualiser.html.twig', [
             'demande' => $demande,
             'user' => $user,
             'monApplication' => $monApplication,
@@ -67,46 +67,49 @@ class StatutDemandeController extends AbstractController
     }
 
     #[Route('/demande/pdf/{token}', name: 'demande_pdf')]
-    public function generatePdf(MonApplication $monApplication,$token, EntityManagerInterface $entityManager): Response
-    {
-        $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+public function generatePdf(MonApplication $monApplication, $token, EntityManagerInterface $entityManager): Response
+{
+    $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
 
-        // if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
-        //     throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
-        // }
+    $user = $demande->getIDutilisateur();
+    $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
 
-        $user = $demande->getIDutilisateur();
-        $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
+    // Encoder l'image en base64
+    $imagePath = 'C:\Users\nbarbeu\newcomer\public\interfaceappli\css\images\logoaca\academie.png';
+    $imageData = base64_encode(file_get_contents($imagePath));
+    $imageSrc = 'data:image/png;base64,' . $imageData;
 
-        // Configurer Dompdf selon vos besoins
-        $options = new Options();
-        $options->set('defaultFont', 'Arial');
-        $dompdf = new Dompdf($options);
+    // Configurer Dompdf
+    $options = new Options();
+    $options->set('isRemoteEnabled', true);
+    $options->set('defaultFont', 'Arial');
+    $dompdf = new Dompdf($options);
 
-        // Récupérer le contenu HTML de votre template
-        $html = $this->renderView('consult/pdf.html.twig', [
-            'demande' => $demande,
-            'user' => $user,
-            'ressources' => $ressources,
-            'monApplication' => $monApplication,
+    // Récupérer le contenu HTML de votre template
+    $html = $this->renderView('consult/index.html.twig', [
+        'demande' => $demande,
+        'user' => $user,
+        'ressources' => $ressources,
+        'monApplication' => $monApplication,
+        'imageSrc' => $imageSrc, // Passer l'image encodée à la vue
+    ]);
 
-        ]);
+    // Charger le HTML dans Dompdf
+    $dompdf->loadHtml($html);
 
-        // Charger le HTML dans Dompdf
-        $dompdf->loadHtml($html);
+    // Définir le format du papier
+    $dompdf->setPaper('A4', 'portrait');
 
-        // (Optionnel) Définir le format du papier et l'orientation
-        $dompdf->setPaper('A4', 'portrait');
+    // Rendre le PDF
+    $dompdf->render();
 
-        // Rendre le PDF
-        $dompdf->render();
+    // Envoyer le PDF au navigateur
+    return new Response($dompdf->output(), 200, [
+        'Content-Type' => 'application/pdf',
+        'Content-Disposition' => 'inline; filename="demande.pdf"',
+    ]);
+}
 
-        // Envoyer le PDF au navigateur
-        return new Response($dompdf->output(), 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="demande.pdf"',
-        ]);
-    }
 
     #[Route('/formulairetest/nouvelle_demande/{token}', name: 'nouvelle_demande')]
     public function nouvelleDemande(SessionInterface $session, $token): Response

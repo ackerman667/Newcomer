@@ -101,7 +101,7 @@ class StatutController extends AbstractController
             $user = $demande->getIDutilisateur();
         }
     
-        return $this->render('consult/index.html.twig', [
+        return $this->render('consult/visualiser.html.twig', [
             'demande' => $demande,
             'user' => $user,
             'monApplication' => $monApplication,
@@ -159,6 +159,11 @@ class StatutController extends AbstractController
             ];
         }
     
+
+        $imagePath = 'C:\Users\nbarbeu\newcomer\public\interfaceappli\css\images\logoaca\academie.png'; 
+        $imageData = base64_encode(file_get_contents($imagePath));
+        $imageSrc = 'data:image/png;base64,' . $imageData;
+    
         // Configurer Dompdf selon vos besoins
         $options = new Options();
         $options->set('defaultFont', 'Arial');
@@ -169,6 +174,7 @@ class StatutController extends AbstractController
             'demande' => $demande,
             'user' => $userInfos,
             'ressources' => $ressources,
+            'imageSrc' => $imageSrc,
         ]);
     
         // Charger le HTML dans Dompdf

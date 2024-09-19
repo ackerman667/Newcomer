@@ -14,12 +14,21 @@ use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class DemandeEtape2FormType extends AbstractType
+
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    private $params;
+
+    public function __construct(ParameterBagInterface $params)
     {
-        $disabledServices = explode(',', getenv('DISABLED_SERVICES'));
+        $this->params = $params;
+    }
+    public function buildForm(FormBuilderInterface $builder, array $options)
+    { 
+        $disabledServices = explode(',', $this->params->get('disabled_services'));
+        
         $builder
             ->add('nom', TextType::class, [
                 'label' => 'Nom :',
@@ -43,7 +52,7 @@ class DemandeEtape2FormType extends AbstractType
                 'choices' => $options['services'],
                 'required' => true,
                 'choice_attr' => function ($choice, $key, $value) use ($disabledServices) {
-                    // Désactiver les services qui sont dans la liste des services désactivés
+                    // Désactiver les éléments dont l'ID est dans la liste des services désactivés
                     if (in_array($value, $disabledServices)) {
                         return ['disabled' => 'disabled'];
                     }

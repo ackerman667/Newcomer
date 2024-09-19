@@ -150,12 +150,7 @@ class FormulaireAutreController extends AbstractController
             $infos_user = $userInformation->getUserInformation($user);
             $uid = $infos_user['uid'];
             $user_bdd = $entityManager->getRepository(User::class)->findOneBy(['uid' => $uid]);
-            if ($user_bdd){
-                $demande->setIDutilisateur($user_bdd);
-            } else {
-
-            }
-            dump($user_bdd);
+            
             
             if ($nouvelleDemande) {
                 // Création d'une nouvelle demande
@@ -196,6 +191,12 @@ class FormulaireAutreController extends AbstractController
                 $historique->setStatutOperation('Création');
             }
             
+            if ($user_bdd){
+                $demande->setIDutilisateur($user_bdd);
+            } else {
+
+            }
+            dump($user_bdd);
     
            
             $demande->setInfosPersonne([
@@ -244,7 +245,7 @@ class FormulaireAutreController extends AbstractController
     
             // Gestion des ressources associées
             $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]) ?? new Ressources();
-            $ressources->setNom('Dossiers Partagés');
+            $ressources->setNom('Ressources');
             $ressources->setDemande($demande);
             $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
             $ressources->setContenu(!empty($dossiersSelectionnes) ? json_encode($dossiersSelectionnes) : 'Pas de ressources sélectionnées / disponible pour ce Service.');

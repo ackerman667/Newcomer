@@ -216,7 +216,7 @@ class FormulaireLdapController extends AbstractController
                 $user1->setToken($token);
         
                 $ressources = new Ressources();
-                $ressources->setNom('Dossier Partagés');
+                $ressources->setNom('Ressources');
                 $ressources->setDemande($demande);
                 $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
                 if (!empty($dossiersSelectionnes)) {
@@ -239,7 +239,7 @@ class FormulaireLdapController extends AbstractController
                     if (!$ressources) {
                         $ressources = new Ressources();
                     }
-                    $ressources->setNom('Dossier Partagés');
+                    $ressources->setNom('Ressources');
                     $ressources->setDemande($demande);
                     $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
                     if (!empty($dossiersSelectionnes)) {
@@ -259,7 +259,7 @@ class FormulaireLdapController extends AbstractController
                     $user1->setToken($token);
         
                     $ressources = new Ressources();
-                    $ressources->setNom('Dossier Partagés');
+                    $ressources->setNom('Ressources');
                     $ressources->setDemande($demande);
                     $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
                     if (!empty($dossiersSelectionnes)) {
@@ -280,7 +280,7 @@ class FormulaireLdapController extends AbstractController
                 $user1->setToken($token);
         
                 $ressources = new Ressources();
-                $ressources->setNom('Dossier Partagés');
+                $ressources->setNom('Ressources');
                 $ressources->setDemande($demande);
                 $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
                 if (!empty($dossiersSelectionnes)) {

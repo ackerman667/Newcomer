@@ -165,8 +165,16 @@ public function refuserDemande(int $id, EntityManagerInterface $entityManager, M
     $entityManager->persist($historique);
     $entityManager->flush();
 
-    $email = $demande->isAutrePersonne() ? json_decode($demande->getInfosPersonne(), true)['email'] : $demande->getIDutilisateur()->getEmail();
+    $infosPersonne = $demande->getInfosPersonne();
 
+// Vérifiez si les informations sont déjà un tableau ou non
+if ($demande->isAutrePersonne() && is_string($infosPersonne)) {
+    // Décoder le JSON seulement si c'est une chaîne
+    $infosPersonne = json_decode($infosPersonne, true);
+}
+
+// Récupérez l'email en fonction du type de demande
+$email = $demande->isAutrePersonne() ? ($infosPersonne['email'] ?? '') : $demande->getIDutilisateur()->getEmail();
     $emailMessage = (new Email())
         ->from('noreply@ac-guadeloupe.fr')
         ->to($email)
@@ -303,6 +311,10 @@ public function generatePdf($id, EntityManagerInterface $entityManager): Respons
         ];
     }
 
+    $imagePath = 'C:\Users\nbarbeu\newcomer\public\interfaceappli\css\images\logoaca\academie.png'; 
+    $imageData = base64_encode(file_get_contents($imagePath));
+    $imageSrc = 'data:image/png;base64,' . $imageData;
+
     // Configurer Dompdf selon vos besoins
     $options = new Options();
     $options->set('defaultFont', 'Arial');
@@ -313,6 +325,7 @@ public function generatePdf($id, EntityManagerInterface $entityManager): Respons
         'demande' => $demande,
         'user' => $userInfos,
         'ressources' => $ressources,
+        'imageSrc' => $imageSrc,
     ]);
 
     // Charger le HTML dans Dompdf
