@@ -63,6 +63,7 @@
                     <h3>Ressources partagés pour le service sélectionné :</h3>
                     {% if dossiersPartages is not empty %}
                         {{ form_widget(form.dossiers_partages) }}
+                         {{ form_widget(form.global_checkbox) }}
                     {% else %}
                         <h4>Pas de Ressources</h4>
                     {% endif %}

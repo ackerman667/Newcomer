@@ -219,6 +219,8 @@ class FormulaireLdapController extends AbstractController
                 $ressources->setNom('Ressources');
                 $ressources->setDemande($demande);
                 $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
+                $globalCheckboxValue = $form->get('global_checkbox')->getData();
+
                 if (!empty($dossiersSelectionnes)) {
                     $ressources->setContenu(json_encode($dossiersSelectionnes));
                 } else {

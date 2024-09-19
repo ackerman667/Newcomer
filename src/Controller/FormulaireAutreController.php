@@ -194,9 +194,28 @@ class FormulaireAutreController extends AbstractController
             if ($user_bdd){
                 $demande->setIDutilisateur($user_bdd);
             } else {
+               
+                $nom_utilisateur = $infos_user['sn'];
+                $prenom_utilisateur = $infos_user['givenname'];
+                $email_utilisateur = $infos_user['mail'];
+                $dateString = $infos_user['datenaissance'];
+                $uid = $infos_user['uid'];
+                $date = \DateTimeImmutable::createFromFormat('d/m/Y', $dateString);
+                $datedenaissance_utilisateur = $date;
+                $user = new User();
+                $user->setNom($nom_utilisateur);
+                $user->setPrenom($prenom_utilisateur);
+                $user->setDateDeNaissance($datedenaissance_utilisateur);
+                $user->setEmail($email_utilisateur);
+                $user->setCompteActif(true);
+                $user->setUid($uid);
+                $entityManager->persist($user);
+                $demande->setIDutilisateur($user);
+
+                dump($user);
 
             }
-            dump($user_bdd);
+          
     
            
             $demande->setInfosPersonne([

@@ -52,7 +52,7 @@ class DemandeEtape2FormType extends AbstractType
                 'choices' => $options['services'],
                 'required' => true,
                 'choice_attr' => function ($choice, $key, $value) use ($disabledServices) {
-                    // Désactiver les éléments dont l'ID est dans la liste des services désactivés
+                    
                     if (in_array($value, $disabledServices)) {
                         return ['disabled' => 'disabled'];
                     }
