@@ -214,6 +214,17 @@ public function generatePdf(MonApplication $monApplication, $token, EntityManage
 
                 $entityManager->persist($historique);
         $entityManager->flush();
+
+        // $email = (new Email())
+        //         ->from('noreply@ac-guadeloupe.fr')
+        //         ->to($user->getEmail())
+        //         ->subject('Votre lien de connexion')
+        //         ->cc('nbarbeu97180@gmail.com')
+        //         ->text('Voici votre lien de connexion :')
+        //         ->html('Bonjour');
+    
+        //     $mailer->send($email);
+    
        
 
         return $this->redirectToRoute('statuts_token', ['token' => $token]);

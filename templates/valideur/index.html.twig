@@ -79,6 +79,21 @@
         color: blue;
         font-weight: bold;
     }
+    .alert {
+        transition: height 0.5s ease, opacity 0.5s ease;
+        overflow: hidden;
+        height: auto;
+        opacity: 1;
+    }
+
+    .alert.fade {
+        height: 0;
+        opacity: 0;
+        padding: 0; /* Pour éviter les espaces résiduels */
+        margin: 0;
+    }
+
+
 </style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
@@ -180,7 +195,7 @@
 </div>
 
 <script>
-   document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function() {
     const filterSelect = document.getElementById('filter-select');
     const rows = document.querySelectorAll('tbody tr');
 
@@ -195,6 +210,14 @@
             }
         });
     });
+
+    // Disparition des alertes après 5 secondes
+    setTimeout(function() {
+        let alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            alert.classList.add('fade');
+        });
+    }, 5000); // Disparition après 5 secondes
 });
 
 function checkComment(demandeId) {
@@ -205,5 +228,6 @@ function checkComment(demandeId) {
     }
     return true;
 }
+
 </script>
 {% endblock %}

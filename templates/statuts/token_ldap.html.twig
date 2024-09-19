@@ -56,8 +56,17 @@
             margin-top: -10px;
         }
         .alert {
-            margin-top: 20px;
-            text-align: center;
+            transition: height 0.5s ease, opacity 0.5s ease;
+            overflow: hidden;
+            height: auto;
+            opacity: 1;
+        }
+
+        .alert.fade {
+            height: 0;
+            opacity: 0;
+            padding: 0; /* Pour éviter les espaces résiduels */
+            margin: 0;
         }
         .status-brouillons {
             background-color: #FFC107;
@@ -110,6 +119,17 @@
             min-width: 100px;
             margin: 5px 0;
         }
+        .btn-container {
+    display: flex;
+    justify-content: flex-end; /* Aligne les boutons à droite */
+    gap: 10px; /* Espace de 10px entre les boutons */
+    margin-bottom: 20px; /* Ajoute de l'espace sous les boutons */
+}
+
+.btn-primary {
+    padding: 10px 20px;
+}
+
     </style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
@@ -128,8 +148,11 @@
                         {{ message }}
                     </div>
                 {% endfor %}
-                 <a href="{{ path('nouvelle-demande-ldap') }}" class="btn btn-primary btn-new-request">Nouvelle Demande (qlq d'autre)</a>
-                 <a href="{{ path('nouvelle_demande_ldap') }}" class="btn btn-primary btn-new-request">Nouvelle Demande</a>
+                <div class="btn-container">
+    <a href="{{ path('nouvelle-demande-ldap') }}" class="btn btn-primary">Faire une demande pour quelqu'un d'autre</a>
+    <a href="{{ path('nouvelle_demande_ldap') }}" class="btn btn-primary">Nouvelle Demande Personelle</a>
+</div>
+
                 <table style="width:100%; border-collapse: collapse;">
                     <thead>
                         <tr style="border-bottom: 1px solid #ddd;">
@@ -225,13 +248,12 @@
     </div>
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-        setTimeout(function () {
-            let alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function (alert) {
-                alert.classList.remove('show');
-                alert.classList.add('fade');
-            });
-        }, 5000); 
-    });
+    setTimeout(function () {
+        let alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function (alert) {
+            alert.classList.add('fade');
+        });
+    }, 5000); // Disparition après 5 secondes
+});
     </script>
 {% endblock %}

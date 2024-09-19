@@ -48,8 +48,17 @@
             margin-bottom: 30px;
         }
         .alert {
-            margin-top: 20px;
-            text-align: center;
+            transition: height 0.5s ease, opacity 0.5s ease;
+            overflow: hidden;
+            height: auto;
+            opacity: 1;
+        }
+
+        .alert.fade {
+            height: 0;
+            opacity: 0;
+            padding: 0; /* Pour éviter les espaces résiduels */
+            margin: 0;
         }
         .status-brouillons {
             background-color: #FFC107;
@@ -103,9 +112,9 @@
             margin: 5px 0;
         }
         .new-request-btn {
-            display: block;
-            margin: 20px auto;
-            text-align: center;
+           display: flex;
+            justify-content: flex-end; 
+            margin-bottom: 20px; 
         }
     </style>
 {% endblock %}
@@ -192,13 +201,13 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-        setTimeout(function () {
-            let alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function (alert) {
-                alert.classList.remove('show');
-                alert.classList.add('fade');
-            });
-        }, 5000); 
-    });
+    setTimeout(function () {
+        let alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function (alert) {
+            alert.classList.add('fade');
+        });
+    }, 5000); // Disparition après 5 secondes
+});
+
     </script>
 {% endblock %}
