@@ -132,6 +132,12 @@ if ($demande->isAutrePersonne() && is_string($infosPersonne)) {
     $infosPersonne = json_decode($infosPersonne, true);
 }
 
+   // Générer le PDF
+   $pdfResponse = $this->generatePdf($id, $entityManager);
+
+   // Récupérer le contenu du PDF généré
+   $pdfOutput = $pdfResponse->getContent();
+
 // Récupérez l'email en fonction du type de demande
 $email = $demande->isAutrePersonne() ? ($infosPersonne['email'] ?? '') : $demande->getIDutilisateur()->getEmail();
 
@@ -142,6 +148,21 @@ $email = $demande->isAutrePersonne() ? ($infosPersonne['email'] ?? '') : $demand
         ->html('<p>Votre demande a été envoyée dans LEKA.</p>');
 
     $mailer->send($emailMessage);
+
+
+//  LEKA
+    // $leka = (new Email())
+    //     ->from('noreply@ac-guadeloupe.fr')
+    //     // ->to('nbarbeu@gmail.com') mail leka
+    //     ->subject('Votre demande a été envoyée dans LEKA') 
+    //     ->html('<p>Votre demande a été envoyée dans LEKA.</p>')
+    //     ->attach($pdfOutput, 'demande.pdf', 'application/pdf');
+
+    // $mailer->send($leka);
+
+
+
+
 
     return $this->redirectToRoute('listedemandes');
 }
@@ -357,19 +378,24 @@ public function editDemandeEtape1(int $id, Request $request, EntityManagerInterf
     // Préparer les données en fonction du type de demande (pour soi-même ou pour une autre personne)
     if ($demande->isAutrePersonne()) {
         $infos_personne = $demande->getInfosPersonne();
-
+    
         // Décoder les informations JSON si nécessaire
         if (!is_array($infos_personne)) {
             $infos_personne = json_decode($infos_personne, true) ?? [];
         }
-        $dateNaissance = null;
-        if (!empty($infos_personne['date_de_naissance']) && is_string($infos_personne['date_de_naissance'])) {
-            $dateNaissance = \DateTime::createFromFormat('Y-m-d', $infos_personne['date_de_naissance']);
+    
+        // $dateNaissance = null;
+    
+        // Vérifier si 'date_de_naissance' est bien un tableau contenant une clé 'date'
+        if (!empty($infos_personne['date_de_naissance']['date']) && is_string($infos_personne['date_de_naissance']['date'])) {
+            $dateNaissance = \DateTime::createFromFormat('Y-m-d H:i:s.u', $infos_personne['date_de_naissance']['date']);
             if (!$dateNaissance) {
-                // Si la date n'a pas pu être convertie, affecter null pour éviter une erreur
+                // Si la conversion échoue, affecter null
                 $dateNaissance = null;
             }
         }
+    
+    
 
         $data = [
             'nom' => $infos_personne['nom'] ?? '',
@@ -559,12 +585,40 @@ public function editDemandeEtape1(int $id, Request $request, EntityManagerInterf
                 $ressources->setContenu('Pas de Ressources disponible pour ce Service.');
             }
 
-            if ($demande->isAutrePersonne()) { // Corrigez ici pour appeler la méthode correctement
+            $statut_utilisateur = $data['statut'];
+
+            if ($demande->isAutrePersonne()) { 
                 $demande->setAutrePersonne(true);
+                $demande->setInfosPersonne([
+                    'nom' => $data['nom'],
+                'prenom' => $data['prenom'],
+                'email' => $data['email'],
+                'date_de_naissance' => $data['date_de_naissance'],
+                'statut' => $data['statut'],
+                'fonction' => $data['fonction'],
+                
+                ]);
+
             } else {
                 $demande->setAutrePersonne(false);
+                $user = $demande->getIDutilisateur();
+                $fonction = $data['fonction'];
+                $user->setFonction($fonction);
+                if ($statut_utilisateur !== 'Titulaire') {
+                    $date_debut_contrat = $data['date_debut_contrat'];
+                    $date_fin_contrat = $data['date_fin_contrat'];
+                    $user->setDateDebut($date_debut_contrat);
+                    $user->setDateFin($date_fin_contrat);
+                    $user->setStatutPersonne($statut_utilisateur);
+                } else {
+                    $user->setStatutPersonne($statut_utilisateur);
+                    $user->setDateDebut(null);
+                    $user->setDateFin(null);
+                }
+
             }
-            
+            $missions = $data['missions'];
+            $demande->SetMissions($missions);
             $entityManager->persist($demande);
             $entityManager->persist($historique);
             $entityManager->persist($ressources);

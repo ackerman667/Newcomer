@@ -16,6 +16,8 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Classe\MonApplication;
 use Doctrine\ORM\EntityManagerInterface;
 use Dompdf\Dompdf;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 use Dompdf\Options;
 
 class StatutDemandeController extends AbstractController
@@ -67,9 +69,11 @@ class StatutDemandeController extends AbstractController
     }
 
     #[Route('/demande/pdf/{token}', name: 'demande_pdf')]
-public function generatePdf(MonApplication $monApplication, $token, EntityManagerInterface $entityManager): Response
+public function generatePdf(Demandes $demande, MonApplication $monApplication,/* $token,*/ EntityManagerInterface $entityManager): Response
 {
-    $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+    // $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+    $token = $demande->getToken();
+
 
     $user = $demande->getIDutilisateur();
     $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
@@ -155,7 +159,7 @@ public function generatePdf(MonApplication $monApplication, $token, EntityManage
     }
 
     #[Route('/formulairetest/modifier/{id}', name: 'modifier_demandes')]
-    public function modifierDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
+    public function modifierDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id, MailerInterface $mailer): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
 
@@ -192,9 +196,10 @@ public function generatePdf(MonApplication $monApplication, $token, EntityManage
     }
 
     #[Route('/formulairetest/valider/{id}', name: 'valider_demandes')]
-    public function validerDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
+    public function validerDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id,MailerInterface $mailer): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
+        $token = $demande->getToken();
         $id_user = $demande->getIDutilisateur();
         $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
         $token= $user->getToken();
@@ -215,15 +220,25 @@ public function generatePdf(MonApplication $monApplication, $token, EntityManage
                 $entityManager->persist($historique);
         $entityManager->flush();
 
-        // $email = (new Email())
-        //         ->from('noreply@ac-guadeloupe.fr')
-        //         ->to($user->getEmail())
-        //         ->subject('Votre lien de connexion')
-        //         ->cc('nbarbeu97180@gmail.com')
-        //         ->text('Voici votre lien de connexion :')
-        //         ->html('Bonjour');
+        $pdfResponse = $this->generatePdf($demande, $monApplication, $entityManager);
+
+
+        // Récupérer le contenu du PDF généré
+        $pdfOutput = $pdfResponse->getContent();
     
-        //     $mailer->send($email);
+        // Créer l'email
+        $email = (new Email())
+            ->from('noreply@ac-guadeloupe.fr')
+            ->to($user->getEmail())
+            ->subject('Votre lien de connexion et la demande en PDF')
+            ->cc('nbarbeu97180@gmail.com')
+            ->text('Voici votre lien de connexion :')
+            ->html('<p>Bonjour, vous trouverez ci-joint votre demande en PDF.</p>');
+    
+        // Ajouter le PDF en pièce jointe
+        $email->attach($pdfOutput, 'demande.pdf', 'application/pdf');
+    
+            $mailer->send($email);
     
        
 

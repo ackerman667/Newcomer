@@ -215,8 +215,7 @@ class FormulaireAutreController extends AbstractController
                 dump($user);
 
             }
-          
-    
+        
            
             $demande->setInfosPersonne([
                 'nom' => $data['nom'],
@@ -225,6 +224,7 @@ class FormulaireAutreController extends AbstractController
                 'date_de_naissance' => $data['date_de_naissance'],
                 'statut' => $data['statut'],
                 'fonction' => $data['fonction'],
+                
             ]);
             $demande->setService($nomServiceSelectionne);
             $demande->setStatuts('Brouillons');

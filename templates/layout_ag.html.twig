@@ -10,6 +10,8 @@
     {% block title %}{% endblock %}
     <!-- tooltipster CSS -->
     <link rel="stylesheet" type="text/css" href="{{ asset('js/tooltipster/dist/css/tooltipster.bundle.min.css','interfaceappli') }}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <link rel="stylesheet" type="text/css" href="{{ asset('js/tooltipster/dist/css/plugins/tooltipster/sideTip/themes/tooltipster-sideTip-shadow.min.css','interfaceappli') }}" />
     <!-- Jquery core JS -->
     <script type="text/javascript" src="{{ asset('bower_components/jquery/dist/jquery.min.js','interfaceappli') }}"></script>
@@ -195,6 +197,9 @@
           <ul class="navbar-nav flex-column">
             <li class="nav-item active">
               <a class="nav-link" href="{{ path('home') }}" alt="Accueil" title="Accueil"><i class="fas fa-home"></i><span>Accueil</span></a>
+            </li>
+            <li class="nav-item active">
+              <a class="nav-link" href="{{ path('ldap') }}" alt="Formulaire" title="Formulaire"><i class="fa-brands fa-wpforms"></i><span>Formulaire</span></a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{{ path('profil') }}" alt="Accès à votre profil utilisateur" title="Accès à votre profil utilisateur"><i class="fas fa-user"></i><span>Profil utilisateur</span></a>
