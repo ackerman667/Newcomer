@@ -60,7 +60,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?bool $compte_actif = null;
 
-    #[ORM\Column(length: 64, nullable: true)]
+    #[ORM\Column(length: 64, nullable: true, unique: true)]
     private ?string $token = null;
 
     #[ORM\Column(nullable: true)]
@@ -68,6 +68,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $uid = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $provenance = null;
 
     public function __construct()
     {
@@ -308,6 +311,18 @@ public function getUid(): ?string
 public function setUid(?string $uid): static
 {
     $this->uid = $uid;
+
+    return $this;
+}
+
+public function getProvenance(): ?string
+{
+    return $this->provenance;
+}
+
+public function setProvenance(?string $provenance): static
+{
+    $this->provenance = $provenance;
 
     return $this;
 }

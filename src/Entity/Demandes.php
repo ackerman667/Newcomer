@@ -35,7 +35,9 @@ class Demandes
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $uid_valideur = null;
 
-    #[ORM\Column(length: 64, nullable: true)]
+
+
+    #[ORM\Column(length: 64, nullable: true, unique: true)]
     private ?string $token = null;
 
     #[ORM\Column(nullable: true)]

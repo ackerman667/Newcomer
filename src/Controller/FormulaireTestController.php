@@ -36,19 +36,19 @@ class FormulaireTestController extends AbstractController
     public function etape1(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, $token): Response
     {
     
-        $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
-        if($demande) {
-            $id_user = $demande->getIDutilisateur();
-        $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
-        } else {
-            $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+        // $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+        // if($demande) {
+        //     $id_user = $demande->getIDutilisateur();
+        // $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
+        // } else {
+        //     $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
 
-        }
+        // }
         
 
-        if (!$user) {
-            throw $this->createNotFoundException('Utilisateur non trouvé.');
-        }
+        // if (!$user) {
+        //     throw $this->createNotFoundException('Utilisateur non trouvé.');
+        // }
 
         $data = $session->get('form_data', []);
         $form = $this->createForm(DemandeEtape1FormType::class, $data);
@@ -73,19 +73,33 @@ class FormulaireTestController extends AbstractController
     #[Route('/formulairetest/etape2/{token}', name: 'formulairetest_etape2')]
     public function etape2(MonApplication $monApplication, Request $request, SessionInterface $session, HttpClientInterface $httpClient, EntityManagerInterface $entityManager, $token): Response
     {
+
+
        
-        $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
-        if($demande) {
+        // $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+        // if($demande) {
+        //     $id_user = $demande->getIDutilisateur();
+        // $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
+        // } else {
+        //     $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+
+        // }
+
+        // if (!$user) {
+        //     throw $this->createNotFoundException('Utilisateur non trouvé.');
+        // }
+        $nouvelleDemande = $session->get('nouvelle_demande', false);
+        if ($nouvelleDemande) {
+            $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+        } else {
+            $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
             $id_user = $demande->getIDutilisateur();
         $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
-        } else {
-            $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
 
         }
 
-        if (!$user) {
-            throw $this->createNotFoundException('Utilisateur non trouvé.');
-        }
+
+
 
         $data = $session->get('form_data', []);
         $data['nom'] = $user->getNom();
@@ -175,21 +189,21 @@ class FormulaireTestController extends AbstractController
     #[Route('/formulairetest/etape3/{token}', name: 'formulairetest_etape3')]
 public function etape3(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, MailerInterface $mailer, $token): Response
 {
-    $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
-        if($demande) {
-            $id_user = $demande->getIDutilisateur();
-        $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
-        } else {
-            $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+    // $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+    //     if($demande) {
+    //         $id_user = $demande->getIDutilisateur();
+    //     $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
+    //     } else {
+    //         $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
 
-        }
-    dump($user);
-    $testtoken = $user->getToken();
+    //     }
+    // dump($user);
+    // $testtoken = $user->getToken();
 
 
-    if (!$user) {
-        throw $this->createNotFoundException('Utilisateur non trouvé.');
-    }
+    // if (!$user) {
+    //     throw $this->createNotFoundException('Utilisateur non trouvé.');
+    // }
 
     $data = $session->get('form_data', []);
     $dossiersPartages = $session->get('dossiers_partages', []);
@@ -211,8 +225,10 @@ public function etape3(MonApplication $monApplication, Request $request, Session
 
         $nouvelleDemande = $session->get('nouvelle_demande', false);
 
-        if ($nouvelleDemande || !$entityManager->getRepository(Demandes::class)->findOneBy(['IDutilisateur' => $user])) {
+        if ($nouvelleDemande /* || !$entityManager->getRepository(Demandes::class)->findOneBy(['IDutilisateur' => $user]) */) {
             dump(" Cas Nouvelle demande Ou  Demande Inexistante");
+            $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+            
             $demande = new Demandes();
             $token = bin2hex(random_bytes(32)); // Générer un nouveau token pour la nouvelle demande
             $demande->setToken($token);
@@ -231,8 +247,10 @@ public function etape3(MonApplication $monApplication, Request $request, Session
                 $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
             }
         } else {
-   
+
             $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+            $id_user = $demande->getIDutilisateur();
+            $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
             $historique->setDemande($demande);
             $historique->setStatut('Modification');
             $historique->setDate(new \DateTime('now', $this->timezone));
@@ -253,6 +271,7 @@ public function etape3(MonApplication $monApplication, Request $request, Session
 
             dump("cas Demande existante");
             if (!$demande) {
+                $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
                 dump("test");
                 // Si aucune demande existante trouvée, toujours créer une nouvelle demande par sécurité
                 $demande = new Demandes();
@@ -274,6 +293,8 @@ public function etape3(MonApplication $monApplication, Request $request, Session
                 }
             }
         }
+
+        $token_stat=$user->getToken();
 
         // Logique partagée pour les deux cas (nouvelle ou modification)
 
@@ -340,10 +361,12 @@ public function etape3(MonApplication $monApplication, Request $request, Session
          $entityManager->persist($ressources);
         $entityManager->flush();
 
-        $session->remove('nouvelle_demande');
+        
 
-        $url = $this->generateUrl('statuts_token', ['token' => $testtoken], UrlGeneratorInterface::ABSOLUTE_URL);
+        $url = $this->generateUrl('statuts_token', ['token' => $token_stat], UrlGeneratorInterface::ABSOLUTE_URL);
         $session->clear();
+        // $session->remove('nouvelle_demande');
+
 
         $email = (new Email())
             ->from('noreply@ac-guadeloupe.fr')
@@ -363,7 +386,7 @@ public function etape3(MonApplication $monApplication, Request $request, Session
         $this->addFlash('success', 'Votre formulaire a été soumis. Pensez à le valider si vous n\'avez plus de modifications à y apporter.');
         $mailer->send($email);
 
-        return $this->redirectToRoute('statuts_token', ['token' => $testtoken]);
+        return $this->redirectToRoute('statuts_token', ['token' => $token_stat]);
     }
 
     return $this->render('formulaire/etape3.html.twig', [

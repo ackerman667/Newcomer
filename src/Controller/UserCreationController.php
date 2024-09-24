@@ -46,6 +46,7 @@ class UserCreationController extends AbstractController
             $expiration = new \DateTimeImmutable('+24 hours');
             $user->setToken($token);
             $user->setTokenExpiration($expiration);
+            $user->setProvenance('externe');
             $entityManager->persist($user);
             $entityManager->flush();
 

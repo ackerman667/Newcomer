@@ -177,7 +177,10 @@ class FormulaireLdapController extends AbstractController
        
        
     
-        $user1 = $entityManager->getRepository(User::class)->findOneBy(['uid' => $uid]);
+        $user1 = $entityManager->getRepository(User::class)->findOneBy([
+            'uid' => $uid,
+            'provenance' => 'ldap'
+        ]);
     
         if (!$user1) {
             $user1 = new User();
@@ -187,6 +190,7 @@ class FormulaireLdapController extends AbstractController
             $user1->setEmail($email_utilisateur);
             $user1->setCompteActif(true);
             $user1->setUid($uid);
+            $user1->setProvenance('ldap');
         }
    
     

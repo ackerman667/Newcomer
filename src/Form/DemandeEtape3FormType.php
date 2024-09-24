@@ -22,14 +22,19 @@ class DemandeEtape3FormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder
-            ->add('dossiers_partages', ChoiceType::class, [
-                'choices' => array_merge(['Num Tel Bureau' => 'Num Tel'], array_combine($options['dossiers_partages'], $options['dossiers_partages'])),
+        $choices = ['Num Tel Bureau' => 'Num Tel'];
+
+foreach ($options['dossiers_partages'] as $dossier) {
+    $choices[$dossier] = $dossier; 
+}
+
+$builder
+    ->add('dossiers_partages', ChoiceType::class, [
+        'choices' => $choices,
         'multiple' => true,
-                'multiple' => true,
-                'expanded' => true,
-                'label' => false,
-            ])
+        'expanded' => true,
+        'label' => false,
+    ])
             // ->add('global_checkbox', CheckboxType::class, [
             //     'label' => 'Case à cocher globale',
             //     'required' => false, // Pas obligatoire

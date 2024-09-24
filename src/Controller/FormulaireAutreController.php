@@ -149,7 +149,10 @@ class FormulaireAutreController extends AbstractController
             $userInformation = new UserInformation();
             $infos_user = $userInformation->getUserInformation($user);
             $uid = $infos_user['uid'];
-            $user_bdd = $entityManager->getRepository(User::class)->findOneBy(['uid' => $uid]);
+            $user_bdd = $entityManager->getRepository(User::class)->findOneBy([
+                'uid' => $uid,
+                'provenance' => 'ldap'
+            ]);
             
             
             if ($nouvelleDemande) {
@@ -209,6 +212,7 @@ class FormulaireAutreController extends AbstractController
                 $user->setEmail($email_utilisateur);
                 $user->setCompteActif(true);
                 $user->setUid($uid);
+                $user->setProvenance('ldap');
                 $entityManager->persist($user);
                 $demande->setIDutilisateur($user);
 
