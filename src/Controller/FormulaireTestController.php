@@ -89,14 +89,22 @@ class FormulaireTestController extends AbstractController
         //     throw $this->createNotFoundException('Utilisateur non trouvé.');
         // }
         $nouvelleDemande = $session->get('nouvelle_demande', false);
-        if ($nouvelleDemande) {
+        if ($nouvelleDemande)        {
             $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
-        } else {
+                } else {
             $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
-            $id_user = $demande->getIDutilisateur();
-        $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
+                     if($demande) {
+                $id_user = $demande->getIDutilisateur();
+                $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
 
-        }
+                         } else {
+                $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+                                }
+            
+                                     }
+          
+
+        
 
 
 
@@ -226,73 +234,74 @@ public function etape3(MonApplication $monApplication, Request $request, Session
         $nouvelleDemande = $session->get('nouvelle_demande', false);
 
         if ($nouvelleDemande /* || !$entityManager->getRepository(Demandes::class)->findOneBy(['IDutilisateur' => $user]) */) {
-            dump(" Cas Nouvelle demande Ou  Demande Inexistante");
-            $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
-            
-            $demande = new Demandes();
-            $token = bin2hex(random_bytes(32)); // Générer un nouveau token pour la nouvelle demande
-            $demande->setToken($token);
-            $historique->setDemande($demande);
-            $historique->setStatut('Création');
-            $historique->setDate(new \DateTime('now', $this->timezone));
-            $historique->setStatutOperation('Création');
+           
+                                        $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+                                        
+                                        $demande = new Demandes();
+                                        $token = bin2hex(random_bytes(32)); // Générer un nouveau token pour la nouvelle demande
+                                        $demande->setToken($token);
+                                        $historique->setDemande($demande);
+                                        $historique->setStatut('Création');
+                                        $historique->setDate(new \DateTime('now', $this->timezone));
+                                        $historique->setStatutOperation('Création');
 
-            $ressources = new Ressources();
-            $ressources->setNom('Ressources');
-            $ressources->setDemande($demande);
-            $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
-            if (!empty($dossiersSelectionnes)) {
-                $ressources->setContenu(json_encode($dossiersSelectionnes));
-            } else {
-                $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
-            }
-        } else {
+                                        $ressources = new Ressources();
+                                        $ressources->setNom('Ressources');
+                                        $ressources->setDemande($demande);
+                                        $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
+                                        if (!empty($dossiersSelectionnes)) {
+                                            $ressources->setContenu(json_encode($dossiersSelectionnes));
+                                        } else {
+                                            $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
+                                        }
+         } else {
 
-            $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
-            $id_user = $demande->getIDutilisateur();
-            $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
-            $historique->setDemande($demande);
-            $historique->setStatut('Modification');
-            $historique->setDate(new \DateTime('now', $this->timezone));
-            $historique->setStatutOperation('Modification');
-            $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
-            if (!$ressources) {
-                $ressources = new Ressources();
-            }
-            $ressources->setNom('Ressources');
-            $ressources->setDemande($demande);
-            $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
-            if (!empty($dossiersSelectionnes)) {
-                $ressources->setContenu(json_encode($dossiersSelectionnes));
-            } else {
-                $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
-            }
+                     $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+                    if (!$demande) {
+                                    $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+                                    dump("test");
+                                    // Si aucune demande existante trouvée, toujours créer une nouvelle demande par sécurité
+                                    $demande = new Demandes();
+                                    $token = bin2hex(random_bytes(32)); // Générer un nouveau token pour la nouvelle demande
+                                    $demande->setToken($token);
+                                    $historique->setDemande($demande);
+                                    $historique->setStatut('Création');
+                                    $historique->setDate(new \DateTime('now', $this->timezone));
+                                    $historique->setStatutOperation('Création');
 
+                                    $ressources = new Ressources();
+                                    $ressources->setNom('Ressources');
+                                    $ressources->setDemande($demande);
+                                    $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
+                                    if (!empty($dossiersSelectionnes)) {
+                                        $ressources->setContenu(json_encode($dossiersSelectionnes));
+                                    } else {
+                                        $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
+                                    }
+                     } elseif($demande) {
+                                    $id_user = $demande->getIDutilisateur();
+                                    $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
+                                    $historique->setDemande($demande);
+                                    $historique->setStatut('Modification');
+                                    $historique->setDate(new \DateTime('now', $this->timezone));
+                                    $historique->setStatutOperation('Modification');
+                                    $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
+                                    if (!$ressources) {
+                                        $ressources = new Ressources();
+                                    }
+                                    $ressources->setNom('Ressources');
+                                    $ressources->setDemande($demande);
+                                    $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
+                                    if (!empty($dossiersSelectionnes)) {
+                                        $ressources->setContenu(json_encode($dossiersSelectionnes));
+                                    } else {
+                                        $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
+                                    }
 
-            dump("cas Demande existante");
-            if (!$demande) {
-                $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
-                dump("test");
-                // Si aucune demande existante trouvée, toujours créer une nouvelle demande par sécurité
-                $demande = new Demandes();
-                $token = bin2hex(random_bytes(32)); // Générer un nouveau token pour la nouvelle demande
-                $demande->setToken($token);
-                $historique->setDemande($demande);
-                $historique->setStatut('Création');
-                $historique->setDate(new \DateTime('now', $this->timezone));
-                $historique->setStatutOperation('Création');
-
-                $ressources = new Ressources();
-                $ressources->setNom('Ressources');
-                $ressources->setDemande($demande);
-                $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
-                if (!empty($dossiersSelectionnes)) {
-                    $ressources->setContenu(json_encode($dossiersSelectionnes));
-                } else {
-                    $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
-                }
-            }
-        }
+                                         }   
+           
+          
+                   }
 
         $token_stat=$user->getToken();
 

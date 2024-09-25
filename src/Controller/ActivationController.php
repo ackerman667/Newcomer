@@ -23,6 +23,7 @@ class ActivationController extends AbstractController
         
             $entityManager->persist($user);
             $entityManager->flush();
+            
 
             // $this->addFlash('success', 'Votre compte a été activé avec succès.');
 

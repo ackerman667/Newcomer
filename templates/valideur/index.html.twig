@@ -156,7 +156,7 @@
                                 <td>
                                     <form class="comment-form" method="post" action="{{ path('commenter_demande', {id: demande.id}) }}">
                                         <textarea id="commentaire-{{ demande.id }}" name="commentaire" rows="2" placeholder="Ajouter un commentaire en cas de refus !" {% if demande.statuts == 'Suivi dans LEKA' %}disabled{% endif %}>{{ demande.commentaire ? demande.commentaire : '' }}</textarea>
-                                        <button type="submit" {% if demande.statuts is not same as('En attente') %}disabled{% endif %}>Commenter</button>
+                                        <button type="submit" {% if demande.statuts is not same as('En attente') %}disabled{% endif %}>Ajouter un commentaire !</button>
                                     </form>
                                 </td>
                                 <td class="toolbar">
