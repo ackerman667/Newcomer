@@ -26,6 +26,10 @@ class Demandes
     #[ORM\JoinColumn(nullable: true)]
     private ?User $IDutilisateur = null;
 
+    #[ORM\ManyToOne(inversedBy: 'demandes')]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?UserAutre $autreUtilisateur = null;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $heureSoumission = null;
 
@@ -422,4 +426,20 @@ class Demandes
 
         return $this;
     }
+
+    public function getAutreUtilisateur(): ?UserAutre
+    {
+        return $this->autreUtilisateur;
+    }
+
+    public function setAutreUtilisateur(?UserAutre $autreUtilisateur): static
+    {
+        $this->autreUtilisateur = $autreUtilisateur;
+
+        return $this;
+    }
+
+
+
+
 }

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Classe\MonApplication;
 use App\Entity\User;
+use App\Entity\UserAutre;
 use App\Entity\Demandes;
 use App\Entity\HistoriqueDemande;
 use App\Entity\Ressources;
@@ -157,9 +158,18 @@ class FormulaireAutreController extends AbstractController
             
             if ($nouvelleDemande) {
                 // Création d'une nouvelle demande
+                $user_infos = new UserAutre();
+                $user_infos->setNom($data['nom']);
+                $user_infos->setPrenom( $data['prenom']);
+                $user_infos->setEmail( $data['email']);
+                $user_infos->setDateDeNaissance($data['date_de_naissance']);
+                $user_infos->setFonction($data['fonction']);
+                $user_infos->setStatutPersonne($data['statut']);
+                $entityManager->persist($user_infos);
                 $demande = new Demandes();
                 $token = bin2hex(random_bytes(32));
                 $demande->setToken($token);
+                $demande->setAutreUtilisateur($user_infos);
                 // $demande->setIDutilisateur($user_bdd);
                 $demande->setTitre('Demande pour une autre personne');
                 $historique->setStatut('Création');
@@ -169,6 +179,14 @@ class FormulaireAutreController extends AbstractController
                 $demande = $entityManager->getRepository(Demandes::class)->find($demandeId);
             
                 if ($demande) {
+                    $user_infos = $demande->getAutreUtilisateur();
+                    $user_infos->setNom($data['nom']);
+                    $user_infos->setPrenom( $data['prenom']);
+                    $user_infos->setEmail( $data['email']);
+                    $user_infos->setDateDeNaissance($data['date_de_naissance']);
+                    $user_infos->setFonction($data['fonction']);
+                    $user_infos->setStatutPersonne($data['statut']);
+                    $entityManager->persist($user_infos);
                     $historique->setDemande($demande);
                     $historique->setStatut('Modification');
                     $historique->setDate(new \DateTime('now', $this->timezone));
@@ -178,16 +196,26 @@ class FormulaireAutreController extends AbstractController
                     $demande = new Demandes();
                     $token = bin2hex(random_bytes(32));
                     $demande->setToken($token);
+                    $demande->setAutreUtilisateur($user_infos);
                     // $demande->setIDutilisateur($user_bdd);
                     $demande->setTitre('Demande pour une autre personne');
                     $historique->setStatut('Création');
                     $historique->setStatutOperation('Création');
                 }
             } else {
+                $user_infos = new UserAutre();
+                $user_infos->setNom($data['nom']);
+                $user_infos->setPrenom( $data['prenom']);
+                $user_infos->setEmail( $data['email']);
+                $user_infos->setDateDeNaissance($data['date_de_naissance']);
+                $user_infos->setFonction($data['fonction']);
+                $user_infos->setStatutPersonne($data['statut']);
+                $entityManager->persist($user_infos);
                 // Cas par défaut où aucune demande n'est détectée, création d'une nouvelle demande
                 $demande = new Demandes();
                 $token = bin2hex(random_bytes(32));
                 $demande->setToken($token);
+                $demande->setAutreUtilisateur($user_infos);
                 // $demande->setIDutilisateur($user_bdd);
                 $demande->setTitre('Demande pour une autre personne');
                 $historique->setStatut('Création');
@@ -219,7 +247,8 @@ class FormulaireAutreController extends AbstractController
                 dump($user);
 
             }
-        
+
+           
            
             $demande->setInfosPersonne([
                 'nom' => $data['nom'],
@@ -277,6 +306,7 @@ class FormulaireAutreController extends AbstractController
             $entityManager->persist($demande);
             $entityManager->persist($historique);
             $entityManager->persist($ressources);
+            
             $entityManager->flush();
     
             // Nettoyage de la session
