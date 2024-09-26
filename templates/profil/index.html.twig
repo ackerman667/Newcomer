@@ -18,18 +18,25 @@
         {{ message }}
     </div>
 {% endfor %}
+
 <main class="row">
     <h4>Vos informations</h4>
+    <div class="user-info">
+        <p><strong>Email :</strong> {{ user.email }}</p>
+        <p><strong>Date de naissance :</strong> {{ user.dateNaissance }}</p>
+    </div>
+
     <address>
         <span id="vcard" class="vcard">
-            <figure class="photo"><img src="{{ asset('css/images/avatar/avatar.png','interfaceappli') }}"></figure>
-              {% if app.user %}
-            <h2 class="fn">{{ 'Utilisateur'|trans }} {{ app.user.username }}</h2>
+            <figure class="photo">
+                <img src="{{ asset('css/images/avatar/avatar.png','interfaceappli') }}" alt="Avatar de l'utilisateur">
+            </figure>
+            {% if user %}
+                <h2 class="fn">{{ 'Utilisateur'|trans }} : {{ user.nom }} {{ user.prenom }}</h2>
             {% endif %}
-            {% if not app.user %}
-            <h2 class="fn">{{ 'Utilisateur anonyme'}} </h2>
+            {% if not user %}
+                <h2 class="fn">{{ 'Utilisateur anonyme'}} </h2>
             {% endif %}
-            {# <span class="adr"><em>Localisation proxy: {{app.user.urlproxy }}</em></span> #}
         </span>
     </address>
 </main>
