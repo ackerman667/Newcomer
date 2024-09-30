@@ -100,12 +100,14 @@ class StatutController extends AbstractController
             // Si la demande n'est pas pour une autre personne, utiliser l'utilisateur lié à la demande
             $user = $demande->getIDutilisateur();
         }
+        $valideur = $demande->getUidValideur();
     
         return $this->render('consult/visualiser.html.twig', [
             'demande' => $demande,
             'user' => $user,
             'monApplication' => $monApplication,
             'ressources' => $ressources,
+            'valideur' => $valideur
         ]);
     }
     
@@ -158,6 +160,7 @@ class StatutController extends AbstractController
                 'date_fin' => $user->getDateFin(),
             ];
         }
+        $valideur = $demande->getUidValideur();
     
 
         $imagePath = 'C:\Users\nbarbeu\newcomer\public\interfaceappli\css\images\logoaca\academie.png'; 
@@ -175,6 +178,7 @@ class StatutController extends AbstractController
             'user' => $userInfos,
             'ressources' => $ressources,
             'imageSrc' => $imageSrc,
+            'valideur' => $valideur
         ]);
     
         // Charger le HTML dans Dompdf

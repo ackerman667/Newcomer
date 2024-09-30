@@ -38,6 +38,10 @@
                 <div class="details-section">
                     <div class="details-section-title">Détails de la Demande</div>
                     <div class="details-group">
+                        <label>Chef de service :</label>
+                        <span>{{ valideur }}</span>
+                    </div>
+                    <div class="details-group">
                         <label>Titre :</label>
                         <span>{{ demande.titre }}</span>
                     </div>
@@ -49,10 +53,7 @@
                         <label>Heure de Soumission :</label>
                         <span>{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</span>
                     </div>
-                    <div class="details-group">
-                        <label>Statut :</label>
-                        <span>{{ demande.statuts }}</span>
-                    </div>
+                   
                     <div class="details-group">
                         <label>Nom Remplaçant :</label>
                         <span>{{ demande.nomRemplacant }}</span>

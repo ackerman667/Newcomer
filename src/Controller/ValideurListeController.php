@@ -109,6 +109,8 @@ public function validerDemande(int $id, EntityManagerInterface $entityManager, M
         throw $this->createNotFoundException('Demande non trouvée.');
     }
 
+    $id_demande = $demande->getId();
+
     $now = new \DateTime('now', $this->timezone);
     $demande->setStatuts('Suivi dans LEKA');
     $demande->setDateValidation($now);
@@ -150,11 +152,18 @@ $email = $demande->isAutrePersonne() ? ($infosPersonne['email'] ?? '') : $demand
     $mailer->send($emailMessage);
 
 
-//  LEKA
+    $valideurEmail = $this->getValideurMail($demande);
+
+    $subject = "La demande numéro $id pour le service {$demande->getService()} a été soumise";
+
+
+
+
+
     // $leka = (new Email())
-    //     ->from('noreply@ac-guadeloupe.fr')
-    //     // ->to('nbarbeu@gmail.com') mail leka
-    //     ->subject('Votre demande a été envoyée dans LEKA') 
+    //     ->from($valideurEmail)
+    //     ->to('nbarbeu@gmail.com')  remplacer par mail LEKA
+    //     ->subject($subject) 
     //     ->html('<p>Votre demande a été envoyée dans LEKA.</p>')
     //     ->attach($pdfOutput, 'demande.pdf', 'application/pdf');
 
@@ -276,12 +285,14 @@ public function visualiserDemande(MonApplication $monApplication, int $id, Entit
         // Sinon, récupérer les informations de l'utilisateur associé à la demande
         $user = $demande->getIDutilisateur();
     }
+     $valideur = $demande->getUidValideur();
 
     return $this->render('valideur/visualiser.html.twig', [
         'demande' => $demande,
         'monApplication' => $monApplication,
         'user' => $user,
         'ressources' => $ressources,
+        'valideur' => $valideur
     ]);
 }
 
@@ -332,6 +343,10 @@ public function generatePdf($id, EntityManagerInterface $entityManager): Respons
         ];
     }
 
+
+    $valideur = $demande->getUidValideur();
+    
+
     $imagePath = 'C:\Users\nbarbeu\newcomer\public\interfaceappli\css\images\logoaca\academie.png'; 
     $imageData = base64_encode(file_get_contents($imagePath));
     $imageSrc = 'data:image/png;base64,' . $imageData;
@@ -347,6 +362,7 @@ public function generatePdf($id, EntityManagerInterface $entityManager): Respons
         'user' => $userInfos,
         'ressources' => $ressources,
         'imageSrc' => $imageSrc,
+        'valideur' => $valideur
     ]);
 
     // Charger le HTML dans Dompdf
@@ -361,6 +377,17 @@ public function generatePdf($id, EntityManagerInterface $entityManager): Respons
     ]);
 }
 
+public function getValideurMail(Demandes $demande): string
+{
+    $uidValideur = $demande->getUidValideur(); // Récupère l'UID du valideur
+    if ($uidValideur) {
+        // Génère l'adresse e-mail en ajoutant le domaine
+        return $uidValideur . '@ac-guadeloupe.fr';
+    }
+
+    // Valeur par défaut si l'UID est manquant
+    return 'noreply@ac-guadeloupe.fr';
+}
 
 
 

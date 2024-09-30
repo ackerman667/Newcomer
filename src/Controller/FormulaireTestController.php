@@ -388,7 +388,6 @@ public function etape3(MonApplication $monApplication, Request $request, Session
             <p>Nous avons bien reçu votre demande d\'accès à un poste de travail informatique.</p>
             <p>Pour accéder à votre compte, veuillez cliquer sur le lien ci-dessous :</p>
             <p><a href="' . $url . '">Cliquez ici pour vous connecter</a></p>
-            <p>Ce lien est valable pour une durée de 24 heures. Si vous n\'avez pas demandé cet accès, veuillez ignorer cet e-mail.</p>
             <p>Bien cordialement,</p>
             <p><strong>Votre équipe informatique</strong></p>
         ');

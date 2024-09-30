@@ -51,6 +51,10 @@ class StatutDemandeController extends AbstractController
     public function consult(MonApplication $monApplication, $token, EntityManagerInterface $entityManager): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+        $valideur = $demande->getUidValideur();
+
+
+        
 
 
         // if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
@@ -65,8 +69,35 @@ class StatutDemandeController extends AbstractController
             'user' => $user,
             'monApplication' => $monApplication,
             'ressources' => $ressources,
+            'valideur' => $valideur
+
         ]);
     }
+    // #[Route('/demande/consult/{id}', name: 'demande_consult')]
+    // public function consult(MonApplication $monApplication, int $id, EntityManagerInterface $entityManager): Response
+    // {
+    //     $demande = $entityManager->getRepository(Demandes::class)->find($id);
+    //     $valideur = $demande->getUidValideur();
+
+
+        
+
+
+    //     // if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
+    //     //     throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
+    //     // }
+
+    //     $user = $demande->getIDutilisateur();
+    //     $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
+
+    //     return $this->render('consult/visualiser.html.twig', [
+    //         'demande' => $demande,
+    //         'user' => $user,
+    //         'monApplication' => $monApplication,
+    //         'ressources' => $ressources,
+    //         'valideur' => $valideur
+    //     ]);
+    // }
 
     #[Route('/demande/pdf/{token}', name: 'demande_pdf')]
 public function generatePdf(Demandes $demande, MonApplication $monApplication,/* $token,*/ EntityManagerInterface $entityManager): Response
@@ -77,6 +108,8 @@ public function generatePdf(Demandes $demande, MonApplication $monApplication,/*
 
     $user = $demande->getIDutilisateur();
     $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
+
+    $valideur = $demande->getUidValideur();
 
     // Encoder l'image en base64
     $imagePath = 'C:\Users\nbarbeu\newcomer\public\interfaceappli\css\images\logoaca\academie.png';
@@ -95,7 +128,8 @@ public function generatePdf(Demandes $demande, MonApplication $monApplication,/*
         'user' => $user,
         'ressources' => $ressources,
         'monApplication' => $monApplication,
-        'imageSrc' => $imageSrc, // Passer l'image encodée à la vue
+        'imageSrc' => $imageSrc,
+        'valideur' => $valideur, // Passer l'image encodée à la vue
     ]);
 
     // Charger le HTML dans Dompdf
@@ -230,9 +264,8 @@ public function generatePdf(Demandes $demande, MonApplication $monApplication,/*
         $email = (new Email())
             ->from('noreply@ac-guadeloupe.fr')
             ->to($user->getEmail())
-            ->subject('Votre lien de connexion et la demande en PDF')
-            ->cc('nbarbeu97180@gmail.com')
-            ->text('Voici votre lien de connexion :')
+            ->subject('Vous avez envoyé la demande.')
+            ->text('Vous avez envoyé la demande.')
             ->html('<p>Bonjour, vous trouverez ci-joint votre demande en PDF.</p>');
     
         // Ajouter le PDF en pièce jointe
