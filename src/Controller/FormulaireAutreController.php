@@ -165,6 +165,18 @@ class FormulaireAutreController extends AbstractController
                 $user_infos->setDateDeNaissance($data['date_de_naissance']);
                 $user_infos->setFonction($data['fonction']);
                 $user_infos->setStatutPersonne($data['statut']);
+                $statut_pers = ($data['statut']);
+                if ($statut_pers !== 'Titulaire') {
+                    $date_debut_contrat = $data['date_debut_contrat'];
+                    $date_fin_contrat = $data['date_fin_contrat'];
+                    $user_infos->setDateDebut($date_debut_contrat);
+                    $user_infos->setDateFin($date_fin_contrat);
+                    
+                } else {
+                    
+                    $user_infos->setDateDebut(null);
+                    $user_infos->setDateFin(null);
+                }
                 $entityManager->persist($user_infos);
                 $demande = new Demandes();
                 $token = bin2hex(random_bytes(32));
@@ -186,6 +198,18 @@ class FormulaireAutreController extends AbstractController
                     $user_infos->setDateDeNaissance($data['date_de_naissance']);
                     $user_infos->setFonction($data['fonction']);
                     $user_infos->setStatutPersonne($data['statut']);
+                    $statut_pers = ($data['statut']);
+                    if ($statut_pers !== 'Titulaire') {
+                        $date_debut_contrat = $data['date_debut_contrat'];
+                        $date_fin_contrat = $data['date_fin_contrat'];
+                        $user_infos->setDateDebut($date_debut_contrat);
+                        $user_infos->setDateFin($date_fin_contrat);
+                        
+                    } else {
+                        
+                        $user_infos->setDateDebut(null);
+                        $user_infos->setDateFin(null);
+                    }
                     $entityManager->persist($user_infos);
                     $historique->setDemande($demande);
                     $historique->setStatut('Modification');
@@ -210,6 +234,18 @@ class FormulaireAutreController extends AbstractController
                 $user_infos->setDateDeNaissance($data['date_de_naissance']);
                 $user_infos->setFonction($data['fonction']);
                 $user_infos->setStatutPersonne($data['statut']);
+                $statut_pers = ($data['statut']);
+                if ($statut_pers !== 'Titulaire') {
+                    $date_debut_contrat = $data['date_debut_contrat'];
+                    $date_fin_contrat = $data['date_fin_contrat'];
+                    $user_infos->setDateDebut($date_debut_contrat);
+                    $user_infos->setDateFin($date_fin_contrat);
+                    
+                } else {
+                 
+                    $user_infos->setDateDebut(null);
+                    $user_infos->setDateFin(null);
+                }
                 $entityManager->persist($user_infos);
                 // Cas par défaut où aucune demande n'est détectée, création d'une nouvelle demande
                 $demande = new Demandes();
@@ -266,8 +302,7 @@ class FormulaireAutreController extends AbstractController
             $demande->setDate((new \DateTime('now', $this->timezone)));
             $demande->setHeureSoumission((new \DateTime('now', $this->timezone)));
             $demande->setAutrePersonne(true);
-            
-            // Gestion des informations de remplaçant
+          
             $choix = $data['replace_someone'];
             if ($choix === 'oui') {
                 $demande->setRemplacant(true);
@@ -311,9 +346,9 @@ class FormulaireAutreController extends AbstractController
     
             // Nettoyage de la session
             $session->remove('form_data');
-            $session->remove('dossiers_partages');
+            $session->remove('demande_id');
             $session->remove('nouvelle_demande');
-            $session->clear();
+            $session->remove('dossiers_partages');
     
             // Envoi d'e-mail de notification
             $email = (new Email())

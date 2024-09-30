@@ -19,6 +19,7 @@
     </div>
 {% endfor %}
 
+ {% if app.session.get('ldap_authenticated') %}
 <main class="row">
     <h4>Vos informations</h4>
     <div class="user-info">
@@ -31,13 +32,29 @@
             <figure class="photo">
                 <img src="{{ asset('css/images/avatar/avatar.png','interfaceappli') }}" alt="Avatar de l'utilisateur">
             </figure>
-            {% if user %}
-                <h2 class="fn">{{ 'Utilisateur'|trans }} : {{ user.nom }} {{ user.prenom }}</h2>
-            {% endif %}
-            {% if not user %}
-                <h2 class="fn">{{ 'Utilisateur anonyme'}} </h2>
-            {% endif %}
+           
+                <h2 class="fn">{{ 'Utilisateur'|trans }} : {{ user.nom }} {{ user.prenom }}</h
+               
         </span>
     </address>
 </main>
+{% else %}
+<main class="row">
+    <h4>Vos informations</h4>
+ 
+
+    <address>
+        <span id="vcard" class="vcard">
+            <figure class="photo">
+                <img src="{{ asset('css/images/avatar/avatar.png','interfaceappli') }}" alt="Avatar de l'utilisateur">
+            </figure>
+           
+                <h2 class="fn">{{ 'Utilisateur anonyme'}} </h2>
+               
+        </span>
+    </address>
+</main>
+ {% endif %}
+
+
 {% endblock %}

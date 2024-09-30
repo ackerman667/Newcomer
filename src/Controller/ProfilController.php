@@ -34,7 +34,7 @@ class ProfilController extends AbstractController
         ];
     }
 
-    #[Route(path: 'formulaireldap/profil', name: 'profil')]
+    #[Route(path: '/profil', name: 'profil')]
     public function profil(MonApplication $monApplication)
     {
         // Utiliser la méthode privée pour récupérer les infos utilisateur
@@ -47,7 +47,7 @@ class ProfilController extends AbstractController
         ]);
     }
 
-    #[Route("formulaireldap/profil/preferences", name: "preferences")]
+    #[Route("/profil/preferences", name: "preferences")]
     public function preferences(MonApplication $monApplication)
     {
         // Utiliser la méthode privée pour récupérer les infos utilisateur
@@ -60,7 +60,7 @@ class ProfilController extends AbstractController
         ]);
     }
 
-    #[Route("formulaireldap/profil/roles", name: "roles")]
+    #[Route("/profil/roles", name: "roles")]
     public function roles(MonApplication $monApplication)
     {
         // Utiliser la méthode privée pour récupérer les infos utilisateur

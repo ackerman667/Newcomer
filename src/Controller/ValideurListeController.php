@@ -441,6 +441,24 @@ public function editDemandeEtape1(int $id, Request $request, EntityManagerInterf
             'statut' => $infos_personne['statut'] ?? '',
             'missions' => $demande->getMissions(),
         ];
+        $user_autre= $demande->getAutreUtilisateur();
+        $data2 = [
+            'nom' => $user_autre ? $user_autre->getNom() : '',
+            'prenom' => $user_autre ? $user_autre->getPrenom() : '',
+            'email' => $user_autre ? $user_autre->getEmail() : '',
+            'date_de_naissance' => $user_autre ? $user_autre->getDateDeNaissance() : '',
+            'fonction' => $user_autre ? $user_autre->getFonction() : '',
+            'replace_someone' => $demande->isRemplacant() ? 'oui' : 'non',
+            'remplacement_nom' => $demande->getNomRemplacant(),
+            'remplacement_prenom' => $demande->getPrenomRemplacant(),
+            'telephone_avant_service' => $demande->getTelephoneRemplacant(),
+            'parti_rectorat' => $demande->isDepart(),
+            'nouvelle_affectation_service' => $demande->getAffectationRemplacant(),
+            'date_debut_contrat' => $user_autre ? $user_autre->getDateDebut() : null,
+            'date_fin_contrat' => $user_autre ? $user_autre->getDateFin() : null,
+            'statut' => $user_autre ? $user_autre->getStatutPersonne() : '',
+            'missions' => $demande->getMissions(),
+        ];
     } else {
         $user = $demande->getIDutilisateur();
         $data = [
@@ -625,6 +643,23 @@ public function editDemandeEtape1(int $id, Request $request, EntityManagerInterf
                 'fonction' => $data['fonction'],
                 
                 ]);
+
+
+                $user = $demande->getAutreUtilisateur();
+                $fonction = $data['fonction'];
+                $user->setFonction($fonction);
+                if ($statut_utilisateur !== 'Titulaire') {
+                    $date_debut_contrat = $data['date_debut_contrat'];
+                    $date_fin_contrat = $data['date_fin_contrat'];
+                    $user->setDateDebut($date_debut_contrat);
+                    $user->setDateFin($date_fin_contrat);
+                    $user->setStatutPersonne($statut_utilisateur);
+                } else {
+                    $user->setStatutPersonne($statut_utilisateur);
+                    $user->setDateDebut(null);
+                    $user->setDateFin(null);
+                }
+
 
             } else {
                 $demande->setAutrePersonne(false);

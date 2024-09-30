@@ -92,8 +92,6 @@
         padding: 0; /* Pour éviter les espaces résiduels */
         margin: 0;
     }
-
-
 </style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
@@ -140,7 +138,6 @@
                             <tr data-status="{{ demande.statuts }}">
                                 {% if demande.AutrePersonne %}
                                     {% set infosPersonne = demande.infosPersonne %}
-
                                     <td>{{ infosPersonne.nom }} {{ infosPersonne.prenom }}</td>
                                 {% else %}
                                     <td>{{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}</td>
@@ -155,7 +152,7 @@
                                 </td>
                                 <td>
                                     <form class="comment-form" method="post" action="{{ path('commenter_demande', {id: demande.id}) }}">
-                                        <textarea id="commentaire-{{ demande.id }}" name="commentaire" rows="2" placeholder="Ajouter un commentaire en cas de refus !" {% if demande.statuts == 'Suivi dans LEKA' %}disabled{% endif %}>{{ demande.commentaire ? demande.commentaire : '' }}</textarea>
+                                        <textarea id="commentaire-{{ demande.id }}" name="commentaire" rows="2" placeholder="Ajouter un commentaire en cas de refus !" {% if demande.statuts == 'Suivi dans LEKA' or demande.statuts == 'Refusée' %}disabled{% endif %}>{{ demande.commentaire ? demande.commentaire : '' }}</textarea>
                                         <button type="submit" {% if demande.statuts is not same as('En attente') %}disabled{% endif %}>Ajouter un commentaire !</button>
                                     </form>
                                 </td>

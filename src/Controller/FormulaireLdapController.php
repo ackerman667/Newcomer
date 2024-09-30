@@ -356,7 +356,10 @@ class FormulaireLdapController extends AbstractController
             $prenom = $user1->getPrenom();
             $url = $this->generateUrl('statuts_token_ldap', [], UrlGeneratorInterface::ABSOLUTE_URL);
 
-            $session->clear();
+            $session->remove('form_data');
+    $session->remove('demande_id');
+    $session->remove('nouvelle_demande');
+    $session->remove('dossiers_partages');
     
             $email = (new Email())
                 ->from('noreply@ac-guadeloupe.fr')

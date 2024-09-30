@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Test de Valideur{% endblock %}
+
+{% block body %}
+    <div style="margin: 50px; text-align: center;">
+        <h1>Test Valideur</h1>
+        
+        <form method="get" action="{{ path('test_valideur') }}">
+            <label for="uid">Entrez un UID :</label>
+            <input type="text" id="uid" name="uid" placeholder="Saisir un UID">
+            <button type="submit">Vérifier</button>
+        </form>
+
+        {% if result is not null %}
+            <div style="margin-top: 20px; font-weight: bold;">
+                <p>{{ result }}</p>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
