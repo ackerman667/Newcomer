@@ -237,6 +237,8 @@ public function editDemandeEtape1(int $id, Request $request, EntityManagerInterf
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $choix = $data['replace_someone'];
+            $demande->setUidValideur($nomValideur);
+            
            
     
             if ($choix === 'oui') {

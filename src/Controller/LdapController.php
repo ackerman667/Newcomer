@@ -48,16 +48,16 @@ class LdapController extends AbstractController
              $demande = $entityManager->getRepository(Demandes::class)->findBy(['IDutilisateur' => $id_demandes]);
                 if($demande) {
                 //    $token = $demande[0]->getToken();
-                    return $this->redirectToRoute('statuts_token_ldap');
+                    return $this->redirectToRoute('liste_demandes');
 
                 } else {
-                    return $this->redirectToRoute('formulaireldap_etape1');
+                    return $this->redirectToRoute('liste_demandes');
 
                 }
              
 
         } else {
-            return $this->redirectToRoute('formulaireldap_etape1');
+            return $this->redirectToRoute('liste_demandes');
     
      
         }

@@ -33,7 +33,7 @@
         margin: 5px 0;
     }
     .status-en-attente {
-        background-color: #FFC107;
+        background-color: #D3D3D3;
         color: white;
         padding: 5px 10px;
         border-radius: 20px;
@@ -42,7 +42,7 @@
         margin: 5px 0;
     }
     .status-refuse {
-        background-color: #FF0000; 
+        background-color: #FF0000;
         color: white;
         padding: 5px 10px;
         border-radius: 20px;
@@ -51,7 +51,7 @@
         margin: 5px 0;
     }
     .status-brouillons {
-        background-color: #D3D3D3;
+        background-color: #FFC107; 
         color: white;
         padding: 5px 10px;
         border-radius: 20px;
@@ -135,6 +135,19 @@
                 <a href="{{ path('nouvelle_demande_ldap') }}" class="btn btn-primary">Nouvelle demande personnelle</a>
             </div>
 
+            <!-- Filtres pour les valideurs (uniquement si l'utilisateur est un valideur) -->
+            {% if isValideur %}
+                <div class="filter-container">
+                    <label for="filter-select">Filtrer par statut :</label>
+                    <select id="filter-select" class="form-select">
+                        <option value="all">Tout</option>
+                        <option value="Suivi dans LEKA">Suivi dans LEKA</option>
+                        <option value="En attente">En attente</option>
+                        <option value="Refusée">Refusée</option>
+                    </select>
+                </div>
+            {% endif %}
+
             <!-- Section Demandes à Valider (uniquement pour les valideurs) -->
             {% if isValideur and demandesAValider is not empty %}
                 <h4 class="text-center mt-4">Demandes à Valider</h4>
@@ -201,98 +214,103 @@
             {% endif %}
 
             <!-- Section Mes Demandes -->
-         <h4 class="text-center mt-4">Mes Demandes</h4>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Service</th>
-            <th>Demandeur</th>
-            <th>Date de soumission</th>
-            <th>Heure de soumission</th>
-            <th>Statut</th>
-            <th>Commentaire</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% if mesDemandes is empty %}
-            <tr>
-                <td colspan="7">Vous n'avez aucune demande pour l'instant</td>
-            </tr>
-        {% else %}
-            {% for demande in mesDemandes %}
-                <tr data-status="{{ demande.statuts }}">
-                    <td>{{ demande.service }}</td>
-                    
-                    {% if demande.isAutrePersonne %}
-                        {% set infosPersonne = demande.infosPersonne %}
-                        <td>{{ infosPersonne.nom }} {{ infosPersonne.prenom }}</td>
+            <h4 class="text-center mt-4">Mes Demandes</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Demandeur</th>
+                        <th>Date de soumission</th>
+                        <th>Heure de soumission</th>
+                        <th>Statut</th>
+                        <th>Commentaire</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if mesDemandes is empty %}
+                        <tr>
+                            <td colspan="7">Vous n'avez aucune demande pour l'instant</td>
+                        </tr>
                     {% else %}
-                        <td>{{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}</td>
+                        {% for demande in mesDemandes %}
+                            <tr data-status="{{ demande.statuts }}">
+                                <td>{{ demande.service }}</td>
+                                {% if demande.isAutrePersonne %}
+                                    {% set infosPersonne = demande.infosPersonne %}
+                                    <td>{{ infosPersonne.nom }} {{ infosPersonne.prenom }}</td>
+                                {% else %}
+                                    <td>{{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}</td>
+                                {% endif %}
+                                <td>{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
+                                <td>{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
+                                <td>
+                                    <span class="{% if demande.statuts == 'Brouillons' %}status-brouillons{% elseif demande.statuts == 'Suivi dans LEKA' %}status-leka{% elseif demande.statuts == 'En attente' %}status-en-attente{% elseif demande.statuts == 'Refusée' %}status-refuse{% endif %}">
+                                        {{ demande.statuts }}
+                                    </span>
+                                </td>
+                                <td>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</td>
+                                <td class="toolbar">
+                                    {% if demande.isAutrePersonne %}
+                                        {% if demande.statuts == 'Brouillons' %}
+                                            <a href="{{ path('modifier_demandespourautre', {id: demande.id}) }}">
+                                                <i class="fas fa-edit icon-edit"></i>
+                                            </a>
+                                            <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
+                                                <i class="fas fa-search icon-search"></i>
+                                            </a>
+                                            <a href="{{ path('supprimer_demandespourautre', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">
+                                                <i class="fas fa-trash-alt icon-trash"></i>
+                                            </a>
+                                            <a href="{{ path('valider_demandespourautre', {id: demande.id}) }}">
+                                                <i class="fas fa-thumbs-up icon-thumbs-up"></i>
+                                            </a>
+                                             <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}">
+                                                    <i class="fas fa-file-pdf icon-pdf"></i>
+                                                </a>
+
+                                            
+                                        {% else %}
+                                            <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
+                                                <i class="fas fa-search icon-search"></i>
+                                            </a>
+                                            <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}">
+                                                <i class="fas fa-file-pdf icon-pdf"></i>
+                                            </a>
+                                        {% endif %}
+                                    {% else %}
+                                        {% if demande.statuts == 'Brouillons' %}
+                                            <a href="{{ path('modifier_demandesldap', {id: demande.id}) }}">
+                                                <i class="fas fa-edit icon-edit"></i>
+                                            </a>
+                                            <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
+                                                <i class="fas fa-search icon-search"></i>
+                                            </a>
+                                            <a href="{{ path('formulaireldap_supprimer', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">
+                                                <i class="fas fa-trash-alt icon-trash"></i>
+                                            </a>
+                                            <a href="{{ path('valider_demandesldap', {id: demande.id}) }}">
+                                                <i class="fas fa-thumbs-up icon-thumbs-up"></i>
+                                            </a>
+                                             <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}">
+                                                    <i class="fas fa-file-pdf icon-pdf"></i>
+                                                </a>
+
+                                        {% else %}
+                                            <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
+                                                <i class="fas fa-search icon-search"></i>
+                                            </a>
+                                            <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}">
+                                                <i class="fas fa-file-pdf icon-pdf"></i>
+                                            </a>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
                     {% endif %}
-                    
-                    <td>{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
-                    <td>{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
-                    <td>
-                        <span class="{% if demande.statuts == 'Brouillons' %}status-brouillons{% elseif demande.statuts == 'Suivi dans LEKA' %}status-leka{% elseif demande.statuts == 'En attente' %}status-en-attente{% elseif demande.statuts == 'Refusée' %}status-refuse{% endif %}">
-                            {{ demande.statuts }}
-                        </span>
-                    </td>
-                    <td>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</td>
-                    <td class="toolbar">
-                        {% if demande.isAutrePersonne %}
-                            {# Actions pour les demandes faites pour une autre personne #}
-                            {% if demande.statuts == 'Brouillons' %}
-                                <a href="{{ path('modifier_demandespourautre', {id: demande.id}) }}">
-                                    <i class="fas fa-edit icon-edit"></i>
-                                </a>
-                                <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
-                                    <i class="fas fa-search icon-search"></i>
-                                </a>
-                                <a href="{{ path('supprimer_demandespourautre', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">
-                                    <i class="fas fa-trash-alt icon-trash"></i>
-                                </a>
-                                <a href="{{ path('valider_demandespourautre', {id: demande.id}) }}">
-                                    <i class="fas fa-thumbs-up icon-thumbs-up"></i>
-                                </a>
-                            {% else %}
-                                <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
-                                    <i class="fas fa-search icon-search"></i>
-                                </a>
-                                <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}">
-                                    <i class="fas fa-file-pdf icon-pdf"></i>
-                                </a>
-                            {% endif %}
-                        {% else %}
-                            {# Actions pour les demandes faites pour soi-même #}
-                            {% if demande.statuts == 'Brouillons' %}
-                                <a href="{{ path('modifier_demandesldap', {id: demande.id}) }}">
-                                    <i class="fas fa-edit icon-edit"></i>
-                                </a>
-                                <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
-                                    <i class="fas fa-search icon-search"></i>
-                                </a>
-                                <a href="{{ path('formulaireldap_supprimer', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">
-                                    <i class="fas fa-trash-alt icon-trash"></i>
-                                </a>
-                                <a href="{{ path('valider_demandesldap', {id: demande.id}) }}">
-                                    <i class="fas fa-thumbs-up icon-thumbs-up"></i>
-                                </a>
-                            {% else %}
-                                <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
-                                    <i class="fas fa-search icon-search"></i>
-                                </a>
-                                <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}">
-                                    <i class="fas fa-file-pdf icon-pdf"></i>
-                                </a>
-                            {% endif %}
-                        {% endif %}
-                    </td>
-                </tr>
-            {% endfor %}
-        {% endif %}
-    </tbody>
-</table>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -332,3 +350,9 @@ function checkComment(demandeId) {
 }
 </script>
 {% endblock %}
+ 
+
+
+
+
+
