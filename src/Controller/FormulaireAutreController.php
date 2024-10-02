@@ -366,7 +366,7 @@ class FormulaireAutreController extends AbstractController
     
             $mailer->send($email);
     
-            return $this->redirectToRoute('statuts_token_ldap');
+            return $this->redirectToRoute('liste_demandes');
         }
     
         return $this->render('formulaireautre/etape3.html.twig', [

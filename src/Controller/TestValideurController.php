@@ -18,7 +18,7 @@ class TestValideurController extends AbstractController
         
         if ($uid) {
             // URL de l'API avec l'UID entré par l'utilisateur
-            $apiUrl = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/apivalideur/' . $uid;
+            $apiUrl = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/valideur/' . $uid;
             $apiToken = 'b97b055g210125afb4c5f507dc823958ff18dfa56a12c7n12agch8db58e21767';
 
             // Envoi de la requête GET à l'API
@@ -34,11 +34,12 @@ class TestValideurController extends AbstractController
             dump($data);
 
             // Vérification si l'UID est un valideur
-            if (isset($data[0]['valideur']) && !empty($data[0]['valideur'])) {
-                $result = "L'UID {$uid} est valideur du service : " . $data[0]['valideur'];
+            if (isset($data[0]['service']) && $data[0]['service'] !== "Pas valideur") {
+                $result = "L'UID {$uid} est valideur du service : " . $data[0]['service'];
             } else {
                 $result = "L'UID {$uid} n'est pas un valideur.";
             }
+            
         }
 
         return $this->render('test/valideur.html.twig', [

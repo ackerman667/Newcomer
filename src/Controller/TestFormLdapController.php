@@ -28,7 +28,7 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use App\Security\UserInformation;
 
-class FormulaireLdapController extends AbstractController
+class TestFormLdapController extends AbstractController
 {
     private $security;
     private $timezone;
@@ -40,7 +40,7 @@ class FormulaireLdapController extends AbstractController
     }
 
 
-    #[Route('/formulaireldap/etape1', name: 'formulaireldap_etape1')]
+    #[Route('/formulaireldap/etape1', name: 'formulaireldaptest_etape1')]
     public function etape1(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager): Response
     {
         $data = $session->get('form_data', []);
@@ -53,7 +53,7 @@ class FormulaireLdapController extends AbstractController
             $session->set('form_data', $data);
           
 
-            return $this->redirectToRoute('formulaireldap_etape2');
+            return $this->redirectToRoute('formulaireldaptest_etape2');
         }
 
         return $this->render('formulaireldap/etape1ldap.html.twig', [
@@ -66,7 +66,7 @@ class FormulaireLdapController extends AbstractController
 
 
 
-    #[Route('/formulaireldap/etape2', name: 'formulaireldap_etape2')]
+    #[Route('/formulaireldap/etape2', name: 'formulaireldaptest_etape2')]
     public function etape2(MonApplication $monApplication, Request $request, SessionInterface $session, HttpClientInterface $httpClient, EntityManagerInterface $entityManager): Response
     {
         $user = $this->security->getUser();
@@ -144,7 +144,7 @@ class FormulaireLdapController extends AbstractController
            
 
 
-            return $this->redirectToRoute('formulaireldap_etape3');
+            return $this->redirectToRoute('formulaireldaptest_etape3');
         }
 
         return $this->render('formulaireldap/etape2ldap.html.twig', [
@@ -157,7 +157,7 @@ class FormulaireLdapController extends AbstractController
     }
 
 
-    #[Route('/formulaireldap/etape3', name: 'formulaireldap_etape3')]
+    #[Route('/formulaireldap/etape3', name: 'formulaireldaptest_etape3')]
     public function etape3(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
         dump($session);
@@ -361,25 +361,25 @@ class FormulaireLdapController extends AbstractController
     $session->remove('nouvelle_demande');
     $session->remove('dossiers_partages');
     
-            // $email = (new Email())
-            //     ->from('noreply@ac-guadeloupe.fr')
-            //     ->to($user1->getEmail())
-            //     ->subject('Votre lien de connexion')
-            //     ->cc('nbarbeu97180@gmail.com')
-            //     ->text('Voici votre lien de connexion :')
-            //     ->html('
-            //         <p>Bonjour ' . $nom . ' ' . $prenom . ',</p>
-            //         <p>Nous avons bien reçu votre demande d\'accès à un poste de travail informatique.</p>
-            //         <p>Pour accéder à votre compte, veuillez cliquer sur le lien ci-dessous :</p>
-            //         <p><a href="' . $url . '">Cliquez ici pour vous connecter</a></p>
+            $email = (new Email())
+                ->from('noreply@ac-guadeloupe.fr')
+                ->to($user1->getEmail())
+                ->subject('Votre lien de connexion')
+                ->cc('nbarbeu97180@gmail.com')
+                ->text('Voici votre lien de connexion :')
+                ->html('
+                    <p>Bonjour ' . $nom . ' ' . $prenom . ',</p>
+                    <p>Nous avons bien reçu votre demande d\'accès à un poste de travail informatique.</p>
+                    <p>Pour accéder à votre compte, veuillez cliquer sur le lien ci-dessous :</p>
+                    <p><a href="' . $url . '">Cliquez ici pour vous connecter</a></p>
 
-            //         <p>Bien cordialement,</p>
-            //         <p><strong>Votre équipe informatique</strong></p>
-            //     ');
+                    <p>Bien cordialement,</p>
+                    <p><strong>Votre équipe informatique</strong></p>
+                ');
     
-            // $mailer->send($email);
+            $mailer->send($email);
     
-            return $this->redirectToRoute('liste_demandes');
+            return $this->redirectToRoute('listedemandes');
         }
     
         return $this->render('formulaireldap/etape3ldap.html.twig', [
