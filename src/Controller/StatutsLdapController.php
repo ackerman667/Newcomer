@@ -67,14 +67,28 @@ class StatutsLdapController extends AbstractController
      */
     private function getDemandesPourUtilisateur(EntityManagerInterface $entityManager, string $uid): array
     {
+        // Récupérer l'utilisateur correspondant à l'UID dans la table User
         $user_bdd = $entityManager->getRepository(User::class)->findOneBy(['uid' => $uid]);
+        
+        // Si l'utilisateur n'est pas trouvé, retourner un tableau vide
         if (!$user_bdd) {
             return [];
         }
-
-        return $entityManager->getRepository(Demandes::class)->findBy(['IDutilisateur' => $user_bdd]);
+    
+        // Construire la requête pour récupérer les demandes selon les deux critères
+        $queryBuilder = $entityManager->createQueryBuilder();
+        $queryBuilder
+            ->select('d')
+            ->from(Demandes::class, 'd')
+            ->leftJoin('d.IDutilisateur', 'u') // Joindre la table User via l'IDutilisateur
+            ->where('d.IDutilisateur = :user') // Critère basé sur l'utilisateur
+            ->orWhere('u.uid = :uid')          // Critère basé sur l'UID
+            ->setParameter('user', $user_bdd)
+            ->setParameter('uid', $uid);
+    
+        // Exécuter la requête et renvoyer les résultats
+        return $queryBuilder->getQuery()->getResult();
     }
-
     /**
      * Récupère les demandes assignées à un valideur spécifique.
      */

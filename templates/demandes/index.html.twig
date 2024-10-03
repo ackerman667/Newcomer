@@ -16,7 +16,7 @@
         border-collapse: collapse;
     }
 {# table tbody tr {
-    background-color: #cce5ff; /* Bleu clair */
+    background-color: #cce5ff; /*ssss Bleu clair */
 } #}
     th, td {
         text-align: center;
@@ -124,6 +124,18 @@
     .btn-primary {
         padding: 10px 20px;
     }
+     .page-title {
+        text-align: center; /* Centre horizontalement */
+        font-weight: bold; /* Rend le texte en gras */
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+    .page-title-container {
+        display: flex;           /* Utilise le modèle Flexbox */
+        justify-content: center; /* Centre horizontalement */
+        align-items: center;     /* Centre verticalement */
+        width: 100%;             /* Prend toute la largeur de la page */
+    }
    
 </style>
 {% endblock %}
@@ -163,26 +175,38 @@
                 </div>
             {% endif %}
 
-            <!-- Section Demandes à Valider (uniquement pour les valideurs) -->
-            {% if isValideur and demandesAValider is not empty %}
-                <h4 class="text-center mt-4">Demandes à Valider</h4>
-                <table class="table table-striped">
-                    <thead>
+            <!-- Tableau combiné pour toutes les demandes -->
+          
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Type de Demande</th>
+                        <th>Service</th>
+                        <th>Demandeur</th>
+                        <th>Date de soumission</th>
+                        <th>Heure de soumission</th>
+                        <th>Statut</th>
+                        <th>Ajouter un commentaire</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if demandesAValider is empty and mesDemandes is empty %}
                         <tr>
-                            <th class="col-demandeur">Demandeur</th>
-                            <th class="col-service">Service</th>
-                            <th>Date de soumission</th>
-                            <th>Heure de soumission</th>
-                            <th>Statut</th>
-                            <th>Ajouter un commentaire</th>
-                            <th>Actions</th>
+                            <td colspan="8">Vous n'avez aucune demande pour l'instant</td>
                         </tr>
-                    </thead>
-                    <tbody>
+                    {% else %}
+                        <!-- Combinaison des demandes à valider et des demandes personnelles -->
                         {% for demande in demandesAValider %}
                             <tr data-status="{{ demande.statuts }}">
-                                <td>{{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}</td>
-                                <td class="service-column">{{ demande.service }}</td>
+                                <td>À Valider</td>
+                                <td>{{ demande.service }}</td>
+                                {% if demande.isAutrePersonne %}
+                                    {% set infosPersonne = demande.infosPersonne %}
+                                    <td>{{ infosPersonne.nom }} {{ infosPersonne.prenom }}</td>
+                                {% else %}
+                                    <td>{{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}</td>
+                                {% endif %}
                                 <td>{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
                                 <td>{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
                                 <td>
@@ -198,59 +222,22 @@
                                 </td>
                                 <td class="toolbar">
                                     {% if demande.statuts == 'En attente' %}
-                                  
-                                        <a href="{{ path('modifier_demandesvalideur_etape1', {id: demande.id}) }}">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="{{ path('visualiser_demande', {id: demande.id}) }}">
-                                            <i class="fas fa-search"></i>
-                                        </a>
-                                        <a href="{{ path('valider_demande', {id: demande.id}) }}">
-                                            <i class="fas fa-thumbs-up"></i>
-                                        </a>
-                                        <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}">
-                                            <i class="fas fa-file-pdf"></i>
-                                        </a>
-                                        <a href="{{ path('refuser_demande', {id: demande.id}) }}" onclick="return checkComment('{{ demande.id }}')">
-                                            <i class="fas fa-thumbs-down"></i>
-                                        </a>
+                                        <a href="{{ path('modifier_demandesvalideur_etape1', {id: demande.id}) }}"><i class="fas fa-edit"></i></a>
+                                        <a href="{{ path('visualiser_demande', {id: demande.id}) }}"><i class="fas fa-search"></i></a>
+                                        <a href="{{ path('valider_demande', {id: demande.id}) }}"><i class="fas fa-thumbs-up"></i></a>
+                                        <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}"><i class="fas fa-file-pdf"></i></a>
+                                        <a href="{{ path('refuser_demande', {id: demande.id}) }}" onclick="return checkComment('{{ demande.id }}')"><i class="fas fa-thumbs-down"></i></a>
                                     {% else %}
-                                        <a href="{{ path('visualiser_demande', {id: demande.id}) }}">
-                                            <i class="fas fa-search"></i>
-                                        </a>
-                                        <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}">
-                                            <i class="fas fa-file-pdf"></i>
-                                        </a>
+                                        <a href="{{ path('visualiser_demande', {id: demande.id}) }}"><i class="fas fa-search"></i></a>
+                                        <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}"><i class="fas fa-file-pdf"></i></a>
                                     {% endif %}
                                 </td>
                             </tr>
                         {% endfor %}
-                    </tbody>
-                </table>
-            {% endif %}
 
-            <!-- Section Mes Demandes -->
-            <h4 class="text-center mt-4">Mes Demandes</h4>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Service</th>
-                        <th>Demandeur</th>
-                        <th>Date de soumission</th>
-                        <th>Heure de soumission</th>
-                        <th>Statut</th>
-                        <th>Commentaire</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if mesDemandes is empty %}
-                        <tr>
-                            <td colspan="7">Vous n'avez aucune demande pour l'instant</td>
-                        </tr>
-                    {% else %}
                         {% for demande in mesDemandes %}
                             <tr data-status="{{ demande.statuts }}">
+                                <td>Mes Demandes</td>
                                 <td>{{ demande.service }}</td>
                                 {% if demande.isAutrePersonne %}
                                     {% set infosPersonne = demande.infosPersonne %}
@@ -269,56 +256,25 @@
                                 <td class="toolbar">
                                     {% if demande.isAutrePersonne %}
                                         {% if demande.statuts == 'Brouillons' %}
-                                            <a href="{{ path('modifier_demandespourautre', {id: demande.id}) }}">
-                                                <i class="fas fa-edit icon-edit"></i>
-                                            </a>
-                                            <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
-                                                <i class="fas fa-search icon-search"></i>
-                                            </a>
-                                            <a href="{{ path('supprimer_demandespourautre', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">
-                                                <i class="fas fa-trash-alt icon-trash"></i>
-                                            </a>
-                                            <a href="{{ path('valider_demandespourautre', {id: demande.id}) }}">
-                                                <i class="fas fa-thumbs-up icon-thumbs-up"></i>
-                                            </a>
-                                             <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}">
-                                                    <i class="fas fa-file-pdf icon-pdf"></i>
-                                                </a>
-
-                                            
+                                            <a href="{{ path('modifier_demandespourautre', {id: demande.id}) }}"><i class="fas fa-edit icon-edit"></i></a>
+                                            <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}"><i class="fas fa-search icon-search"></i></a>
+                                            <a href="{{ path('supprimer_demandespourautre', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');"><i class="fas fa-trash-alt icon-trash"></i></a>
+                                            <a href="{{ path('valider_demandespourautre', {id: demande.id}) }}"><i class="fas fa-thumbs-up icon-thumbs-up"></i></a>
+                                            <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}"><i class="fas fa-file-pdf icon-pdf"></i></a>
                                         {% else %}
-                                            <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
-                                                <i class="fas fa-search icon-search"></i>
-                                            </a>
-                                            <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}">
-                                                <i class="fas fa-file-pdf icon-pdf"></i>
-                                            </a>
+                                            <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}"><i class="fas fa-search icon-search"></i></a>
+                                            <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}"><i class="fas fa-file-pdf icon-pdf"></i></a>
                                         {% endif %}
                                     {% else %}
                                         {% if demande.statuts == 'Brouillons' %}
-                                            <a href="{{ path('modifier_demandesldap', {id: demande.id}) }}">
-                                                <i class="fas fa-edit icon-edit"></i>
-                                            </a>
-                                            <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
-                                                <i class="fas fa-search icon-search"></i>
-                                            </a>
-                                            <a href="{{ path('formulaireldap_supprimer', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">
-                                                <i class="fas fa-trash-alt icon-trash"></i>
-                                            </a>
-                                            <a href="{{ path('valider_demandesldap', {id: demande.id}) }}">
-                                                <i class="fas fa-thumbs-up icon-thumbs-up"></i>
-                                            </a>
-                                             <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}">
-                                                    <i class="fas fa-file-pdf icon-pdf"></i>
-                                                </a>
-
+                                            <a href="{{ path('modifier_demandesldap', {id: demande.id}) }}"><i class="fas fa-edit icon-edit"></i></a>
+                                            <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}"><i class="fas fa-search icon-search"></i></a>
+                                            <a href="{{ path('formulaireldap_supprimer', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');"><i class="fas fa-trash-alt icon-trash"></i></a>
+                                            <a href="{{ path('valider_demandesldap', {id: demande.id}) }}"><i class="fas fa-thumbs-up icon-thumbs-up"></i></a>
+                                            <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}"><i class="fas fa-file-pdf icon-pdf"></i></a>
                                         {% else %}
-                                            <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}">
-                                                <i class="fas fa-search icon-search"></i>
-                                            </a>
-                                            <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}">
-                                                <i class="fas fa-file-pdf icon-pdf"></i>
-                                            </a>
+                                            <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}"><i class="fas fa-search icon-search"></i></a>
+                                            <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}"><i class="fas fa-file-pdf icon-pdf"></i></a>
                                         {% endif %}
                                     {% endif %}
                                 </td>
@@ -330,6 +286,8 @@
         </div>
     </div>
 </div>
+
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

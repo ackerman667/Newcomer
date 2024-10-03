@@ -35,12 +35,14 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-10">
+           
                 <div class="details-section">
                     <div class="details-section-title">Détails de la Demande</div>
                     <div class="details-group">
                         <label>Chef de service :</label>
                         <span>{{ valideur }}</span>
                     </div>
+                    
                     <div class="details-group">
                         <label>Titre :</label>
                         <span>{{ demande.titre }}</span>
@@ -72,7 +74,7 @@
                     </div>
                 </div>
                 <div class="details-section">
-                    <div class="details-section-title">Détails de l'Utilisateur</div>
+                    <div class="details-section-title">Détails du demandeur</div>
                     
                     {% if demande.isAutrePersonne %}
                       

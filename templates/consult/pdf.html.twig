@@ -63,10 +63,16 @@
     <div class="container">
         <div class="row justify-content-center">
             <h2 class="text-center mb-5">Récapitulatif de votre demande</h2>
+            
             <div class="col-md-10">
+            {% if demande.isAutrePersonne %}
+    La demande a été effectuée par : <span style="font-weight: bold; color: red;">{{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}</span>
+{% endif %}
                 <div class="details-section">
+                
                     <div class="details-section-title">Détails de la Demande</div>
                       <div class="details-group">
+                      
                         <label>Chef de service :</label>
                         <span>{{ valideur }}</span>
                     </div>
@@ -103,7 +109,7 @@
                 </div>
 
                 <div class="details-section">
-                    <div class="details-section-title">Détails de l'Utilisateur</div>
+                    <div class="details-section-title">Détails du demandeur</div>
                     
                     {% if demande.isAutrePersonne %}
                         <!-- Affichage des informations pour une autre personne -->
@@ -178,8 +184,11 @@
                         <label>Service :</label>
                         <span>{{ demande.service }}</span>
                     </div>
+                    
                 </div>
+                
             </div>
+           
         </div>
     </div>
 {% endblock %}
