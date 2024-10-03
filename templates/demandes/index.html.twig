@@ -167,10 +167,15 @@
                 <div class="filter-container">
                     <label for="filter-select">Filtrer par statut :</label>
                     <select id="filter-select" class="form-select">
-                        <option value="all">Tout</option>
+                    <option value="all">Tout</option>
+                          <option value="Mes Demandes">Mes Demandes</option>
+                        <option value="À Valider">Demandes à Valider</option>
+                        
                         <option value="Suivi dans LEKA">Suivi dans LEKA</option>
                         <option value="En attente">En attente</option>
                         <option value="Refusée">Refusée</option>
+                      
+
                     </select>
                 </div>
             {% endif %}
@@ -198,7 +203,7 @@
                     {% else %}
                         <!-- Combinaison des demandes à valider et des demandes personnelles -->
                         {% for demande in demandesAValider %}
-                            <tr data-status="{{ demande.statuts }}">
+                            <tr data-status="{{ demande.statuts }}" data-type="À Valider">
                                 <td>À Valider</td>
                                 <td>{{ demande.service }}</td>
                                 {% if demande.isAutrePersonne %}
@@ -236,7 +241,8 @@
                         {% endfor %}
 
                         {% for demande in mesDemandes %}
-                            <tr data-status="{{ demande.statuts }}">
+                           <tr data-status="{{ demande.statuts }}" data-type="Mes Demandes">
+
                                 <td>Mes Demandes</td>
                                 <td>{{ demande.service }}</td>
                                 {% if demande.isAutrePersonne %}
@@ -298,7 +304,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const filterValue = filterSelect.value;
         rows.forEach(row => {
             const status = row.getAttribute('data-status');
-            if (filterValue === 'all' || (filterValue === 'Suivi dans LEKA' && status === 'Suivi dans LEKA') || (filterValue === 'En attente' && status === 'En attente') || (filterValue === 'Refusée' && status === 'Refusée')) {
+            const type = row.getAttribute('data-type');
+            if (filterValue === 'all' || (filterValue === 'Suivi dans LEKA' && status === 'Suivi dans LEKA') || 
+            (filterValue === 'En attente' && status === 'En attente') || (filterValue === 'Refusée' && status === 'Refusée') || 
+           (filterValue === 'Mes Demandes' && type === 'Mes Demandes') ||   (filterValue === 'À Valider' && type === 'À Valider')) {
                 row.style.display = '';
             } else {
                 row.style.display = 'none';

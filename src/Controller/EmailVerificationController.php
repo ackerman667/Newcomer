@@ -14,6 +14,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Mailer\MailerInterface;
 use App\Entity\Demandes;
+use App\Entity\User;
 use Symfony\Component\Routing\Annotation\Route;
 
 class EmailVerificationController extends AbstractController
@@ -61,20 +62,39 @@ class EmailVerificationController extends AbstractController
                     'monApplication' => $monApplication,
                 ]);
             } elseif ($user && !$demande) {
-                $token = $user->getToken();
-                $url = $this->generateUrl('statuts_token', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
-            
-                $email = (new Email())
-                    ->from('noreply@ac-guadeloupe.fr')
-                    ->to($user->getEmail())
-                    ->subject('Compléter votre demande')
-                    ->html('
-                    <p>Bonjour ' . $user->getPrenom() . ',</p>
-                    <p>Veuillez compléter votre demande en cliquant sur le lien suivant : <a href="' . $url . '">Compléter ma demande</a></p>');
-            
-                $mailer->send($email);
-            
-                $this->addFlash('info', 'Votre compte existe déjà. Veuillez consulter votre boîte mail pour compléter le formulaire.');
+                if($user->isCompteActif()) {
+                    $token = $user->getToken();
+                    $url = $this->generateUrl('statuts_token', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
+                    $email = (new Email())
+                        ->from('noreply@ac-guadeloupe.fr')
+                        ->to($user->getEmail())
+                        ->subject('Compléter votre demande')
+                        ->html('
+                        <p>Bonjour ' . $user->getPrenom() . ',</p>
+                        <p>Veuillez compléter votre demande en cliquant sur le lien suivant : <a href="' . $url . '">Compléter ma demande</a></p>');
+                
+                    $mailer->send($email);
+                
+                    $this->addFlash('info', 'Votre compte existe déjà. Veuillez consulter votre boîte mail pour compléter le formulaire.');
+
+                   
+                } else {
+                    $token = $user->getToken();
+                    $url = $this->generateUrl('activate_account', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
+                    $email = (new Email())
+                        ->from('noreply@ac-guadeloupe.fr')
+                        ->to($user->getEmail())
+                        ->subject('Compléter votre demande')
+                        ->html('
+                        <p>Bonjour ' . $user->getPrenom() . ',</p>
+                        <p>Veuillez compléter votre demande en cliquant sur le lien suivant : <a href="' . $url . '">Compléter ma demande</a></p>');
+                
+                    $mailer->send($email);
+                
+                    $this->addFlash('info', 'Votre compte existe déjà. Veuillez consulter votre boîte mail pour compléter le formulaire.');
+
+                }
+                
             
                 return $this->render('utilisateur/compte_existant.html.twig', [
                     'monApplication' => $monApplication,
