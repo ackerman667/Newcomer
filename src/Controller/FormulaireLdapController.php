@@ -354,7 +354,7 @@ class FormulaireLdapController extends AbstractController
             $token1 = $demande->getToken();
             $nom = $user1->getNom();
             $prenom = $user1->getPrenom();
-            $url = $this->generateUrl('statuts_token_ldap', [], UrlGeneratorInterface::ABSOLUTE_URL);
+            $url = $this->generateUrl('liste_demandes', [], UrlGeneratorInterface::ABSOLUTE_URL);
 
             $session->remove('form_data');
     $session->remove('demande_id');

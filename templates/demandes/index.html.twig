@@ -15,6 +15,9 @@
         width: 100%;
         border-collapse: collapse;
     }
+{# table tbody tr {
+    background-color: #cce5ff; /* Bleu clair */
+} #}
     th, td {
         text-align: center;
         padding: 12px;
@@ -23,7 +26,7 @@
     th {
         background-color: #f8f8f8;
     }
-    .status-leka {
+    .status-leka, .status-leka-mesdemandes{
         background-color: #28A745;
         color: white;
         padding: 5px 10px;
@@ -33,6 +36,15 @@
         margin: 5px 0;
     }
     .status-en-attente {
+        background-color:  #FFC107;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        display: inline-block;
+        min-width: 100px;
+        margin: 5px 0;
+    }
+    .status-en-attente-mesdemandes {
         background-color: #D3D3D3;
         color: white;
         padding: 5px 10px;
@@ -41,7 +53,8 @@
         min-width: 100px;
         margin: 5px 0;
     }
-    .status-refuse {
+    
+    .status-refuse, .status-refuse-mesdemandes{
         background-color: #FF0000;
         color: white;
         padding: 5px 10px;
@@ -50,7 +63,7 @@
         min-width: 100px;
         margin: 5px 0;
     }
-    .status-brouillons {
+    .status-brouillons-mesdemandes {
         background-color: #FFC107; 
         color: white;
         padding: 5px 10px;
@@ -59,6 +72,7 @@
         min-width: 100px;
         margin: 5px 0;
     }
+    
     .comment-form textarea {
         width: 100%;
         margin-bottom: 5px;
@@ -110,6 +124,7 @@
     .btn-primary {
         padding: 10px 20px;
     }
+   
 </style>
 {% endblock %}
 
@@ -183,6 +198,7 @@
                                 </td>
                                 <td class="toolbar">
                                     {% if demande.statuts == 'En attente' %}
+                                  
                                         <a href="{{ path('modifier_demandesvalideur_etape1', {id: demande.id}) }}">
                                             <i class="fas fa-edit"></i>
                                         </a>
@@ -245,7 +261,7 @@
                                 <td>{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
                                 <td>{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
                                 <td>
-                                    <span class="{% if demande.statuts == 'Brouillons' %}status-brouillons{% elseif demande.statuts == 'Suivi dans LEKA' %}status-leka{% elseif demande.statuts == 'En attente' %}status-en-attente{% elseif demande.statuts == 'Refusée' %}status-refuse{% endif %}">
+                                    <span class="{% if demande.statuts == 'Brouillons' %}status-brouillons-mesdemandes{% elseif demande.statuts == 'Suivi dans LEKA' %}status-leka-mesdemandes{% elseif demande.statuts == 'En attente' %}status-en-attente-mesdemandes{% elseif demande.statuts == 'Refusée' %}status-refuse-mesdemandes{% endif %}">
                                         {{ demande.statuts }}
                                     </span>
                                 </td>
