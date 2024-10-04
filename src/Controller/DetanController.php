@@ -22,21 +22,35 @@ class DetanController extends AbstractController
 
         // Récupérer les demandes avec le statut "Suivi dans LEKA"
         $query = $entityManager->createQuery(
-            'SELECT d, u
-            FROM App\Entity\Demandes d
-            JOIN d.IDutilisateur u
-            WHERE d.statuts = :statuts'
-            // -- AND u.uid IS NULL'
+            'SELECT d, u, ua
+             FROM App\Entity\Demandes d
+             JOIN d.IDutilisateur u
+             LEFT JOIN d.autreUtilisateur ua
+             WHERE d.statuts = :statuts'
         )->setParameter('statuts', 'Suivi dans LEKA');
+        
+        $demandesWithUsers = $query->getResult();
+        
 
         $demandesWithUsers = $query->getResult();
         dump($demandesWithUsers);
         $alertUsers = $this->getUsersWithMultipleLEKADemandes($entityManager);
 
+
+        $demandesWithProvenance = [];
+foreach ($demandesWithUsers as $demande) {
+    $demandesWithProvenance[] = [
+        'demande' => $demande,
+        'provenance' => $demande->getIDutilisateur()->getProvenance(), // Obtenir la provenance
+    ];
+}
+
+
         return $this->render('assistance/demandes_validees.html.twig', [
             'demandesWithUsers' => $demandesWithUsers,
             'monApplication' => $monApplication,
             'alertUsers' => $alertUsers,
+            'demandesWithProvenance' => $demandesWithProvenance,
         ]);
     }
 

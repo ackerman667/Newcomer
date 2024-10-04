@@ -89,6 +89,9 @@
         .text-danger {
             color: red;
         }
+        .text-info {
+            color: #17a2b8;
+        }
         /* Style pour l'icône d'alerte */
         .alert-icon {
             color: red; /* Icône rouge pour attirer l'attention */
@@ -152,20 +155,26 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% if demandesWithUsers is empty %}
+                        {% if demandesWithProvenance is empty %}
                             <tr>
                                 <td colspan="7">Vous n'avez aucune demande pour l'instant</td>
                             </tr>
                         {% else %}
-                            {% for demande in demandesWithUsers %}
+                            {% for demandeInfo in demandesWithProvenance %}
+                                {% set demande = demandeInfo.demande %}
+                                {% set provenance = demandeInfo.provenance %}
                                 <tr data-status="{{ demande.statuts }}" data-uid="{{ demande.IDutilisateur.uid }}">
                                     <td>{{ demande.id }}</td>
-                                    <td>
-                                        {{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}
-                                        {% if demande.IDutilisateur.id in alertUsers %}
-                                            <span class="alert-icon" title="Cette personne a plus d'une demande en cours.">&#9888;</span>
-                                        {% endif %}
-                                    </td>
+                                    {% if demande.isAutrePersonne %}
+                                        <td>{{ demande.autreUtilisateur.nom }} {{ demande.autreUtilisateur.prenom }}</td>
+                                    {% else %}
+                                        <td>
+                                            {{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}
+                                            {% if demande.IDutilisateur.id in alertUsers %}
+                                                <span class="alert-icon" title="Cette personne a plus d'une demande en cours.">&#9888;</span>
+                                            {% endif %}
+                                        </td>
+                                    {% endif %}
                                     <td>{{ demande.IDutilisateur.email }}</td>
                                     <td>{{ demande.datevalidation ? demande.datevalidation|date('d/m/Y') : '' }}</td>
                                     <td>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</td>
@@ -176,12 +185,23 @@
                                             {{ demande.IDutilisateur.uid }}
                                         {% endif %}
                                     </td>
-                                    <td>
-                                        <form action="{{ path('ajouter_uid', {id: demande.IDutilisateur.id}) }}" method="post" class="input-group">
-                                            <input type="text" name="uid" placeholder="Entrer UID" class="form-control input-uid">
-                                            <button type="submit" class="btn btn-primary">Ajouter</button>
-                                        </form>
-                                    </td>
+                 <td>
+    <form action="{{ path('ajouter_uid', {id: demande.IDutilisateur.id}) }}" method="post" class="input-group" style="flex-direction: column; align-items: flex-start;">
+        {% if demande.IDutilisateur.provenance == 'ldap' %}
+            <div style="display: flex; width: 100%;">
+                <input type="text" name="uid" placeholder="Entrer UID" class="form-control input-uid" disabled style="background-color: #e9ecef; cursor: not-allowed; flex: 1;">
+                <button type="button" class="btn btn-secondary" disabled style="cursor: not-allowed; margin-left: 5px;">Ajouter</button>
+            </div>
+            <small class="text-info" style="margin-top: 5px; color: #6c757d;">Cette personne existe déjà dans l'annuaire.</small>
+        {% else %}
+            <div style="display: flex; width: 100%;">
+                <input type="text" name="uid" placeholder="Entrer UID" class="form-control input-uid" style="flex: 1;">
+                <button type="submit" class="btn btn-primary" style="margin-left: 5px;">Ajouter</button>
+            </div>
+        {% endif %}
+    </form>
+</td>
+
                                 </tr>
                             {% endfor %}
                         {% endif %}
@@ -201,11 +221,11 @@
                 rows.forEach(row => {
                     const uid = row.getAttribute('data-uid');
 
-                    if (filterValue === 'all' && row.getAttribute('data-status') === 'Suivi dans LEKA') {
+                    if (filterValue === 'all') {
                         row.style.display = '';
-                    } else if (filterValue === 'no-uid' && (uid === '' || uid === 'null' || uid === null)) {
+                    } else if (filterValue === 'no-uid' && (!uid || uid === 'null')) {
                         row.style.display = '';
-                    } else if (filterValue === 'has-uid' && uid !== '' && uid !== 'null' && uid !== null) {
+                    } else if (filterValue === 'has-uid' && uid) {
                         row.style.display = '';
                     } else {
                         row.style.display = 'none';

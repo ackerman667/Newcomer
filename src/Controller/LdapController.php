@@ -33,36 +33,7 @@ class LdapController extends AbstractController
         $user = $this->security->getUser();
         $session = $this->requestStack->getSession();
         $session->set('ldap_authenticated', true);
-        
-        $userInformation = new UserInformation();
-        // dump($user);
-         $infos_user = $userInformation->getUserInformation($user);
-        //  dump($infos_user);
-        $uid = $infos_user['uid'];
-        // $uid = $user.getUid();
-        dump($uid);
-        $user_bdd= $entityManager->getRepository(User::class)->findOneBy(['uid' => $uid]);
-        dump($user_bdd);
-        if($user_bdd) {
-             $id_demandes=$user_bdd->getId();
-             $demande = $entityManager->getRepository(Demandes::class)->findBy(['IDutilisateur' => $id_demandes]);
-                if($demande) {
-                //    $token = $demande[0]->getToken();
-                    return $this->redirectToRoute('liste_demandes');
-
-                } else {
-                    return $this->redirectToRoute('liste_demandes');
-
-                }
-             
-
-        } else {
-            return $this->redirectToRoute('liste_demandes');
-    
-     
-        }
-
-
+        return $this->redirectToRoute('liste_demandes');
 
     }
 
@@ -77,6 +48,6 @@ class LdapController extends AbstractController
         $session->clear();
 
         // Redirection vers la page `aide` après la déconnexion
-        return $this->redirectToRoute('aide');
+        return $this->redirectToRoute('profil');
     }
 }
