@@ -174,7 +174,7 @@
                                         <a href="{{ path('demande_consult', {token: demande.token}) }}">
                                             <i class="fas fa-search icon-search"></i>
                                         </a>
-                                        <a href="{{ path('formulairetest_supprimer', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">
+                                        <a href="{{ path('formulaireexterne_supprimer', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">
                                             <i class="fas fa-trash-alt icon-trash"></i>
                                         </a>
                                         <a href="{{ path('valider_demandes', {id: demande.id}) }}">

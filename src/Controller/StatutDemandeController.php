@@ -149,7 +149,7 @@ public function generatePdf(Demandes $demande, MonApplication $monApplication,/*
 }
 
 
-    #[Route('/formulairetest/nouvelle_demande/{token}', name: 'nouvelle_demande')]
+    #[Route('/formulaireexterne/nouvelle_demande/{token}', name: 'nouvelle_demande')]
     public function nouvelleDemande(SessionInterface $session, $token): Response
     {
         // Réinitialiser les données de la session pour démarrer une nouvelle demande
@@ -158,11 +158,11 @@ public function generatePdf(Demandes $demande, MonApplication $monApplication,/*
         $session->set('nouvelle_demande', true); // Indiquer explicitement qu'une nouvelle demande doit être créée
     
         // Rediriger vers la première étape du formulaire pour une nouvelle demande
-        return $this->redirectToRoute('formulairetest_etape1', ['token' => $token]);
+        return $this->redirectToRoute('formulaireexterne_etape1', ['token' => $token]);
     }
     
 
-    #[Route('/formulairetest/supprimer/{id}', name: 'formulairetest_supprimer')]
+    #[Route('/formulaireexterne/supprimer/{id}', name: 'formulaireexterne_supprimer')]
     public function supprimerDemande(Request $request, EntityManagerInterface $entityManager, $id): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
@@ -192,7 +192,7 @@ public function generatePdf(Demandes $demande, MonApplication $monApplication,/*
         return $this->redirectToRoute('statuts_token' , ['token' => $token]); 
     }
 
-    #[Route('/formulairetest/modifier/{id}', name: 'modifier_demandes')]
+    #[Route('/formulaireexterne/modifier/{id}', name: 'modifier_demandes')]
     public function modifierDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id, MailerInterface $mailer): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
@@ -226,10 +226,10 @@ public function generatePdf(Demandes $demande, MonApplication $monApplication,/*
         $session->set('form_data', $data);
         $session->set('demande_id', $id);
 
-        return $this->redirectToRoute('formulairetest_etape1', ['token' => $token]);
+        return $this->redirectToRoute('formulaireexterne_etape1', ['token' => $token]);
     }
 
-    #[Route('/formulairetest/valider/{id}', name: 'valider_demandes')]
+    #[Route('/formulaireexterne/valider/{id}', name: 'valider_demandes')]
     public function validerDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id,MailerInterface $mailer): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);

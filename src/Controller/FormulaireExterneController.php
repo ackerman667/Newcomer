@@ -22,7 +22,7 @@ use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-class FormulaireTestController extends AbstractController
+class FormulaireExterneController extends AbstractController
 {
     private $timezone;
 
@@ -32,7 +32,7 @@ class FormulaireTestController extends AbstractController
         $this->timezone = new \DateTimeZone('America/Guadeloupe'); 
     }
 
-    #[Route('/formulairetest/etape1/{token}', name: 'formulairetest_etape1')]
+    #[Route('/formulaireexterne/etape1/{token}', name: 'formulaireexterne_etape1')]
     public function etape1(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, $token): Response
     {
     
@@ -58,7 +58,7 @@ class FormulaireTestController extends AbstractController
             $data = $form->getData();
             $session->set('form_data', $data);
 
-            return $this->redirectToRoute('formulairetest_etape2', ['token' => $token]);
+            return $this->redirectToRoute('formulaireexterne_etape2', ['token' => $token]);
         }
 
         return $this->render('formulaire/etape1.html.twig', [
@@ -70,7 +70,7 @@ class FormulaireTestController extends AbstractController
         ]);
     }
 
-    #[Route('/formulairetest/etape2/{token}', name: 'formulairetest_etape2')]
+    #[Route('/formulaireexterne/etape2/{token}', name: 'formulaireexterne_etape2')]
     public function etape2(MonApplication $monApplication, Request $request, SessionInterface $session, HttpClientInterface $httpClient, EntityManagerInterface $entityManager, $token): Response
     {
 
@@ -181,7 +181,7 @@ class FormulaireTestController extends AbstractController
             $nomValideur = $apiDataSecond[0]['valideur'];
             $session->set('nom_valideur', $nomValideur);
 
-            return $this->redirectToRoute('formulairetest_etape3', ['token' => $token]);
+            return $this->redirectToRoute('formulaireexterne_etape3', ['token' => $token]);
         }
 
         return $this->render('formulaire/etape2.html.twig', [
@@ -194,7 +194,7 @@ class FormulaireTestController extends AbstractController
         ]);
     }
 
-    #[Route('/formulairetest/etape3/{token}', name: 'formulairetest_etape3')]
+    #[Route('/formulaireexterne/etape3/{token}', name: 'formulaireexterne_etape3')]
 public function etape3(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, MailerInterface $mailer, $token): Response
 {
     // $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
