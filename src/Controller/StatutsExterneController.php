@@ -20,7 +20,7 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Dompdf\Options;
 
-class StatutDemandeController extends AbstractController
+class StatutsExterneController extends AbstractController
 {
 
     private $timezone;
@@ -40,7 +40,7 @@ class StatutDemandeController extends AbstractController
         dump($demandes);
         
 
-        return $this->render('statuts/token.html.twig', [
+        return $this->render('demandes/demandes_externe.html.twig', [
             'demandes' => $demandes,
             'monApplication' => $monApplication,
             'user' => $user,
@@ -64,7 +64,7 @@ class StatutDemandeController extends AbstractController
         $user = $demande->getIDutilisateur();
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
 
-        return $this->render('consult/visualiser.html.twig', [
+        return $this->render('visualiser-demandes/visualiser.html.twig', [
             'demande' => $demande,
             'user' => $user,
             'monApplication' => $monApplication,
@@ -123,7 +123,7 @@ public function generatePdf(Demandes $demande, MonApplication $monApplication,/*
     $dompdf = new Dompdf($options);
 
     // Récupérer le contenu HTML de votre template
-    $html = $this->renderView('consult/index.html.twig', [
+    $html = $this->renderView('visualiser-demandes/index.html.twig', [
         'demande' => $demande,
         'user' => $user,
         'ressources' => $ressources,

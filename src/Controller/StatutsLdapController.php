@@ -395,7 +395,7 @@ class StatutsLdapController extends AbstractController
         $dompdf = new Dompdf($options);
     
         // Récupérer le contenu HTML de votre template
-        $html = $this->renderView('consult/pdf.html.twig', [
+        $html = $this->renderView('visualiser-demandes/pdf.html.twig', [
             'demande' => $demande,
             'user' => $userInfos,
             'ressources' => $ressources,
@@ -583,7 +583,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
         }
         $valideur = $demande->getUidValideur();
     
-        return $this->render('consult/visualiser.html.twig', [
+        return $this->render('visualiser-demandes/visualiser.html.twig', [
             'demande' => $demande,
             'user' => $user,
             'monApplication' => $monApplication,
@@ -653,7 +653,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
         $dompdf = new Dompdf($options);
     
         // Récupérer le contenu HTML de votre template
-        $html = $this->renderView('consult/pdf.html.twig', [
+        $html = $this->renderView('visualiser-demandes/pdf.html.twig', [
             'demande' => $demande,
             'user' => $userInfos,
             'ressources' => $ressources,
