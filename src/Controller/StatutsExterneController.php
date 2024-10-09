@@ -30,7 +30,7 @@ class StatutsExterneController extends AbstractController
         
         $this->timezone = new \DateTimeZone('America/Guadeloupe'); 
     }
-    #[Route('/statuts/{token}', name: 'statuts_token')]
+    #[Route('/statuts/{token}', name: 'demande_externe')]
     public function index(MonApplication $monApplication, EntityManagerInterface $entityManager, $token): Response
     {
 
@@ -189,7 +189,7 @@ public function generatePdf(Demandes $demande, MonApplication $monApplication,/*
         $entityManager->remove($demande);
         $entityManager->flush();
 
-        return $this->redirectToRoute('statuts_token' , ['token' => $token]); 
+        return $this->redirectToRoute('demande_externe' , ['token' => $token]); 
     }
 
     #[Route('/formulaireexterne/modifier/{id}', name: 'modifier_demandes')]
@@ -275,7 +275,7 @@ public function generatePdf(Demandes $demande, MonApplication $monApplication,/*
     
        
 
-        return $this->redirectToRoute('statuts_token', ['token' => $token]);
+        return $this->redirectToRoute('demande_externe', ['token' => $token]);
     }
 
 

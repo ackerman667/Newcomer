@@ -197,21 +197,7 @@ class FormulaireExterneController extends AbstractController
     #[Route('/formulaireexterne/etape3/{token}', name: 'formulaireexterne_etape3')]
 public function etape3(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, MailerInterface $mailer, $token): Response
 {
-    // $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
-    //     if($demande) {
-    //         $id_user = $demande->getIDutilisateur();
-    //     $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
-    //     } else {
-    //         $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
-
-    //     }
-    // dump($user);
-    // $testtoken = $user->getToken();
-
-
-    // if (!$user) {
-    //     throw $this->createNotFoundException('Utilisateur non trouvé.');
-    // }
+    
 
     $data = $session->get('form_data', []);
     $dossiersPartages = $session->get('dossiers_partages', []);
@@ -233,12 +219,12 @@ public function etape3(MonApplication $monApplication, Request $request, Session
 
         $nouvelleDemande = $session->get('nouvelle_demande', false);
 
-        if ($nouvelleDemande /* || !$entityManager->getRepository(Demandes::class)->findOneBy(['IDutilisateur' => $user]) */) {
+        if ($nouvelleDemande ) {
            
                                         $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
                                         
                                         $demande = new Demandes();
-                                        $token = bin2hex(random_bytes(32)); // Générer un nouveau token pour la nouvelle demande
+                                        $token = bin2hex(random_bytes(32)); 
                                         $demande->setToken($token);
                                         $historique->setDemande($demande);
                                         $historique->setStatut('Création');
@@ -259,10 +245,10 @@ public function etape3(MonApplication $monApplication, Request $request, Session
                      $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
                     if (!$demande) {
                                     $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
-                                    dump("test");
-                                    // Si aucune demande existante trouvée, toujours créer une nouvelle demande par sécurité
+                             
+                                    
                                     $demande = new Demandes();
-                                    $token = bin2hex(random_bytes(32)); // Générer un nouveau token pour la nouvelle demande
+                                    $token = bin2hex(random_bytes(32)); 
                                     $demande->setToken($token);
                                     $historique->setDemande($demande);
                                     $historique->setStatut('Création');
@@ -305,7 +291,7 @@ public function etape3(MonApplication $monApplication, Request $request, Session
 
         $token_stat=$user->getToken();
 
-        // Logique partagée pour les deux cas (nouvelle ou modification)
+
 
         $choix = $data['replace_someone'];
         $statut_utilisateur = $data['statut'];
@@ -372,10 +358,9 @@ public function etape3(MonApplication $monApplication, Request $request, Session
 
         
 
-        $url = $this->generateUrl('statuts_token', ['token' => $token_stat], UrlGeneratorInterface::ABSOLUTE_URL);
+        $url = $this->generateUrl('demande_externe', ['token' => $token_stat], UrlGeneratorInterface::ABSOLUTE_URL);
         $session->clear();
-        // $session->remove('nouvelle_demande');
-
+       
 
         $email = (new Email())
             ->from('noreply@ac-guadeloupe.fr')
@@ -394,7 +379,7 @@ public function etape3(MonApplication $monApplication, Request $request, Session
         $this->addFlash('success', 'Votre formulaire a été soumis. Pensez à le valider si vous n\'avez plus de modifications à y apporter.');
         $mailer->send($email);
 
-        return $this->redirectToRoute('statuts_token', ['token' => $token_stat]);
+        return $this->redirectToRoute('demande_externe', ['token' => $token_stat]);
     }
 
     return $this->render('formulaire/etape3.html.twig', [

@@ -17,10 +17,9 @@ class DetanController extends AbstractController
     #[Route('formulaireldap/demandesvalidees', name: 'demandes_validees')]
     public function demandesValidees(MonApplication $monApplication, EntityManagerInterface $entityManager): Response
     {
-        // Récupérer les utilisateurs sans UID
+
       
 
-        // Récupérer les demandes avec le statut "Suivi dans LEKA"
         $query = $entityManager->createQuery(
             'SELECT d, u, ua
              FROM App\Entity\Demandes d
@@ -41,7 +40,7 @@ class DetanController extends AbstractController
 foreach ($demandesWithUsers as $demande) {
     $demandesWithProvenance[] = [
         'demande' => $demande,
-        'provenance' => $demande->getIDutilisateur()->getProvenance(), // Obtenir la provenance
+        'provenance' => $demande->getIDutilisateur()->getProvenance(), 
     ];
 }
 
@@ -83,7 +82,7 @@ foreach ($demandesWithUsers as $demande) {
     {
         $alertUsers = [];
     
-        // Vérification des utilisateurs ayant plusieurs demandes avec `AutrePersonne` à `false`
+      
         $query1 = $entityManager->createQuery(
             'SELECT IDENTITY(d.IDutilisateur) as userId, COUNT(d.id) as demandeCount
              FROM App\Entity\Demandes d
@@ -97,7 +96,7 @@ foreach ($demandesWithUsers as $demande) {
             $alertUsers[] = $entry['userId'];
         }
     
-        // Vérification pour les demandes faites par d'autres personnes (`AutrePersonne` = true)
+
         $query2 = $entityManager->createQuery(
             'SELECT d, ua
              FROM App\Entity\Demandes d
@@ -106,8 +105,7 @@ foreach ($demandesWithUsers as $demande) {
         )->setParameter('statut', 'Suivi dans LEKA');
     
         $demandesAutre = $query2->getResult();
-    
-        // Compter le nombre de demandes pour les mêmes utilisateurs dans `UserAutre`
+
         $personneCount = [];
         foreach ($demandesAutre as $demande) {
             $key = $demande->getAutreUtilisateur()->getNom() . '-' . $demande->getAutreUtilisateur()->getPrenom() . '-' . $demande->getAutreUtilisateur()->getDateDeNaissance()->format('Y-m-d');
@@ -117,7 +115,7 @@ foreach ($demandesWithUsers as $demande) {
             $personneCount[$key]++;
         }
     
-        // Ajouter les utilisateurs concernés dans l'alerte
+
         foreach ($personneCount as $key => $count) {
             if ($count > 1) {
                 $alertUsers[] = $key;

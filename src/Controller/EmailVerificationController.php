@@ -44,7 +44,7 @@ class EmailVerificationController extends AbstractController
                     return $this->redirectToRoute('ldap');
                 }
                 $token = $user->getToken();
-                 $url = $this->generateUrl('statuts_token', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
+                 $url = $this->generateUrl('demande_externe', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
             
                 $email = (new Email())
                     ->from('noreply@ac-guadeloupe.fr')
@@ -64,7 +64,7 @@ class EmailVerificationController extends AbstractController
             } elseif ($user && !$demande) {
                 if($user->isCompteActif()) {
                     $token = $user->getToken();
-                    $url = $this->generateUrl('statuts_token', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
+                    $url = $this->generateUrl('demande_externe', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
                     $email = (new Email())
                         ->from('noreply@ac-guadeloupe.fr')
                         ->to($user->getEmail())
@@ -125,7 +125,7 @@ class EmailVerificationController extends AbstractController
     {
         $domain = explode('@', $email)[1];
     
-        // Domaine qui entrainera la redirection
+  
         return $domain === 'ac-guadeloupe.fr';
     }
 }

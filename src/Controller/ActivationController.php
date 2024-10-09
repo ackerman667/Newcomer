@@ -16,16 +16,15 @@ class ActivationController extends AbstractController
     {
         $user = $userRepository->findOneBy(['token' => $token]);
 
-        // if ($user && $user->getTokenExpiration() >= new \DateTime()) {
             if ($user) {
-            // Activer le compte utilisateur
+           
             $user->setCompteActif(true);
         
             $entityManager->persist($user);
             $entityManager->flush();
             
 
-            // $this->addFlash('success', 'Votre compte a été activé avec succès.');
+        
 
             return $this->render('activation/success_activation.html.twig', [
                 'token' => $token,
@@ -33,7 +32,7 @@ class ActivationController extends AbstractController
             ]);
         }
 
-        // Rendu si le token est invalide ou expiré
+      
         return $this->render('activation/invalid_token.html.twig', [
             'monApplication' => $monApplication,
         ]);

@@ -41,7 +41,6 @@ class FormulaireAutreController extends AbstractController
     {
         $data = $session->get('form_data', []);
 
-        // Création du formulaire pour l'étape 1
         $form = $this->createForm(DemandeEtape1FormType::class, $data);
         $form->handleRequest($request);
 
@@ -124,17 +123,13 @@ class FormulaireAutreController extends AbstractController
     #[Route('/formulaireldap/a/etape3', name: 'formulaireldap-etape3')]
     public function etape3PourAutre(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
-        // Récupérer l'utilisateur actuel et ses informations
-       
-    
-        // Récupérer les données de session
+
         $data = $session->get('form_data', []);
         $dossiersPartages = $session->get('dossiers_partages', []);
         $nomServiceSelectionne = $session->get('nom_service_selectionne', '');
         $nomValideur = $session->get('nom_valideur', '');
         
-    
-        // Création du formulaire
+
         $form = $this->createForm(DemandeEtape3FormType::class, $data, [
             'dossiers_partages' => $dossiersPartages,
             'data_class' => null,
@@ -157,7 +152,7 @@ class FormulaireAutreController extends AbstractController
             
             
             if ($nouvelleDemande) {
-                // Création d'une nouvelle demande
+  
                 $user_infos = new UserAutre();
                 $user_infos->setNom($data['nom']);
                 $user_infos->setPrenom( $data['prenom']);
@@ -182,7 +177,6 @@ class FormulaireAutreController extends AbstractController
                 $token = bin2hex(random_bytes(32));
                 $demande->setToken($token);
                 $demande->setAutreUtilisateur($user_infos);
-                // $demande->setIDutilisateur($user_bdd);
                 $demande->setTitre('Demande pour une autre personne');
                 $historique->setStatut('Création');
                 $historique->setStatutOperation('Création');
@@ -221,7 +215,7 @@ class FormulaireAutreController extends AbstractController
                     $token = bin2hex(random_bytes(32));
                     $demande->setToken($token);
                     $demande->setAutreUtilisateur($user_infos);
-                    // $demande->setIDutilisateur($user_bdd);
+                    
                     $demande->setTitre('Demande pour une autre personne');
                     $historique->setStatut('Création');
                     $historique->setStatutOperation('Création');
@@ -252,7 +246,7 @@ class FormulaireAutreController extends AbstractController
                 $token = bin2hex(random_bytes(32));
                 $demande->setToken($token);
                 $demande->setAutreUtilisateur($user_infos);
-                // $demande->setIDutilisateur($user_bdd);
+ 
                 $demande->setTitre('Demande pour une autre personne');
                 $historique->setStatut('Création');
                 $historique->setStatutOperation('Création');
@@ -438,7 +432,7 @@ class FormulaireAutreController extends AbstractController
 
         $this->addFlash('success', 'La demande a été supprimée avec succès.');
 
-        return $this->redirectToRoute('statuts_token_ldap');
+        return $this->redirectToRoute('liste_demandes');
     }
 
     #[Route('/formulaireldap/a/valider/{id}', name: 'valider_demandespourautre')]
@@ -461,7 +455,7 @@ class FormulaireAutreController extends AbstractController
         $entityManager->persist($historique);
         $entityManager->flush();
 
-        return $this->redirectToRoute('statuts_token_ldap');
+        return $this->redirectToRoute('liste_demandes');
     }
 
     private function buildTree(array &$services, $parentId = 0) {
