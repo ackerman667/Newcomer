@@ -31,8 +31,15 @@ class StatutsExterneController extends AbstractController
         $this->timezone = new \DateTimeZone('America/Guadeloupe'); 
     }
     #[Route('/statuts/{token}', name: 'demande_externe')]
-    public function index(MonApplication $monApplication, EntityManagerInterface $entityManager, $token): Response
+    public function index(SessionInterface $session, MonApplication $monApplication, EntityManagerInterface $entityManager, $token): Response
     {
+        $session->clear();
+        $sessionData = $session->all();
+
+        // Utilisez dump() pour afficher le contenu de la session (nécessite le composant de débogage activé)
+        dump($sessionData);
+
+
 
         $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
         $demandes = $entityManager->getRepository(Demandes::class)->findBy(['IDutilisateur' => $user]);

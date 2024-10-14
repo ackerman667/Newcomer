@@ -210,6 +210,13 @@
         });
     }, 5000); // Disparition après 5 secondes
 });
+// Ajouter un écouteur de `pageshow` pour détecter le retour arrière
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted || performance.navigation.type === 2) {
+        // Reload la page lorsque l'utilisateur revient en arrière dans l'historique
+        window.location.reload();
+    }
+});
 
     </script>
 {% endblock %}
