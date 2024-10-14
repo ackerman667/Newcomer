@@ -22,7 +22,7 @@ class DemandeEtape3FormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $choices = ['Num Tel Bureau' => 'Num Tel'];
+        $choices = ['Besoin Numéro téléphone Bureau?' => 'Num Tel'];
 
 foreach ($options['dossiers_partages'] as $dossier) {
     $choices[$dossier] = $dossier; 

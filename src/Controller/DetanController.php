@@ -11,13 +11,14 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Demandes;
 use App\Entity\User;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class DetanController extends AbstractController
 {
     #[Route('formulaireldap/demandesvalidees', name: 'demandes_validees')]
-    public function demandesValidees(MonApplication $monApplication, EntityManagerInterface $entityManager): Response
+    public function demandesValidees(SessionInterface $session , MonApplication $monApplication, EntityManagerInterface $entityManager): Response
     {
-
+      
       
 
         $query = $entityManager->createQuery(

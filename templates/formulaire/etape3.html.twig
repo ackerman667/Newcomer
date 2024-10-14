@@ -50,6 +50,9 @@
     </div>
 {% endblock %}
 {% block main %}
+<h5 style="font-weight: bold; text-align: center; margin-bottom: 30px; color: red;">
+    Veuillez sélectionner les Ressources dont vous pensez avoir besoin.
+</h5>
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-10">
@@ -60,14 +63,14 @@
                     <h3>Service sélectionné : {{ nomServiceSelectionne }}</h3>
                 </div>
                 <div class="dossiers">
-                    <h3>Ressources pour le service sélectionné :</h3>
-                    {% if dossiersPartages is not empty %}
-                        {{ form_widget(form.dossiers_partages) }}
+                     <h3>Ressources partagées pour le service sélectionné :</h3>
 
-                    {% else %}
-                        <h4>Pas de Ressources</h4>
-                    {% endif %}
-                </div>
+    {{ form_widget(form.dossiers_partages) }}
+
+    {% if dossiersPartages is empty %}
+        {# <h4>Pas de Ressources</h4> #}
+    {% endif %}
+</div>
             </div>
 
             <div class="btn-group">

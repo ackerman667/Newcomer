@@ -54,6 +54,10 @@ class FormulaireLdapController extends AbstractController
 
             return $this->redirectToRoute('formulaireldap_etape2');
         }
+        $sessionData = $session->all();
+
+        // Utilisez dump() pour afficher le contenu de la session (nécessite le composant de débogage activé)
+        dump($sessionData);
 
         return $this->render('formulaireldap/etape1ldap.html.twig', [
             'form' => $form->createView(),
@@ -137,6 +141,11 @@ class FormulaireLdapController extends AbstractController
            
             $nomValideur = $apiDataSecond[0]['valideur'];
             $session->set('nom_valideur', $nomValideur);
+            $sessionData = $session->all();
+
+            // Utilisez dump() pour afficher le contenu de la session (nécessite le composant de débogage activé)
+            dump($sessionData);
+    
             
         
 
@@ -160,6 +169,11 @@ class FormulaireLdapController extends AbstractController
     public function etape3(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
         dump($session);
+        $sessionData = $session->all();
+
+        // Utilisez dump() pour afficher le contenu de la session (nécessite le composant de débogage activé)
+        dump($sessionData);
+
         $user = $this->security->getUser();
         $userInformation = new UserInformation();
         $infos_user = $userInformation->getUserInformation($user);
@@ -359,6 +373,11 @@ class FormulaireLdapController extends AbstractController
     $session->remove('demande_id');
     $session->remove('nouvelle_demande');
     $session->remove('dossiers_partages');
+    $session->remove('_csrf/https-demande_etape1_form');
+    $session->remove('_csrf/https-demande_etape2_form');
+    $session->remove('_csrf/https-demande_etape3_form');
+    $session->remove('nom_service_selectionne');
+    $session->remove('nom_valideur');
     
             // $email = (new Email())
             //     ->from('noreply@ac-guadeloupe.fr')

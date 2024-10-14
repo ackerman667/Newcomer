@@ -339,10 +339,15 @@ class FormulaireAutreController extends AbstractController
             $entityManager->flush();
     
             // Nettoyage de la session
-            $session->remove('form_data');
+              $session->remove('form_data');
             $session->remove('demande_id');
             $session->remove('nouvelle_demande');
             $session->remove('dossiers_partages');
+            $session->remove('_csrf/https-demande_etape1_form');
+            $session->remove('_csrf/https-demande_etape2_form');
+            $session->remove('_csrf/https-demande_etape3_form');
+            $session->remove('nom_service_selectionne');
+            $session->remove('nom_valideur');
     
             // Envoi d'e-mail de notification
             $email = (new Email())
@@ -409,31 +414,31 @@ class FormulaireAutreController extends AbstractController
         return $this->redirectToRoute('formulaireldap-etape1', ['id' => $id]);
     }
 
-    #[Route('/formulaireldap/a/supprimer/{id}', name: 'supprimer_demandespourautre')]
-    public function supprimerDemandePourAutre($id, EntityManagerInterface $entityManager): RedirectResponse
-    {
-        $demande = $entityManager->getRepository(Demandes::class)->find($id);
-        if (!$demande) {
-            throw $this->createNotFoundException('Demande non trouvée.');
-        }
+    // #[Route('/formulaireldap/a/supprimer/{id}', name: 'supprimer_demandespourautre')]
+    // public function supprimerDemandePourAutre($id, EntityManagerInterface $entityManager): RedirectResponse
+    // {
+    //     $demande = $entityManager->getRepository(Demandes::class)->find($id);
+    //     if (!$demande) {
+    //         throw $this->createNotFoundException('Demande non trouvée.');
+    //     }
 
-        $historiques = $entityManager->getRepository(HistoriqueDemande::class)->findBy(['demande' => $demande]);
-        foreach ($historiques as $historique) {
-            $entityManager->remove($historique);
-        }
+    //     $historiques = $entityManager->getRepository(HistoriqueDemande::class)->findBy(['demande' => $demande]);
+    //     foreach ($historiques as $historique) {
+    //         $entityManager->remove($historique);
+    //     }
 
-        $ressources = $entityManager->getRepository(Ressources::class)->findBy(['demande' => $demande]);
-        foreach ($ressources as $ressource) {
-            $entityManager->remove($ressource);
-        }
+    //     $ressources = $entityManager->getRepository(Ressources::class)->findBy(['demande' => $demande]);
+    //     foreach ($ressources as $ressource) {
+    //         $entityManager->remove($ressource);
+    //     }
 
-        $entityManager->remove($demande);
-        $entityManager->flush();
+    //     $entityManager->remove($demande);
+    //     $entityManager->flush();
 
-        $this->addFlash('success', 'La demande a été supprimée avec succès.');
+    //     $this->addFlash('success', 'La demande a été supprimée avec succès.');
 
-        return $this->redirectToRoute('liste_demandes');
-    }
+    //     return $this->redirectToRoute('liste_demandes');
+    // }
 
     #[Route('/formulaireldap/a/valider/{id}', name: 'valider_demandespourautre')]
     public function validerDemandePourAutre(MonApplication $monApplication, EntityManagerInterface $entityManager, $id): Response

@@ -1,24 +1,31 @@
 <?php
 
-namespace App\Controller;
+namespace App\Command;
 
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-class ServiceController extends AbstractController
+class UpdateServiceIdsCommand extends Command
 {
+    protected static $defaultName = 'app:update-service-ids';
     private $httpClient;
 
     public function __construct(HttpClientInterface $httpClient)
     {
+        parent::__construct();
         $this->httpClient = $httpClient;
     }
 
-    #[Route('/services-without-parent', name: 'services_without_parent')]
-    public function getServicesWithoutParent(): Response
+    protected function configure()
+    {
+        $this
+            ->setDescription('Updates the SERVICE_IDS in the .env.local file with services without parents.')
+            ->setHelp('This command allows you to update the SERVICE_IDS variable in the .env.local file...');
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         // Appel à l'API pour récupérer les services
         $apiUrl = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/services';
@@ -32,7 +39,6 @@ class ServiceController extends AbstractController
             ],
         ]);
 
-        // Convertir la réponse JSON en tableau
         $services = $response->toArray();
 
         // Utilisation de la méthode buildTree pour structurer les services
@@ -43,22 +49,36 @@ class ServiceController extends AbstractController
             return $service['id_service'];
         }, $servicesTree);
 
-        // Retourner les IDs dans une réponse JSON
-        return new JsonResponse([
-            'service_ids' => $servicesWithoutParent,
-        ]);
+        // Convertir les IDs en chaîne de caractères
+        $idsAsString = implode(',', $servicesWithoutParent);
+
+        // Mettre à jour la variable dans .env.local
+        $envFile = $this->getApplication()->getKernel()->getProjectDir().'/.env.local';
+        $this->updateEnvVariable($envFile, $idsAsString);
+
+        $output->writeln('SERVICE_IDS updated successfully!');
+
+        return Command::SUCCESS;
     }
 
-    /**
-     * Construire un arbre de services
-     */
+    private function updateEnvVariable($envFile, $idsAsString)
+    {
+        $envContent = file_get_contents($envFile);
+
+        if (strpos($envContent, 'SERVICE_IDS=') !== false) {
+            $envContent = preg_replace('/SERVICE_IDS=.*/', 'SERVICE_IDS="'.$idsAsString.'"', $envContent);
+        } else {
+            $envContent .= PHP_EOL.'SERVICE_IDS="'.$idsAsString.'"';
+        }
+
+        file_put_contents($envFile, $envContent);
+    }
+
     private function buildTree(array &$services, $parentId = 0): array
     {
         $branch = [];
         foreach ($services as &$service) {
-            // Si le service est à la racine (pas de parent)
             if ($service['pere'] == $parentId) {
-                // Récursion pour récupérer les enfants du service
                 $children = $this->buildTree($services, $service['id_service']);
                 if ($children) {
                     $service['children'] = $children;

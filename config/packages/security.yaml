@@ -10,72 +10,25 @@ security:
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
         # used to reload user from session & other features (e.g. switch_user)
-        app_user_provider2:
+        provider_userldap:
             id: App\Security\UserProvider
-        app_user_provider:
-            entity:
-                class: App\Entity\User
-                property: email
-        chain_provider:
-            chain:
-                providers: [app_user_provider, app_user_provider2]
-        
+     
     firewalls:
-        test2:
+        ldap:
             
             lazy: true
             pattern: /formulaireldap/
             remote_user:
                 user: HTTP_CT_REMOTE_USER
-            provider: app_user_provider2
+            provider: provider_userldap
             logout:
                 path: app_logout
-        # main:
-        #     login_link:
-        #         check_route: login_check
-        #         signature_properties: ['id']
-        #         provider: app_user_provider
-        #     logout:
-        #         path: app_logout
-                
+      
 
        
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
-        # test:
-        #     remote_user:
-        #         user: HTTP_CT_REMOTE_USER
-        #     provider: app_user_provider2
-        #     pattern: ^/loginldap
-    
-
-        # test2:
-            
-        #     lazy: true
-        #     pattern: /formulaireldap/
-        #     remote_user:
-        #         user: HTTP_CT_REMOTE_USER
-        #     provider: app_user_provider2
-        #     logout:
-        #         path: app_logout
-
-            
-        
-        # autre_firewall:
-        #     provider: app_user_provider
-        #     lazy: true
-        #     pattern: ^/
-        #     custom_authenticator: App\Security\LoginFormAuthenticator
-        #     jwt: ~
-        #     entry_point: App\Security\LoginFormAuthenticator
-        #     logout:
-        #         path: app_logout
-
-
-          
-        
-        
                 # where to redirect after logout
                 # target: app_any_route
 
