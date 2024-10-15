@@ -240,6 +240,7 @@ public function etape3(MonApplication $monApplication, Request $request, Session
                                         } else {
                                             $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
                                         }
+                                        $this->addFlash('success', 'Votre demande a été créé.');
          } else {
 
                      $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
@@ -264,6 +265,7 @@ public function etape3(MonApplication $monApplication, Request $request, Session
                                     } else {
                                         $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
                                     }
+                                    $this->addFlash('success', 'Votre demande a été créé.');
                      } elseif($demande) {
                                     $id_user = $demande->getIDutilisateur();
                                     $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
@@ -285,6 +287,7 @@ public function etape3(MonApplication $monApplication, Request $request, Session
                                     }
 
                                          }   
+                                         $this->addFlash('success', 'Votre demande a été modifiée.');
            
           
                    }
@@ -376,7 +379,7 @@ public function etape3(MonApplication $monApplication, Request $request, Session
             <p>Bien cordialement,</p>
             <p><strong>Votre équipe informatique</strong></p>
         ');
-        $this->addFlash('success', 'Votre formulaire a été soumis. Pensez à le valider si vous n\'avez plus de modifications à y apporter.');
+        // $this->addFlash('success', 'Votre formulaire a été soumis. Pensez à le valider si vous n\'avez plus de modifications à y apporter.');
         $mailer->send($email);
 
         return $this->redirectToRoute('demande_externe', ['token' => $token_stat]);

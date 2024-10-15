@@ -86,13 +86,18 @@
         text-align: right;
         color: #1E90FF;
     }
-    .toolbar a {
-        margin-left: 10px;
-        color: #1E90FF !important;
+   .toolbar a {
+    padding: 0; /* Supprime tout rembourrage supplémentaire */
+    margin: 0; /* Supprime toute marge supplémentaire */
     }
+
     .toolbar a i {
+        display: inline;
         color: #1E90FF !important;
+        margin-left: 2px; /* Ajustez cette valeur pour plus ou moins d'espace */
+        margin-right: 2px; /* Ajustez cette valeur pour plus ou moins d'espace */
     }
+
     .col-demandeur {
         width: 15%;
     }
@@ -300,38 +305,40 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterSelect = document.getElementById('filter-select');
     const rows = document.querySelectorAll('tbody tr');
 
-    // Gestion du changement de filtre
-    filterSelect.addEventListener('change', function() {
-        const filterValue = filterSelect.value;
-        rows.forEach(row => {
-            const status = row.getAttribute('data-status');
-            const type = row.getAttribute('data-type');
-            if (filterValue === 'all' || (filterValue === 'Suivi dans LEKA' && status === 'Suivi dans LEKA') || 
-                (filterValue === 'En attente' && status === 'En attente') || (filterValue === 'Refusée' && status === 'Refusée') || 
-                (filterValue === 'Mes Demandes' && type === 'Mes Demandes') || (filterValue === 'À Valider' && type === 'À Valider')) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    });
-
-    // Gestion de la disparition des alertes
-        setTimeout(function() {
-        let alerts = document.querySelectorAll('.alert');
-        alerts.forEach(function(alert) {
-            // Transition pour la disparition de l'alerte
-            alert.style.transition = 'opacity 1s ease-out';
-            alert.style.opacity = '0'; // Réduire l'opacité à 0 pour masquer
-
-            // Supprimer l'alerte du DOM après la transition
-            alert.addEventListener('transitionend', function() {
-                if (alert.parentNode) {
-                    alert.parentNode.removeChild(alert);  // Supprime l'alerte du DOM
+    // Si filterSelect existe, ajoute l'événement de changement
+    if (filterSelect) {
+        filterSelect.addEventListener('change', function() {
+            const filterValue = filterSelect.value;
+            rows.forEach(row => {
+                const status = row.getAttribute('data-status');
+                const type = row.getAttribute('data-type');
+                if (filterValue === 'all' || (filterValue === 'Suivi dans LEKA' && status === 'Suivi dans LEKA') || 
+                    (filterValue === 'En attente' && status === 'En attente') || (filterValue === 'Refusée' && status === 'Refusée') || 
+                    (filterValue === 'Mes Demandes' && type === 'Mes Demandes') || (filterValue === 'À Valider' && type === 'À Valider')) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
                 }
             });
         });
-    }, 5000); // Disparition après 5 secondes
+    } else {
+        console.log('Aucun filtre trouvé, l\'utilisateur n\'est pas un valideur.');
+    }
+
+    // Gestion de la disparition des alertes
+    setTimeout(function() {
+        let alerts = document.querySelectorAll('.alert');
+        console.log('Alerts found:', alerts);
+        alerts.forEach(function(alert) {
+            alert.style.transition = 'opacity 1s ease-out';
+            alert.style.opacity = '0';
+            alert.addEventListener('transitionend', function() {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            });
+        });
+    }, 5000); 
 });
 
 // Ajouter un écouteur de `pageshow` pour détecter le retour arrière

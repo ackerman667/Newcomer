@@ -243,6 +243,7 @@ class FormulaireLdapController extends AbstractController
                 } else {
                     $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
                 }
+                $this->addFlash('success', 'Votre demande a été créé.');
         
             } elseif (!$nouvelleDemande && $demandeId) {
                 // Modification d'une demande existante
@@ -266,6 +267,7 @@ class FormulaireLdapController extends AbstractController
                     } else {
                         $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
                     }
+                    $this->addFlash('success', 'Votre demande a été modifiée.');
                 } else {
                     // Cas où la demande n'est pas trouvée, créer une nouvelle demande
                     $demande = new Demandes();
@@ -286,6 +288,7 @@ class FormulaireLdapController extends AbstractController
                     } else {
                         $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
                     }
+                    $this->addFlash('success', 'Votre demande a été créé.');
                 }
             } else {
                 // Cas par défaut où aucune demande n'est détectée, création d'une nouvelle demande
@@ -307,6 +310,7 @@ class FormulaireLdapController extends AbstractController
                 } else {
                     $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
                 }
+                $this->addFlash('success', 'Votre demande a été créé.');
             }
         
             $choix = $data['replace_someone'];

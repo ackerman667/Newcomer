@@ -195,6 +195,7 @@ public function generatePdf(Demandes $demande, MonApplication $monApplication,/*
 
         $entityManager->remove($demande);
         $entityManager->flush();
+        $this->addFlash('success', 'Votre demande a été supprimée.');
 
         return $this->redirectToRoute('demande_externe' , ['token' => $token]); 
     }
