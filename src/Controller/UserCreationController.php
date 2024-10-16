@@ -28,6 +28,21 @@ class UserCreationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $email_user = $form->get('email')->getData();
+
+        // Vérifier si l'utilisateur avec cet email existe déjà
+        $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $email_user]);
+
+        if ($existingUser) {
+            // Ajoute un message flash pour indiquer que l'e-mail est déjà utilisé
+            $this->addFlash('error', 'L\'adresse e-mail est déjà utilisée.');
+
+            // Rendre le formulaire avec le message flash d'erreur
+            return $this->render('user_creation/index.html.twig', [
+                'form' => $form->createView(),
+                'monApplication' => $monApplication,
+            ]);
+        }
             $user = new User();
             $user->setCompteActif(false);
             $nom = $form->get('nom')->getData();

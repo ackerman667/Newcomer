@@ -75,10 +75,6 @@ foreach ($demandesWithUsers as $demande) {
 
 
 
-
-
-
-
     private function getUsersWithMultipleLEKADemandes(EntityManagerInterface $entityManager): array
     {
         $alertUsers = [];

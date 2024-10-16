@@ -189,13 +189,13 @@ class ActionsValideurController extends AbstractController
     $email = $demande->isAutrePersonne() ? $infosPersonne['email'] ?? '' : $demande->getIDutilisateur()->getEmail();
     
     
-        $emailMessage = (new Email())
-            ->from('noreply@ac-guadeloupe.fr')
-            ->to($email)
-            ->subject('Votre demande a reçu un commentaire')
-            ->html('<p>Votre demande a reçu un commentaire : ' . $commentaire . '</p>');
+        // $emailMessage = (new Email())
+        //     ->from('noreply@ac-guadeloupe.fr')
+        //     ->to($email)
+        //     ->subject('Votre demande a reçu un commentaire')
+        //     ->html('<p>Votre demande a reçu un commentaire : ' . $commentaire . '</p>');
     
-        $mailer->send($emailMessage);
+        // $mailer->send($emailMessage);
     
         return $this->redirectToRoute('liste_demandes');
     }

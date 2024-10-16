@@ -1,5 +1,59 @@
 {% extends 'layout_ag.html.twig' %}
 {% block title %}<title>Profil - {{monApplication.Appli}}</title>{% endblock %}
+{% block head_gene %}
+    <style>
+        .user-info {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 900px;
+            width: 30%;
+            margin-right: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            align-items: center;
+             text-align: center;  
+        }
+
+       
+        .vcard {
+            text-align: center;
+        }
+
+        .main-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+        }
+        h4 {
+            color: #00A7D8;
+        }
+        .photo {
+            text-align: top;
+            margin-left: 800px; /* Ajuste la valeur de cette marge pour rapprocher la photo du rectangle */
+        }
+
+        .user-info p {
+            margin: 5px 0;
+        }
+
+        .user-info p strong {
+            font-weight: bold;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .user-info {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+{% endblock %}
 {% block body %}<body  class="page not-home">{% endblock %}
 {% block header %}
     <div class="title_app" id="title">
@@ -19,10 +73,13 @@
     </div>
 {% endfor %}
 
- {% if app.session.get('ldap_authenticated') %}
-<main class="row">
-    <h4>Vos informations</h4>
+{% if app.session.get('ldap_authenticated') %}
+<main class="row main-container">
+
     <div class="user-info">
+        <h4><strong>Vos informations</strong></h4>
+        <p><strong>Nom :</strong> {{ user.nom }}</p>
+        <p><strong>Prénom :</strong> {{ user.prenom }}</p>
         <p><strong>Email :</strong> {{ user.email }}</p>
         <p><strong>Date de naissance :</strong> {{ user.dateNaissance }}</p>
     </div>
@@ -32,29 +89,26 @@
             <figure class="photo">
                 <img src="{{ asset('css/images/avatar/avatar.png','interfaceappli') }}" alt="Avatar de l'utilisateur">
             </figure>
-           
-                <h2 class="fn">{{ 'Utilisateur'|trans }} : {{ user.nom }} {{ user.prenom }}</h
-               
+            <h2 class="fn">{{ 'Utilisateur'|trans }} : {{ user.nom }} {{ user.prenom }}</h2>
         </span>
     </address>
 </main>
 {% else %}
-<main class="row">
-    <h4>Vos informations</h4>
- 
+<main class="row main-container">
+    <div class="user-info">
+        <h4>Vos informations</h4>
+        <p>Utilisateur anonyme</p>
+    </div>
 
     <address>
         <span id="vcard" class="vcard">
             <figure class="photo">
                 <img src="{{ asset('css/images/avatar/avatar.png','interfaceappli') }}" alt="Avatar de l'utilisateur">
             </figure>
-           
-                <h2 class="fn">{{ 'Utilisateur anonyme'}} </h2>
-               
+            <h2 class="fn">Utilisateur anonyme</h2>
         </span>
     </address>
 </main>
- {% endif %}
-
+{% endif %}
 
 {% endblock %}

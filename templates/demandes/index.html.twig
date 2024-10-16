@@ -351,13 +351,31 @@ window.addEventListener('pageshow', function(event) {
 
 // Fonction de vérification de commentaire avant le refus
 function checkComment(demandeId) {
-    const commentaire = document.getElementById('commentaire-' + demandeId).value.trim();
+    const commentaireElement = document.getElementById('commentaire-' + demandeId);
+    const commentaireForm = commentaireElement.closest('form');
+    const commentaire = commentaireElement.value.trim();
+
+    // Vérifier si le champ commentaire est vide
     if (commentaire === '') {
         alert('Veuillez ajouter un commentaire avant de refuser la demande.');
-        return false;
+        commentaireElement.focus();
+        return false; // Empêche la soumission si le commentaire est vide
     }
-    return true;
+
+    // Soumettre le commentaire avant le refus
+    commentaireForm.submit(); // Soumettre le formulaire de commentaire
+
+    // Attendre la soumission du commentaire avant de refuser
+    setTimeout(function() {
+        // Rediriger vers la route de refus après que le commentaire soit soumis
+         window.location.href = "{{ path('refuser_demande', {id: 'ID_DEMANDE'}) }}".replace('ID_DEMANDE', demandeId);
+    }, 1000); // Attendre 1 seconde avant de rediriger vers la route de refus
+
+    return false; // Empêche la soumission immédiate du refus jusqu'à ce que le commentaire soit soumis
 }
+
+
+
 </script>
 
 {% endblock %}
