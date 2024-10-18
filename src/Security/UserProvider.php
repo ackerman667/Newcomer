@@ -42,7 +42,8 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
         });
     }
 
-    public function refreshUser(UserInterface $user)
+    // public function refreshUser(UserInterface $user): UserInterface
+    public function refreshUser(UserInterface $user): UserInterface
     {
         if (!$user instanceof User) {
             throw new UnsupportedUserException(sprintf('Invalid user class "%s".', get_class($user)));
@@ -63,7 +64,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
         });
     }
 
-    public function supportsClass($class)
+    public function supportsClass($class): bool
     {
         return User::class === $class;
     }

@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Classe\MonApplication;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Security\Core\Security; 
+use Symfony\Bundle\SecurityBundle\Security; 
 use App\Security\UserInformation;// Import pour Security
 
 class ProfilController extends AbstractController

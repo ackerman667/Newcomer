@@ -13,7 +13,7 @@ use App\Entity\Demandes;
 use Symfony\Component\Routing\Annotation\Route;
 
 use App\Security\UserInformation;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class LdapController extends AbstractController
 {

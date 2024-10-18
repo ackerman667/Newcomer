@@ -22,7 +22,7 @@ use Symfony\Component\Mime\Email;
 use App\Security\UserInformation;
 use App\Entity\HistoriqueDemande;
 
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 
 
 class StatutsLdapController extends AbstractController

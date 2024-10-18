@@ -18,7 +18,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Form\DemandeEtape1FormType;
 use App\Form\DemandeEtape2FormType;
 use App\Form\DemandeEtape3FormType;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Dompdf\Dompdf;
