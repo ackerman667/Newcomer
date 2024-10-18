@@ -17,6 +17,7 @@ class MentionController extends AbstractController
     /**
      * @Route("/mention", name="mention")
      */
+    #[Route('/mention', name: 'mention')]
     public function index(MonApplication $monApplication)
     {
         // Créer une instance du client HTTP Symfony

@@ -16,6 +16,7 @@ class AideController extends AbstractController
     /**
      * @Route("/aide", name="aide")
      */
+    #[Route('/aide', name: 'aide')]
     public function index(MonApplication $monApplication)
     {
         return $this->render('aide/index.html.twig', [
