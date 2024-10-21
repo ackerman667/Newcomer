@@ -36,7 +36,7 @@ class StatutsExterneController extends AbstractController
         $session->clear();
         $sessionData = $session->all();
 
-        // Utilisez dump() pour afficher le contenu de la session (nécessite le composant de débogage activé)
+        
         dump($sessionData);
 
 
@@ -64,9 +64,7 @@ class StatutsExterneController extends AbstractController
         
 
 
-        // if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
-        //     throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
-        // }
+      
 
         $user = $demande->getIDutilisateur();
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
@@ -109,7 +107,7 @@ class StatutsExterneController extends AbstractController
     #[Route('/demande/pdf/{token}', name: 'demande_pdf')]
 public function generatePdf(Demandes $demande, MonApplication $monApplication,/* $token,*/ EntityManagerInterface $entityManager): Response
 {
-    // $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+    
     $token = $demande->getToken();
 
 
@@ -129,20 +127,19 @@ public function generatePdf(Demandes $demande, MonApplication $monApplication,/*
     $options->set('defaultFont', 'Arial');
     $dompdf = new Dompdf($options);
 
-    // Récupérer le contenu HTML de votre template
+    
     $html = $this->renderView('visualiser-demandes/index.html.twig', [
         'demande' => $demande,
         'user' => $user,
         'ressources' => $ressources,
         'monApplication' => $monApplication,
         'imageSrc' => $imageSrc,
-        'valideur' => $valideur, // Passer l'image encodée à la vue
+        'valideur' => $valideur, 
     ]);
 
-    // Charger le HTML dans Dompdf
+   
     $dompdf->loadHtml($html);
 
-    // Définir le format du papier
     $dompdf->setPaper('A4', 'portrait');
 
     // Rendre le PDF
@@ -159,12 +156,12 @@ public function generatePdf(Demandes $demande, MonApplication $monApplication,/*
     #[Route('/formulaireexterne/nouvelle_demande/{token}', name: 'nouvelle_demande')]
     public function nouvelleDemande(SessionInterface $session, $token): Response
     {
-        // Réinitialiser les données de la session pour démarrer une nouvelle demande
+       
         $session->remove('form_data');
         $session->remove('demande_id');
-        $session->set('nouvelle_demande', true); // Indiquer explicitement qu'une nouvelle demande doit être créée
+        $session->set('nouvelle_demande', true);
     
-        // Rediriger vers la première étape du formulaire pour une nouvelle demande
+        
         return $this->redirectToRoute('formulaireexterne_etape1', ['token' => $token]);
     }
     
@@ -173,7 +170,7 @@ public function generatePdf(Demandes $demande, MonApplication $monApplication,/*
     public function supprimerDemande(Request $request, EntityManagerInterface $entityManager, $id): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
-        //   $x = $demande.getIDUtilisateur();
+    
         $id_user = $demande->getIDutilisateur();
         $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
         $token = $user->getToken();
@@ -265,10 +262,10 @@ public function generatePdf(Demandes $demande, MonApplication $monApplication,/*
         $pdfResponse = $this->generatePdf($demande, $monApplication, $entityManager);
 
 
-        // Récupérer le contenu du PDF généré
+       
         $pdfOutput = $pdfResponse->getContent();
     
-        // Créer l'email
+        
         $email = (new Email())
             ->from('noreply@ac-guadeloupe.fr')
             ->to($user->getEmail())

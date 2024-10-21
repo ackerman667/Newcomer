@@ -15,9 +15,7 @@
         width: 100%;
         border-collapse: collapse;
     }
-{# table tbody tr {
-    background-color: #cce5ff; /*ssss Bleu clair */
-} #}
+
     th, td {
         text-align: center;
         padding: 12px;
@@ -87,15 +85,15 @@
         color: #1E90FF;
     }
    .toolbar a {
-    padding: 0; /* Supprime tout rembourrage supplémentaire */
-    margin: 0; /* Supprime toute marge supplémentaire */
+    padding: 0; 
+    margin: 0; 
     }
 
     .toolbar a i {
         display: inline;
         color: #1E90FF !important;
-        margin-left: 2px; /* Ajustez cette valeur pour plus ou moins d'espace */
-        margin-right: 2px; /* Ajustez cette valeur pour plus ou moins d'espace */
+        margin-left: 2px; 
+        margin-right: 2px; 
     }
 
     .col-demandeur {
@@ -130,16 +128,16 @@
         padding: 10px 20px;
     }
      .page-title {
-        text-align: center; /* Centre horizontalement */
-        font-weight: bold; /* Rend le texte en gras */
+        text-align: center; 
+        font-weight: bold;
         margin-top: 20px;
         margin-bottom: 20px;
     }
     .page-title-container {
-        display: flex;           /* Utilise le modèle Flexbox */
-        justify-content: center; /* Centre horizontalement */
-        align-items: center;     /* Centre verticalement */
-        width: 100%;             /* Prend toute la largeur de la page */
+        display: flex;           
+        justify-content: center; 
+        align-items: center;    
+        width: 100%;             
     }
    
 </style>
@@ -161,13 +159,12 @@
                 </div>
             {% endfor %}
 
-            <!-- Section de boutons pour faire de nouvelles demandes -->
+            
             <div class="btn-container">
                 <a href="{{ path('nouvelle-demande-ldap') }}" class="btn btn-primary">Faire une demande pour quelqu'un d'autre</a>
                 <a href="{{ path('nouvelle_demande_ldap') }}" class="btn btn-primary">Nouvelle demande personnelle</a>
             </div>
 
-            <!-- Filtres pour les valideurs (uniquement si l'utilisateur est un valideur) -->
             {% if isValideur %}
                 <div class="filter-container">
                     <label for="filter-select">Filtrer par statut :</label>
@@ -185,7 +182,7 @@
                 </div>
             {% endif %}
 
-            <!-- Tableau combiné pour toutes les demandes -->
+            
           
             <table class="table table-striped">
                 <thead>
@@ -206,7 +203,7 @@
                             <td colspan="8">Vous n'avez aucune demande pour l'instant</td>
                         </tr>
                     {% else %}
-                        <!-- Combinaison des demandes à valider et des demandes personnelles -->
+                        
                         {% for demande in demandesAValider %}
                             <tr data-status="{{ demande.statuts }}" data-type="À Valider">
                                 <td>À Valider</td>

@@ -46,7 +46,7 @@ class DemandeEtape1FormType extends AbstractType
                 ],
                 'expanded' => true,
                 'multiple' => false,
-                'placeholder' => false, // Désactive le placeholder
+                'placeholder' => false, 
                 'required' => false,
                 'attr' => ['class' => 'form-check'],
             ])

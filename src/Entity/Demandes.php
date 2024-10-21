@@ -292,7 +292,7 @@ class Demandes
     public function removeHistoriqueDemande(HistoriqueDemande $historiqueDemande): static
     {
         if ($this->historiqueDemandes->removeElement($historiqueDemande)) {
-            // set the owning side to null (unless already changed)
+            
             if ($historiqueDemande->getDemande() === $this) {
                 $historiqueDemande->setDemande(null);
             }
@@ -346,7 +346,7 @@ class Demandes
     public function removeRessource(Ressources $ressource): static
     {
         if ($this->ressources->removeElement($ressource)) {
-            // set the owning side to null (unless already changed)
+         
             if ($ressource->getDemandeId() === $this) {
                 $ressource->setDemandeId(null);
             }

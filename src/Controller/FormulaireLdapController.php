@@ -56,7 +56,7 @@ class FormulaireLdapController extends AbstractController
         }
         $sessionData = $session->all();
 
-        // Utilisez dump() pour afficher le contenu de la session (nécessite le composant de débogage activé)
+        
         dump($sessionData);
 
         return $this->render('formulaireldap/etape1ldap.html.twig', [
@@ -103,7 +103,7 @@ class FormulaireLdapController extends AbstractController
 
         $servicesTree = $this->buildTree($services);
 
-        // Transform services for dropdown
+   
         $servicesDropdownData = $this->transformServicesForDropdown($servicesTree);
 
         $form = $this->createForm(DemandeEtape2FormType::class, $data, [
@@ -143,7 +143,7 @@ class FormulaireLdapController extends AbstractController
             $session->set('nom_valideur', $nomValideur);
             $sessionData = $session->all();
 
-            // Utilisez dump() pour afficher le contenu de la session (nécessite le composant de débogage activé)
+            
             dump($sessionData);
     
             
@@ -171,7 +171,7 @@ class FormulaireLdapController extends AbstractController
         dump($session);
         $sessionData = $session->all();
 
-        // Utilisez dump() pour afficher le contenu de la session (nécessite le composant de débogage activé)
+
         dump($sessionData);
 
         $user = $this->security->getUser();

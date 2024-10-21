@@ -35,20 +35,6 @@ class FormulaireExterneController extends AbstractController
     #[Route('/formulaireexterne/etape1/{token}', name: 'formulaireexterne_etape1')]
     public function etape1(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, $token): Response
     {
-    
-        // $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
-        // if($demande) {
-        //     $id_user = $demande->getIDutilisateur();
-        // $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
-        // } else {
-        //     $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
-
-        // }
-        
-
-        // if (!$user) {
-        //     throw $this->createNotFoundException('Utilisateur non trouvé.');
-        // }
 
         $data = $session->get('form_data', []);
         $form = $this->createForm(DemandeEtape1FormType::class, $data);
@@ -76,18 +62,7 @@ class FormulaireExterneController extends AbstractController
 
 
        
-        // $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
-        // if($demande) {
-        //     $id_user = $demande->getIDutilisateur();
-        // $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
-        // } else {
-        //     $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
-
-        // }
-
-        // if (!$user) {
-        //     throw $this->createNotFoundException('Utilisateur non trouvé.');
-        // }
+        
         $nouvelleDemande = $session->get('nouvelle_demande', false);
         if ($nouvelleDemande)        {
             $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
@@ -122,7 +97,7 @@ class FormulaireExterneController extends AbstractController
             $data['date_fin_contrat'] = $user->getDateFin();
         }
 
-        // Appel à l'API pour récupérer les services
+       
         $apiUrl = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/services';
         $apiToken = 'b97b055g210125afb4c5f507dc823958ff18dfa56a12c7n12agch8db58e21767';
         $response = $httpClient->request('GET', $apiUrl, [
@@ -138,10 +113,8 @@ class FormulaireExterneController extends AbstractController
 
        
 
-        // Organiser les services en une structure arborescente
         $servicesTree = $this->buildTree($services);
 
-        // Transform services for dropdown
         $servicesDropdownData = $this->transformServicesForDropdown($servicesTree);
         dump($servicesDropdownData);
 
@@ -198,7 +171,10 @@ class FormulaireExterneController extends AbstractController
 public function etape3(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, MailerInterface $mailer, $token): Response
 {
     
+    $sessionData = $session->all();
 
+ 
+    dump($sessionData);
     $data = $session->get('form_data', []);
     $dossiersPartages = $session->get('dossiers_partages', []);
   
@@ -379,7 +355,7 @@ public function etape3(MonApplication $monApplication, Request $request, Session
             <p>Bien cordialement,</p>
             <p><strong>Votre équipe informatique</strong></p>
         ');
-        // $this->addFlash('success', 'Votre formulaire a été soumis. Pensez à le valider si vous n\'avez plus de modifications à y apporter.');
+       
         $mailer->send($email);
 
         return $this->redirectToRoute('demande_externe', ['token' => $token_stat]);

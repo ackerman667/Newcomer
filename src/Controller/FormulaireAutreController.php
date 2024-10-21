@@ -325,18 +325,16 @@ class FormulaireAutreController extends AbstractController
                 $demande->setDepart(false);
             }
     
-            // Mise à jour de l'historique
+         
             $historique->setDemande($demande);
             $historique->setDate(new \DateTime('now', $this->timezone));
     
-            // Gestion des ressources associées
             $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]) ?? new Ressources();
             $ressources->setNom('Ressources');
             $ressources->setDemande($demande);
             $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
             $ressources->setContenu(!empty($dossiersSelectionnes) ? json_encode($dossiersSelectionnes) : 'Pas de ressources sélectionnées / disponible pour ce Service.');
     
-            // Persister les changements dans la base de données
             $entityManager->persist($demande);
             $entityManager->persist($historique);
             $entityManager->persist($ressources);
@@ -384,90 +382,7 @@ class FormulaireAutreController extends AbstractController
     }
     
 
-    // #[Route('/formulaireldap/a/nouvelle_demande', name: 'nouvelle-demande-ldap')]
-    // public function nouvelleDemande(SessionInterface $session, EntityManagerInterface $entityManager): Response
-    // {
-    //     // Réinitialiser les données de la session pour démarrer une nouvelle demande
-    //     $session->remove('form_data');
-    //     $session->remove('demande_id');
     
-    //     $session->set('nouvelle_demande', true);
-        
-    
-    //     return $this->redirectToRoute('formulaireldap-etape1');
-    // }
-    
-
-    
-    // #[Route('/formulaireldap/a/modifier/{id}', name: 'modifier_demandespourautre')]
-    // public function modifierDemandePourAutre(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
-    // {
-    //     $demande = $entityManager->getRepository(Demandes::class)->find($id);
-    //     if (!$demande) {
-    //         throw $this->createNotFoundException('Demande non trouvée.');
-    //     }
-
-    //     $data = $demande->getInfosPersonne();
-    //     if (isset($data['date_de_naissance']) && is_array($data['date_de_naissance'])) {
-    //         $dateString = $data['date_de_naissance']['date']; // Extraction de la chaîne de date
-    //         $dateNaissance = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s.u', $dateString);
-    //         $data['date_de_naissance'] = $dateNaissance; // Remplacer dans le tableau de données
-    //     }
-    //     $session->set('form_data', $data);
-    //     $session->set('demande_id', $id);
-
-    //     return $this->redirectToRoute('formulaireldap-etape1', ['id' => $id]);
-    // }
-
-    // // #[Route('/formulaireldap/a/supprimer/{id}', name: 'supprimer_demandespourautre')]
-    // // public function supprimerDemandePourAutre($id, EntityManagerInterface $entityManager): RedirectResponse
-    // // {
-    // //     $demande = $entityManager->getRepository(Demandes::class)->find($id);
-    // //     if (!$demande) {
-    // //         throw $this->createNotFoundException('Demande non trouvée.');
-    // //     }
-
-    // //     $historiques = $entityManager->getRepository(HistoriqueDemande::class)->findBy(['demande' => $demande]);
-    // //     foreach ($historiques as $historique) {
-    // //         $entityManager->remove($historique);
-    // //     }
-
-    // //     $ressources = $entityManager->getRepository(Ressources::class)->findBy(['demande' => $demande]);
-    // //     foreach ($ressources as $ressource) {
-    // //         $entityManager->remove($ressource);
-    // //     }
-
-    // //     $entityManager->remove($demande);
-    // //     $entityManager->flush();
-
-    // //     $this->addFlash('success', 'La demande a été supprimée avec succès.');
-
-    // //     return $this->redirectToRoute('liste_demandes');
-    // // }
-
-    // #[Route('/formulaireldap/a/valider/{id}', name: 'valider_demandespourautre')]
-    // public function validerDemandePourAutre(MonApplication $monApplication, EntityManagerInterface $entityManager, $id): Response
-    // {
-    //     $demande = $entityManager->getRepository(Demandes::class)->find($id);
-    //     if (!$demande) {
-    //         throw $this->createNotFoundException('Demande non trouvée.');
-    //     }
-
-    //     $demande->setStatuts('En attente');
-    //     $entityManager->persist($demande);
-
-    //     $historique = new HistoriqueDemande();
-    //     $historique->setDemande($demande);
-    //     $historique->setStatut('Envoyée');
-    //     $historique->setDate(new \DateTime('now', $this->timezone));
-    //     $historique->setStatutOperation('Envoi de la demande');
-
-    //     $entityManager->persist($historique);
-    //     $entityManager->flush();
-
-    //     return $this->redirectToRoute('liste_demandes');
-    // }
-
     private function buildTree(array &$services, $parentId = 0) {
         $branch = [];
         foreach ($services as &$service) {

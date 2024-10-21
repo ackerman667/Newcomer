@@ -57,7 +57,7 @@
         .alert.fade {
             height: 0;
             opacity: 0;
-            padding: 0; /* Pour éviter les espaces résiduels */
+            padding: 0; 
             margin: 0;
         }
         .status-brouillons {
@@ -132,7 +132,7 @@
                     </div>
                 {% endfor %}
 
-                {# Bouton "Nouvelle Demande" placé en dehors de la boucle #}
+             
                 <div class="new-request-btn">
                     <a href="{{ path('nouvelle_demande', { token: user.token }) }}" class="btn btn-primary">Nouvelle Demande</a>
                 </div>

@@ -128,7 +128,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getPassword(): ?string
     {
-        // Retourne une chaîne vide pour les utilisateurs sans mot de passe
+       
         return $this->password ?? '';
     }
 
@@ -144,8 +144,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function eraseCredentials(): void
     {
-        // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
+      
     }
 
 public function getUsername(): ?string
@@ -174,7 +173,7 @@ public function addDemande(Demandes $demande): static
 public function removeDemande(Demandes $demande): static
 {
     if ($this->demandes->removeElement($demande)) {
-        // set the owning side to null (unless already changed)
+     
         if ($demande->getIDutilisateur() === $this) {
             $demande->setIDutilisateur(null);
         }

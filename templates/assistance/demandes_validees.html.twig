@@ -92,24 +92,24 @@
         .text-info {
             color: #17a2b8;
         }
-        /* Style pour l'icône d'alerte */
+       
         .alert-icon {
-            color: red; /* Icône rouge pour attirer l'attention */
+            color: red; 
             margin-left: 5px;
             cursor: pointer;
         }
-        /* Effet de survol pour le message */
+      
         .alert-icon:hover::after {
-            content: attr(title); /* Affiche le message de l'attribut title */
-            background-color: #333; /* Fond noir */
-            color: #fff; /* Texte blanc */
+            content: attr(title); 
+            background-color: #333; 
+            color: #fff;
             padding: 5px;
             border-radius: 5px;
             position: absolute;
             top: -30px;
             left: 0;
             white-space: nowrap;
-            z-index: 10; /* Superpose le message sur les autres éléments */
+            z-index: 10; 
             font-size: 12px;
         }
     </style>
@@ -233,14 +233,13 @@
                 });
             });
 
-            // Disparition des alertes après 5 secondes
             setTimeout(function () {
                 let alerts = document.querySelectorAll('.alert');
                 alerts.forEach(function (alert) {
                     alert.classList.remove('show');
                     alert.classList.add('fade');
                 });
-            }, 5000); // Disparition après 5 secondes
+            }, 5000); 
         });
     </script>
 {% endblock %}

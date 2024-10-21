@@ -13,9 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class AideController extends AbstractController
 {
-    /**
-     * @Route("/aide", name="aide")
-     */
+   
     #[Route('/aide', name: 'aide')]
     public function index(MonApplication $monApplication)
     {

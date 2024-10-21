@@ -40,14 +40,14 @@ class LdapController extends AbstractController
     #[Route('/logout', name: 'app_logout')]
     public function logout(): Response
     {
-        // Récupérer la session
+       
         $session = $this->requestStack->getSession();
         
-        // Supprimer la variable de session `ldap_authenticated`
+        
         $session->remove('ldap_authenticated');
         $session->clear();
 
-        // Redirection vers la page `aide` après la déconnexion
+        
         return $this->redirectToRoute('profil');
     }
 }

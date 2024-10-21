@@ -170,7 +170,7 @@ class UserAutre
     public function removeDemande(Demandes $demande): static
     {
         if ($this->demandes->removeElement($demande)) {
-            // set the owning side to null (unless already changed)
+            
             if ($demande->getAutreUtilisateur() === $this) {
                 $demande->setAutreUtilisateur(null);
             }

@@ -54,12 +54,12 @@ public function editDemandeEtape1(int $id, Request $request, EntityManagerInterf
     if ($demande->isAutrePersonne()) {
         $infos_personne = $demande->getInfosPersonne();
     
-        // Décoder les informations JSON si nécessaire
+       
         if (!is_array($infos_personne)) {
             $infos_personne = json_decode($infos_personne, true) ?? [];
         }
     
-        // $dateNaissance = null;
+        
     
         // Vérifier si 'date_de_naissance' est bien un tableau contenant une clé 'date'
         if (!empty($infos_personne['date_de_naissance']['date']) && is_string($infos_personne['date_de_naissance']['date'])) {
@@ -351,7 +351,7 @@ public function editDemandeEtape1(int $id, Request $request, EntityManagerInterf
         ]);
     }
 
-    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+   
 
     
     private function buildTree(array &$services, $parentId = 0)

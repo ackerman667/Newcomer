@@ -35,10 +35,7 @@ $builder
         'expanded' => true,
         'label' => false,
     ])
-            // ->add('global_checkbox', CheckboxType::class, [
-            //     'label' => 'Case à cocher globale',
-            //     'required' => false, // Pas obligatoire
-            // ])
+           
             ;
        
     }

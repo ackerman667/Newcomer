@@ -54,7 +54,7 @@ class StatutsLdapController extends AbstractController
         $user = $this->security->getUser();
         $uid = $user->getUid();
 
-        // Vérifier si l'utilisateur est un valideur (utilisation d'une méthode de service externe)
+        // Vérifier si l'utilisateur est un valideur 
         $isValideur = $this->roleChecker->isUserValideur();
 
         // Récupérer les demandes de l'utilisateur courant (pour la section "Mes Demandes")
@@ -65,7 +65,6 @@ class StatutsLdapController extends AbstractController
 
         $sessionData = $session->all();
 
-        // Utilisez dump() pour afficher le contenu de la session (nécessite le composant de débogage activé)
         dump($sessionData);
 
         return $this->render('demandes/index.html.twig', [
@@ -98,13 +97,13 @@ class StatutsLdapController extends AbstractController
         $queryBuilder
             ->select('d')
             ->from(Demandes::class, 'd')
-            ->leftJoin('d.IDutilisateur', 'u') // Joindre la table User via l'IDutilisateur
-            ->where('d.IDutilisateur = :user') // Critère basé sur l'utilisateur
-            ->orWhere('u.uid = :uid')          // Critère basé sur l'UID
+            ->leftJoin('d.IDutilisateur', 'u') 
+            ->where('d.IDutilisateur = :user') 
+            ->orWhere('u.uid = :uid')          
             ->setParameter('user', $user_bdd)
             ->setParameter('uid', $uid);
     
-        // Exécuter la requête et renvoyer les résultats
+     
         return $queryBuilder->getQuery()->getResult();
     }
     /**
@@ -116,7 +115,7 @@ class StatutsLdapController extends AbstractController
 
         return $entityManager->getRepository(Demandes::class)->createQueryBuilder('d')
             ->where('d.uid_valideur = :uid')
-            ->andWhere('d.statuts <> :statutExclus') // Exclure les brouillons
+            ->andWhere('d.statuts <> :statutExclus') 
             ->setParameter('uid', $uid)
             ->setParameter('statutExclus', $statutExclus)
             ->getQuery()
@@ -131,7 +130,7 @@ class StatutsLdapController extends AbstractController
         if ($demande->isAutrePersonne()) {
             $infos_personne = $demande->getInfosPersonne();
 
-            // Décoder JSON en tableau si nécessaire
+        
             if (!is_array($infos_personne)) {
                 $infos_personne = json_decode($infos_personne, true) ?? [];
             }
@@ -157,16 +156,11 @@ class StatutsLdapController extends AbstractController
 
 
 
-// ----------------------------------------------------------------------------------------------------------------------------------> PARTIE COMMUNE
-// ----------------------------------------------------------------------------------------------------------------------------------> PARTIE COMMUNE
-// ----------------------------------------------------------------------------------------------------------------------------------> PARTIE COMMUNE
-// ----------------------------------------------------------------------------------------------------------------------------------> PARTIE COMMUNE
-// ----------------------------------------------------------------------------------------------------------------------------------> PARTIE COMMUNE
-// ----------------------------------------------------------------------------------------------------------------------------------> PARTIE COMMUNE
+
 #[Route('/formulaireldap/nouvelle_demande', name: 'nouvelle_demande_ldap')]
 public function nouvelleDemande(SessionInterface $session, EntityManagerInterface $entityManager): Response
 {
-    // Réinitialiser les données de la session pour démarrer une nouvelle demande
+    
     $session->remove('form_data');
     $session->remove('demande_id');
 
@@ -178,7 +172,7 @@ public function nouvelleDemande(SessionInterface $session, EntityManagerInterfac
 #[Route('/formulaireldap/a/nouvelle_demande', name: 'nouvelle-demande-ldap')]
 public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInterface $entityManager): Response
 {
-    // Réinitialiser les données de la session pour démarrer une nouvelle demande
+  
     $session->remove('form_data');
     $session->remove('demande_id');
 
@@ -305,7 +299,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     
         // Faire la distinction si la demande est pour une autre personne ou non
         if ($demande->isAutrePersonne()) {
-            // Récupérer les informations de l'autre personne à partir du JSON
+            
             $infos_personne = $demande->getInfosPersonne();
             if (!is_array($infos_personne)) {
                 $infos_personne = json_decode($infos_personne, true) ?? [];
@@ -318,7 +312,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
                 $infos_personne['date_de_naissance'] = $dateNaissance;
             }
     
-            $user = $infos_personne; // Utiliser les infos du JSON pour l'affichage
+            $user = $infos_personne; 
         } else {
             // Si la demande n'est pas pour une autre personne, utiliser l'utilisateur lié à la demande
             $user = $demande->getIDutilisateur();
@@ -341,23 +335,22 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     {
         $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
     
-        // Vérifier si la demande est valide
+       
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
         }
     
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
     
-        // Vérifier si la demande est faite pour une autre personne
+       
         if ($demande->isAutrePersonne()) {
-            // Récupérer les informations à partir du JSON
+           
             $infosPersonne = $demande->getInfosPersonne();
     
-            // Vérifier que le contenu est une chaîne JSON avant d'appeler json_decode
             if (is_string($infosPersonne)) {
                 $userInfos = json_decode($infosPersonne, true);
             } else {
-                // Si ce n'est pas une chaîne, on considère que c'est déjà un tableau
+               
                 $userInfos = $infosPersonne;
             }
     
@@ -365,11 +358,11 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
             if (!empty($userInfos['date_de_naissance']) && is_array($userInfos['date_de_naissance'])) {
                 $userInfos['date_de_naissance'] = \DateTime::createFromFormat('Y-m-d H:i:s.u', $userInfos['date_de_naissance']['date']);
             } elseif (!empty($userInfos['date_de_naissance']) && is_string($userInfos['date_de_naissance'])) {
-                // Si la date est une chaîne, essayez de la convertir
+               
                 $userInfos['date_de_naissance'] = \DateTime::createFromFormat('Y-m-d', $userInfos['date_de_naissance']);
             }
         } else {
-            // Récupérer les informations de l'utilisateur lié
+            
             $user = $demande->getIDutilisateur();
             $userInfos = [
                 'nom' => $user->getNom(),
@@ -389,12 +382,11 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
         $imageData = base64_encode(file_get_contents($imagePath));
         $imageSrc = 'data:image/png;base64,' . $imageData;
     
-        // Configurer Dompdf selon vos besoins
         $options = new Options();
         $options->set('defaultFont', 'Arial');
         $dompdf = new Dompdf($options);
     
-        // Récupérer le contenu HTML de votre template
+       
         $html = $this->renderView('visualiser-demandes/pdf.html.twig', [
             'demande' => $demande,
             'user' => $userInfos,
@@ -403,16 +395,15 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
             'valideur' => $valideur
         ]);
     
-        // Charger le HTML dans Dompdf
+   
         $dompdf->loadHtml($html);
     
-        // Définir le format du papier et l'orientation
+      
         $dompdf->setPaper('A4', 'portrait');
     
-        // Rendre le PDF
         $dompdf->render();
     
-        // Envoyer le PDF au navigateur
+       
         return new Response($dompdf->output(), 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="demande.pdf"',
@@ -421,9 +412,6 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     
   
 
-    // ----------------------------------------------------------------------------------------------------------------------------------> 
-// ----------------------------------------------------------------------------------------------------------------------------------> 
-// ---------------------------------------------------------------------------------------------------------------------------------->  AUTRE
 
 #[Route('/formulaireldap/a/modifier/{id}', name: 'modifier_demandespourautre')]
     public function modifierDemandePourAutre(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
@@ -435,9 +423,9 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
 
         $data = $demande->getInfosPersonne();
         if (isset($data['date_de_naissance']) && is_array($data['date_de_naissance'])) {
-            $dateString = $data['date_de_naissance']['date']; // Extraction de la chaîne de date
+            $dateString = $data['date_de_naissance']['date']; 
             $dateNaissance = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s.u', $dateString);
-            $data['date_de_naissance'] = $dateNaissance; // Remplacer dans le tableau de données
+            $data['date_de_naissance'] = $dateNaissance; 
         }
         $session->set('form_data', $data);
         $session->set('demande_id', $id);
@@ -499,13 +487,13 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     
     public function getValideurMail(Demandes $demande): string
     {
-        $uidValideur = $demande->getUidValideur(); // Récupère l'UID du valideur
+        $uidValideur = $demande->getUidValideur(); 
         if ($uidValideur) {
-            // Génère l'adresse e-mail en ajoutant le domaine
+      
             return $uidValideur . '@ac-guadeloupe.fr';
         }
     
-        // Valeur par défaut si l'UID est manquant
+       
         return 'noreply@ac-guadeloupe.fr';
     }
     

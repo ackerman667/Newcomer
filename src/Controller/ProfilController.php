@@ -6,23 +6,23 @@ use App\Classe\MonApplication;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security; 
-use App\Security\UserInformation;// Import pour Security
+use App\Security\UserInformation;
 
 class ProfilController extends AbstractController
 {
-    private Security $security; // Ajouter la propriété Security
+    private Security $security; 
 
-    // Injecter Security via le constructeur
+ 
     public function __construct(Security $security)
     {
         $this->security = $security;
     }
 
-    // Méthode privée pour récupérer les informations de l'utilisateur
+    // Méthode  pour récupérer les informations de l'utilisateur
     private function getUserInfo(): array
     {
         $user = $this->security->getUser();
-        $userInformation = new UserInformation(); // Assurez-vous que cette classe est bien définie et importée
+        $userInformation = new UserInformation(); 
         $infos_user = $userInformation->getUserInformation($user);
 
         return [
@@ -37,39 +37,39 @@ class ProfilController extends AbstractController
     #[Route(path: '/profil', name: 'profil')]
     public function profil(MonApplication $monApplication)
     {
-        // Utiliser la méthode privée pour récupérer les infos utilisateur
+        
         $userInfo = $this->getUserInfo();
 
         return $this->render('profil/index.html.twig', [
             'monApplication' => $monApplication,
             'page' => 'profil',
-            'user' => $userInfo, // Ajouter les informations utilisateur
+            'user' => $userInfo, 
         ]);
     }
 
     #[Route("/profil/preferences", name: "preferences")]
     public function preferences(MonApplication $monApplication)
     {
-        // Utiliser la méthode privée pour récupérer les infos utilisateur
+      
         $userInfo = $this->getUserInfo();
 
         return $this->render('profil/preferences.html.twig', [
             'monApplication' => $monApplication,
             'page' => 'preferences',
-            'user' => $userInfo, // Ajouter les informations utilisateur
+            'user' => $userInfo, 
         ]);
     }
 
     #[Route("/profil/roles", name: "roles")]
     public function roles(MonApplication $monApplication)
     {
-        // Utiliser la méthode privée pour récupérer les infos utilisateur
+        
         $userInfo = $this->getUserInfo();
 
         return $this->render('profil/roles.html.twig', [
             'monApplication' => $monApplication,
             'page' => 'roles',
-            'user' => $userInfo, // Ajouter les informations utilisateur
+            'user' => $userInfo, 
         ]);
     }
 }

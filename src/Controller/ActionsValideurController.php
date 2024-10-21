@@ -56,7 +56,7 @@ class ActionsValideurController extends AbstractController
         $demande->setStatuts('Suivi dans LEKA');
         $demande->setDateValidation($now);
     
-        // Créer un historique de la demande
+       
         $historique = new HistoriqueDemande();
         $historique->setDemande($demande);
         $historique->setStatut('Suivi dans LEKA');
@@ -65,20 +65,19 @@ class ActionsValideurController extends AbstractController
         $entityManager->persist($historique);
         $entityManager->flush();
     
-        // Récupérer l'email de l'utilisateur ou de la personne cible
-       // Récupérer les informations de la demande
+      
     $infosPersonne = $demande->getInfosPersonne();
     
-    // Vérifiez si les informations sont déjà un tableau ou non
+   
     if ($demande->isAutrePersonne() && is_string($infosPersonne)) {
-        // Décoder le JSON seulement si c'est une chaîne
+     
         $infosPersonne = json_decode($infosPersonne, true);
     }
     
-       // Générer le PDF
+       
        $pdfResponse = $this->generatePdf($id, $entityManager);
     
-       // Récupérer le contenu du PDF généré
+       
        $pdfOutput = $pdfResponse->getContent();
     
     // Récupérez l'email en fonction du type de demande
@@ -136,9 +135,9 @@ class ActionsValideurController extends AbstractController
     
         $infosPersonne = $demande->getInfosPersonne();
     
-    // Vérifiez si les informations sont déjà un tableau ou non
+
     if ($demande->isAutrePersonne() && is_string($infosPersonne)) {
-        // Décoder le JSON seulement si c'est une chaîne
+       
         $infosPersonne = json_decode($infosPersonne, true);
     }
     
@@ -177,10 +176,10 @@ class ActionsValideurController extends AbstractController
         $entityManager->persist($historique);
         $entityManager->flush();
     
-       // Vérifiez si infos_personne est déjà un tableau ou non
+   
     $infosPersonne = $demande->getInfosPersonne();
     if ($demande->isAutrePersonne() && is_string($infosPersonne)) {
-        // Décoder le JSON seulement si c'est une chaîne
+  
         $infosPersonne = json_decode($infosPersonne, true);
     }
     
@@ -211,18 +210,17 @@ class ActionsValideurController extends AbstractController
     
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande->getId()]);
     
-        // Vérifier si la demande est pour une autre personne
         if ($demande->isAutrePersonne()) {
             $infos_personne = $demande->getInfosPersonne();
     
-            // Si infos_personne n'est pas déjà un tableau, décoder JSON
+          
             if (!is_array($infos_personne)) {
                 $user = json_decode($infos_personne, true);
             } else {
                 $user = $infos_personne;
             }
         } else {
-            // Sinon, récupérer les informations de l'utilisateur associé à la demande
+         
             $user = $demande->getIDutilisateur();
         }
          $valideur = $demande->getUidValideur();
@@ -241,23 +239,23 @@ class ActionsValideurController extends AbstractController
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
     
-        // Vérifier si la demande est valide
+    
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
         }
     
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande->getId()]);
     
-        // Vérifier si la demande est faite pour une autre personne
+        
         if ($demande->isAutrePersonne()) {
-            // Récupérer les informations à partir du JSON
+            
             $infosPersonne = $demande->getInfosPersonne();
     
-            // Vérifier que le contenu est une chaîne JSON avant d'appeler json_decode
+       
             if (is_string($infosPersonne)) {
                 $userInfos = json_decode($infosPersonne, true);
             } else {
-                // Si ce n'est pas une chaîne, on considère que c'est déjà un tableau
+             
                 $userInfos = $infosPersonne;
             }
     
@@ -265,7 +263,7 @@ class ActionsValideurController extends AbstractController
                 $userInfos['date_de_naissance'] = \DateTime::createFromFormat('Y-m-d H:i:s.u', $userInfos['date_de_naissance']['date']);
             }
         } else {
-            // Récupérer les informations de l'utilisateur lié
+            
             $userInfos = [
                 'nom' => $demande->getIDutilisateur()->getNom(),
                 'prenom' => $demande->getIDutilisateur()->getPrenom(),
@@ -286,12 +284,12 @@ class ActionsValideurController extends AbstractController
         $imageData = base64_encode(file_get_contents($imagePath));
         $imageSrc = 'data:image/png;base64,' . $imageData;
     
-        // Configurer Dompdf selon vos besoins
+       
         $options = new Options();
         $options->set('defaultFont', 'Arial');
         $dompdf = new Dompdf($options);
     
-        // Récupérer le contenu HTML de votre template
+      
         $html = $this->renderView('visualiser-demandes/pdf.html.twig', [
             'demande' => $demande,
             'user' => $userInfos,
@@ -300,12 +298,12 @@ class ActionsValideurController extends AbstractController
             'valideur' => $valideur
         ]);
     
-        // Charger le HTML dans Dompdf
+     
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
     
-        // Envoyer le PDF au navigateur
+        
         return new Response($dompdf->output(), 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="demande.pdf"',
@@ -316,9 +314,9 @@ class ActionsValideurController extends AbstractController
 
     public function getValideurMail(Demandes $demande): string
     {
-        $uidValideur = $demande->getUidValideur(); // Récupère l'UID du valideur
+        $uidValideur = $demande->getUidValideur(); 
         if ($uidValideur) {
-            // Génère l'adresse e-mail en ajoutant le domaine
+           
             return $uidValideur . '@ac-guadeloupe.fr';
         }
     

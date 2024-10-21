@@ -1,58 +1,47 @@
 {% extends 'layout_ag.html.twig' %}
 {% block title %}<title>Profil - {{monApplication.Appli}}</title>{% endblock %}
 {% block head_gene %}
-    <style>
-        .user-info {
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-            padding: 20px;
-            border-radius: 10px;
-            max-width: 900px;
-            width: 30%;
-            margin-right: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            align-items: center;
-             text-align: center;  
-        }
+   <style>
+    .main-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 40px;
+    }
+    .photo {
+        position: relative;
+        margin-bottom: 20px;
+        width: 200px; /* Taille de l'image */
+        height: 200px; /* Taille de l'image */
+        border-radius: 50%;
+        overflow: hidden; /* Empêche tout débordement */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optionnel: ajout d'un léger effet d'ombre */
+    }
+    .photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Pour s'assurer que l'image est bien centrée et ne déborde pas */
+    }
+    .user-info {
+        text-align: center;
+    }
+    .user-info h2 {
+        font-size: 1.5rem;
+        color: #333;
+    }
+    .user-info p {
+        margin: 5px 0;
+        font-size: 1rem;
+    }
+    .user-info p strong {
+        font-weight: bold;
+    }
+    .user-info .email, .user-info .date-naissance {
+        font-style: italic;
+        color: #555;
+    }
+</style>
 
-       
-        .vcard {
-            text-align: center;
-        }
-
-        .main-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 10px;
-        }
-        h4 {
-            color: #00A7D8;
-        }
-        .photo {
-            text-align: top;
-            margin-left: 800px; /* Ajuste la valeur de cette marge pour rapprocher la photo du rectangle */
-        }
-
-        .user-info p {
-            margin: 5px 0;
-        }
-
-        .user-info p strong {
-            font-weight: bold;
-            color: #333;
-        }
-
-        @media (max-width: 768px) {
-            .main-container {
-                flex-direction: column;
-            }
-
-            .user-info {
-                margin-bottom: 20px;
-            }
-        }
-    </style>
 {% endblock %}
 {% block body %}<body  class="page not-home">{% endblock %}
 {% block header %}
@@ -74,40 +63,26 @@
 {% endfor %}
 
 {% if app.session.get('ldap_authenticated') %}
-<main class="row main-container">
+<main class="main-container">
+    <figure class="photo">
+        <img src="{{ asset('css/images/avatar/avatar.png','interfaceappli') }}" alt="Avatar de l'utilisateur">
+    </figure>
 
     <div class="user-info">
-        <h4><strong>Vos informations</strong></h4>
-        <p><strong>Nom :</strong> {{ user.nom }}</p>
-        <p><strong>Prénom :</strong> {{ user.prenom }}</p>
-        <p><strong>Email :</strong> {{ user.email }}</p>
-        <p><strong>Date de naissance :</strong> {{ user.dateNaissance }}</p>
+        <h2>M. {{ user.nom }} {{ user.prenom }}</h2>
+        <p>né le : <span class="date-naissance">{{ user.dateNaissance }}</span></p>
+        <p><strong>Courriel:</strong> <span class="email">{{ user.email }}</span></p>
     </div>
-
-    <address>
-        <span id="vcard" class="vcard">
-            <figure class="photo">
-                <img src="{{ asset('css/images/avatar/avatar.png','interfaceappli') }}" alt="Avatar de l'utilisateur">
-            </figure>
-            <h2 class="fn">{{ 'Utilisateur'|trans }} : {{ user.nom }} {{ user.prenom }}</h2>
-        </span>
-    </address>
 </main>
 {% else %}
-<main class="row main-container">
-    <div class="user-info">
-        <h4>Vos informations</h4>
-        <p>Utilisateur anonyme</p>
-    </div>
+<main class="main-container">
+    <figure class="photo">
+        <img src="{{ asset('css/images/avatar/avatar.png','interfaceappli') }}" alt="Avatar de l'utilisateur">
+    </figure>
 
-    <address>
-        <span id="vcard" class="vcard">
-            <figure class="photo">
-                <img src="{{ asset('css/images/avatar/avatar.png','interfaceappli') }}" alt="Avatar de l'utilisateur">
-            </figure>
-            <h2 class="fn">Utilisateur anonyme</h2>
-        </span>
-    </address>
+    <div class="user-info">
+        <h2>Utilisateur anonyme</h2>
+    </div>
 </main>
 {% endif %}
 
