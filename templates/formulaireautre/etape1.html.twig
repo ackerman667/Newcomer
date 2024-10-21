@@ -129,20 +129,25 @@ document.addEventListener('DOMContentLoaded', function () {
     const telephoneAvantServiceInput = document.querySelector('.telephone-avant-service-input');
     const nouvelleAffectationServiceInput = document.querySelector('.nouvelle-affectation-service-input');
 
-    function toggleRemplacementSection() {
+   function toggleRemplacementSection() {
         if (replaceSomeoneYes.checked) {
             remplacementSection.style.display = 'block';
             remplacementNomInput.required = true;
             remplacementPrenomInput.required = true;
             telephoneAvantServiceInput.required = true;
         } else {
-            remplacementSection.style.display = 'none';
-            remplacementNomInput.required = false;
-            remplacementPrenomInput.required = false;
-            telephoneAvantServiceInput.required = false;
-            remplacementNomInput.value = '';
-            remplacementPrenomInput.value = '';
-            telephoneAvantServiceInput.value = '';
+              remplacementSection.style.display = 'none';
+        remplacementNomInput.required = false;
+        remplacementPrenomInput.required = false;
+        telephoneAvantServiceInput.required = false;
+        remplacementNomInput.value = '';
+        remplacementPrenomInput.value = '';
+        telephoneAvantServiceInput.value = '';
+        partiRectoratYes.checked = false;
+        partiRectoratNo.checked = false;
+        nouvelleAffectationServiceSection.style.display = 'none';
+        nouvelleAffectationServiceInput.required = false;
+        nouvelleAffectationServiceInput.value = '';
         }
     }
 

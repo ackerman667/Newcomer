@@ -70,7 +70,13 @@
 
     <div class="user-info">
         <h2>M. {{ user.nom }} {{ user.prenom }}</h2>
-        <p>né le : <span class="date-naissance">{{ user.dateNaissance }}</span></p>
+          {% if user.codecivilite== "M." %}
+                 <p>né le : <span class="date-naissance">{{ user.dateNaissance }}</span></p>
+            {% else %}
+              <p>née le : <span class="date-naissance">{{ user.dateNaissance }}</span></p>
+            {% endif %}
+
+       
         <p><strong>Courriel:</strong> <span class="email">{{ user.email }}</span></p>
     </div>
 </main>

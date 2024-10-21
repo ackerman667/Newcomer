@@ -31,6 +31,7 @@ class ProfilController extends AbstractController
             'email' => $infos_user['mail'],
             'dateNaissance' => $infos_user['datenaissance'],
             'uid' => $infos_user['uid'],
+            'codecivilite'=> $infos_user['codecivilite'],
         ];
     }
 

@@ -63,7 +63,7 @@
         <div class="col-md-10">
             {{ form_start(form) }}
 
-            <!-- Question Remplacez-vous quelqu'un -->
+            
             <div class="form-group replace-someone-group">
                 {{ form_label(form.replace_someone, null, {'label_attr': {'class': 'bold-label'}}) }}
                 <div class="form-group-inline">
@@ -136,13 +136,18 @@ document.addEventListener('DOMContentLoaded', function () {
             remplacementPrenomInput.required = true;
             telephoneAvantServiceInput.required = true;
         } else {
-            remplacementSection.style.display = 'none';
-            remplacementNomInput.required = false;
-            remplacementPrenomInput.required = false;
-            telephoneAvantServiceInput.required = false;
-            remplacementNomInput.value = '';
-            remplacementPrenomInput.value = '';
-            telephoneAvantServiceInput.value = '';
+              remplacementSection.style.display = 'none';
+        remplacementNomInput.required = false;
+        remplacementPrenomInput.required = false;
+        telephoneAvantServiceInput.required = false;
+        remplacementNomInput.value = '';
+        remplacementPrenomInput.value = '';
+        telephoneAvantServiceInput.value = '';
+        partiRectoratYes.checked = false;
+        partiRectoratNo.checked = false;
+        nouvelleAffectationServiceSection.style.display = 'none';
+        nouvelleAffectationServiceInput.required = false;
+        nouvelleAffectationServiceInput.value = '';
         }
     }
 

@@ -32,22 +32,22 @@ class UserInformation
             $fiche['uid']=$info[0]['uid'][0];
 
            
-            // dump($fiche);
-            //Recherche de l'URL du portail suivant le rev-proxy d'ou vient l'agent
-            // $result=ldap_search($ds, $_SERVER["ANNU_BASE_DATAREPOSITORY"],"(ctscPEPName=".$_SERVER["HTTP_CT_WEB_SVR_ID"].")");
+            dump($fiche);
+            // Recherche de l'URL du portail suivant le rev-proxy d'ou vient l'agent
+            $result=ldap_search($ds, $_SERVER["ANNU_BASE_DATAREPOSITORY"],"(ctscPEPName=".$_SERVER["HTTP_CT_WEB_SVR_ID"].")");
             $nb=ldap_count_entries($ds, $result);
-            // if ($nb>0){
-            //     $revproxy=ldap_get_entries($ds, $result);
-            //     // $fiche['urlproxy']=$revproxy[0]['ctscpepurlprefix'][0];
-            //     $fiche['urllogout']=$fiche['urlproxy'].$_SERVER['URL_LOG_OUT'];
-            //     //On recherche le chemin de l'application portail /portail/public
-            //     $result=ldap_search($ds, $_SERVER["ANNU_BASE_APPLI_PORTAIL"], "(ou=*)");
-            //     $nb=ldap_count_entries($ds,$result);
-            //     if ($nb>0){
-            //         $Applis = ldap_get_entries($ds, $result);
-            //         $fiche['urlportail']=$fiche['urlproxy'].$Applis[0]['street'][0];
-            //     }
-            // }
+            if ($nb>0){
+                $revproxy=ldap_get_entries($ds, $result);
+                // $fiche['urlproxy']=$revproxy[0]['ctscpepurlprefix'][0];
+                $fiche['urllogout']=$fiche['urlproxy'].$_SERVER['URL_LOG_OUT'];
+                //On recherche le chemin de l'application portail /portail/public
+                $result=ldap_search($ds, $_SERVER["ANNU_BASE_APPLI_PORTAIL"], "(ou=*)");
+                $nb=ldap_count_entries($ds,$result);
+                if ($nb>0){
+                    $Applis = ldap_get_entries($ds, $result);
+                    $fiche['urlportail']=$fiche['urlproxy'].$Applis[0]['street'][0];
+                }
+            }
             //Ici on sait que l'agent est dans l'annuaire et on va lui mettre une rôle defaut
             $fiche["roles"]=" Rôle Utilisateur";
             //dd($fiche);
