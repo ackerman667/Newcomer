@@ -65,49 +65,38 @@ class ActionsValideurController extends AbstractController
         $entityManager->persist($historique);
         $entityManager->flush();
     
-      
-    $infosPersonne = $demande->getInfosPersonne();
-    
-   
-    if ($demande->isAutrePersonne() && is_string($infosPersonne)) {
-     
-        $infosPersonne = json_decode($infosPersonne, true);
-    }
-    
        
        $pdfResponse = $this->generatePdf($id, $entityManager);
-    
-       
        $pdfOutput = $pdfResponse->getContent();
     
     // Récupérez l'email en fonction du type de demande
-    // $email = $demande->isAutrePersonne() ? ($infosPersonne['email'] ?? '') : $demande->getIDutilisateur()->getEmail();
+    $email = $demande->isAutrePersonne() ? $demande->getAutreUtilisateur()->getEmail() : $demande->getIDutilisateur()->getEmail();
     
-    //     $emailMessage = (new Email())
-    //         ->from('noreply@ac-guadeloupe.fr')
-    //         ->to($email)
-    //         ->subject('Votre demande a été envoyée dans LEKA')
-    //         ->html('<p>Votre demande a été envoyée dans LEKA.</p>');
+        $emailMessage = (new Email())
+            ->from('noreply@ac-guadeloupe.fr')
+            ->to($email)
+            ->subject('Votre demande a été envoyée dans LEKA')
+            ->html('<p>Votre demande a été envoyée dans LEKA.</p>');
     
-    //     $mailer->send($emailMessage);
+        $mailer->send($emailMessage);
     
     
         $valideurEmail = $this->getValideurMail($demande);
     
-        $subject = "La demande numéro $id pour le service {$demande->getService()} a été soumise";
+        $subject = "La demande numéro $id pour le service {$demande->getService()} a été validée";
     
     
     
     
     
-        // $leka = (new Email())
-        //     ->from($valideurEmail)
-        //     ->to('nbarbeu@gmail.com')  remplacer par mail LEKA
-        //     ->subject($subject) 
-        //     ->html('<p>Votre demande a été envoyée dans LEKA.</p>')
-        //     ->attach($pdfOutput, 'demande.pdf', 'application/pdf');
+        $leka = (new Email())
+            ->from($valideurEmail)
+            ->to('lekadempp@ac-guadeloupe.fr') 
+            ->subject($subject) 
+            ->html('<p>Votre demande a été envoyée dans LEKA.</p>')
+            ->attach($pdfOutput, 'demande.pdf', 'application/pdf');
     
-        // $mailer->send($leka);
+        $mailer->send($leka);
 
     
         return $this->redirectToRoute('liste_demandes');
@@ -133,16 +122,9 @@ class ActionsValideurController extends AbstractController
         $entityManager->persist($historique);
         $entityManager->flush();
     
-        $infosPersonne = $demande->getInfosPersonne();
-    
-
-    if ($demande->isAutrePersonne() && is_string($infosPersonne)) {
-       
-        $infosPersonne = json_decode($infosPersonne, true);
-    }
-    
+        
     // Récupérez l'email en fonction du type de demande
-    $email = $demande->isAutrePersonne() ? ($infosPersonne['email'] ?? '') : $demande->getIDutilisateur()->getEmail();
+    $email = $demande->isAutrePersonne() ? $demande->getAutreUtilisateur()->getEmail() : $demande->getIDutilisateur()->getEmail();
         $emailMessage = (new Email())
             ->from('noreply@ac-guadeloupe.fr')
             ->to($email)
@@ -177,14 +159,10 @@ class ActionsValideurController extends AbstractController
         $entityManager->flush();
     
    
-    $infosPersonne = $demande->getInfosPersonne();
-    if ($demande->isAutrePersonne() && is_string($infosPersonne)) {
-  
-        $infosPersonne = json_decode($infosPersonne, true);
-    }
+    
     
     // Récupérez l'email en fonction du type de demande
-    $email = $demande->isAutrePersonne() ? $infosPersonne['email'] ?? '' : $demande->getIDutilisateur()->getEmail();
+    $email = $demande->isAutrePersonne() ? $demande->getAutreUtilisateur()->getEmail() : $demande->getIDutilisateur()->getEmail();
     
     
         // $emailMessage = (new Email())
@@ -211,24 +189,18 @@ class ActionsValideurController extends AbstractController
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande->getId()]);
     
         if ($demande->isAutrePersonne()) {
-            $infos_personne = $demande->getInfosPersonne();
-    
-          
-            if (!is_array($infos_personne)) {
-                $user = json_decode($infos_personne, true);
-            } else {
-                $user = $infos_personne;
-            }
+            $user = $demande->getAutreUtilisateur();
+            
         } else {
-         
+            // Si la demande n'est pas pour une autre personne, utiliser l'utilisateur lié à la demande
             $user = $demande->getIDutilisateur();
         }
-         $valideur = $demande->getUidValideur();
+        $valideur = $demande->getUidValideur();
     
-        return $this->render('valideur/visualiser.html.twig', [
+        return $this->render('visualiser-demandes/visualiser.html.twig', [
             'demande' => $demande,
-            'monApplication' => $monApplication,
             'user' => $user,
+            'monApplication' => $monApplication,
             'ressources' => $ressources,
             'valideur' => $valideur
         ]);
@@ -248,20 +220,31 @@ class ActionsValideurController extends AbstractController
     
         
         if ($demande->isAutrePersonne()) {
+            $user = $demande->getAutreUtilisateur(); 
+            $userInfos = [
+            'nom' => $user->getNom(),
+            'prenom' => $user->getPrenom(),
+            'email' => $user->getEmail(),
+            'date_de_naissance' => $user->getDateDeNaissance(),
+            'fonction' => $user->getFonction(),
+            'statut' => $user->getStatutPersonne(),
+            'date_debut' => $user->getDateDebut(),
+            'date_fin' => $user->getDateFin(),
+        ];
             
-            $infosPersonne = $demande->getInfosPersonne();
+            // $infosPersonne = $demande->getInfosPersonne();
     
        
-            if (is_string($infosPersonne)) {
-                $userInfos = json_decode($infosPersonne, true);
-            } else {
+            // if (is_string($infosPersonne)) {
+            //     $userInfos = json_decode($infosPersonne, true);
+            // } else {
              
-                $userInfos = $infosPersonne;
-            }
+            //     $userInfos = $infosPersonne;
+            // }
     
-            if (!empty($userInfos['date_de_naissance']) && is_array($userInfos['date_de_naissance'])) {
-                $userInfos['date_de_naissance'] = \DateTime::createFromFormat('Y-m-d H:i:s.u', $userInfos['date_de_naissance']['date']);
-            }
+            // if (!empty($userInfos['date_de_naissance']) && is_array($userInfos['date_de_naissance'])) {
+            //     $userInfos['date_de_naissance'] = \DateTime::createFromFormat('Y-m-d H:i:s.u', $userInfos['date_de_naissance']['date']);
+            // }
         } else {
             
             $userInfos = [
@@ -280,7 +263,7 @@ class ActionsValideurController extends AbstractController
         $valideur = $demande->getUidValideur();
         
     
-        $imagePath = 'C:\Users\nbarbeu\newcomer\public\interfaceappli\css\images\logoaca\academie.png'; 
+      $imagePath = $this->getParameter('kernel.project_dir') . '/public/interfaceappli/css/images/10_logoAC_GUADELOUPE_web.png';
         $imageData = base64_encode(file_get_contents($imagePath));
         $imageSrc = 'data:image/png;base64,' . $imageData;
     
@@ -290,12 +273,13 @@ class ActionsValideurController extends AbstractController
         $dompdf = new Dompdf($options);
     
       
-        $html = $this->renderView('visualiser-demandes/pdf.html.twig', [
+        $html = $this->renderView('valideur/pdf_valideur.html.twig', [
             'demande' => $demande,
             'user' => $userInfos,
             'ressources' => $ressources,
             'imageSrc' => $imageSrc,
-            'valideur' => $valideur
+            'valideur' => $valideur,
+            // 'autreUtilisateur'  => $autreUtilisateur,
         ]);
     
      

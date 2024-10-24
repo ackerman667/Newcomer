@@ -121,6 +121,10 @@
                             <label>Prénom :</label>
                             <span>{{ user.prenom }}</span>
                         </div>
+                         <div class="details-group">
+                            <label>Date de Naissance :</label>
+                            <span>{{ user.dateDeNaissance ? user.dateDeNaissance|date('d/m/Y') : '' }}</span>
+                        </div>
                         <div class="details-group">
                             <label>Email :</label>
                             <span>{{ user.email }}</span>
@@ -133,10 +137,7 @@
                             <label>Statut :</label>
                             <span>{{ user.statutPersonne }}</span>
                         </div>
-                        <div class="details-group">
-                            <label>Date de Naissance :</label>
-                            <span>{{ user.dateDeNaissance ? user.dateDeNaissance|date('d/m/Y') : '' }}</span>
-                        </div>
+                       
                         <div class="details-group" {% if user.statutPersonne == 'Titulaire' %} style="display:none" {% endif %}>
                             <label>Date de Début de Contrat :</label>
                             <span>{{ user.dateDebut ? user.dateDebut|date('d/m/Y') : '' }}</span>
@@ -158,6 +159,24 @@
                         <label>Service :</label>
                         <span>{{ demande.service }}</span>
                     </div>
+                     <div class="details-group">
+                        <label> Avez vous besoin d'un numéro de Téléphone Bureau ? :</label>
+                         <span>
+        {% if 'Num Tel' in ressources.contenu %}
+            Oui
+        {% else %}
+            Non
+        {% endif %}
+
+    </span>
+                    </div>
+                     <div class="details-group" >
+                            <label> Commentaire du valideur:</label>
+                            <span>{% if demande.commentaire %}
+                            {{ demande.commentaire }} {% else %}
+                            Pas de commentaire {% endif %}
+                            </span>
+                        </div>
                 </div>
             </div>
         </div>

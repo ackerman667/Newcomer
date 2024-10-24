@@ -52,45 +52,9 @@ public function editDemandeEtape1(int $id, Request $request, EntityManagerInterf
 
     // Préparer les données en fonction du type de demande (pour soi-même ou pour une autre personne)
     if ($demande->isAutrePersonne()) {
-        $infos_personne = $demande->getInfosPersonne();
-    
-       
-        if (!is_array($infos_personne)) {
-            $infos_personne = json_decode($infos_personne, true) ?? [];
-        }
-    
         
-    
-        // Vérifier si 'date_de_naissance' est bien un tableau contenant une clé 'date'
-        if (!empty($infos_personne['date_de_naissance']['date']) && is_string($infos_personne['date_de_naissance']['date'])) {
-            $dateNaissance = \DateTime::createFromFormat('Y-m-d H:i:s.u', $infos_personne['date_de_naissance']['date']);
-            if (!$dateNaissance) {
-                // Si la conversion échoue, affecter null
-                $dateNaissance = null;
-            }
-        }
-    
-    
-
-        $data = [
-            'nom' => $infos_personne['nom'] ?? '',
-            'prenom' => $infos_personne['prenom'] ?? '',
-            'email' => $infos_personne['email'] ?? '',
-            'date_de_naissance' => $dateNaissance,
-            'fonction' => $infos_personne['fonction'] ?? '',
-            'replace_someone' => $demande->isRemplacant() ? 'oui' : 'non',
-            'remplacement_nom' => $demande->getNomRemplacant(),
-            'remplacement_prenom' => $demande->getPrenomRemplacant(),
-            'telephone_avant_service' => $demande->getTelephoneRemplacant(),
-            'parti_rectorat' => $demande->isDepart(),
-            'nouvelle_affectation_service' => $demande->getAffectationRemplacant(),
-            'date_debut_contrat' => $infos_personne['date_debut_contrat'] ?? null,
-            'date_fin_contrat' => $infos_personne['date_fin_contrat'] ?? null,
-            'statut' => $infos_personne['statut'] ?? '',
-            'missions' => $demande->getMissions(),
-        ];
         $user_autre= $demande->getAutreUtilisateur();
-        $data2 = [
+        $data = [
             'nom' => $user_autre ? $user_autre->getNom() : '',
             'prenom' => $user_autre ? $user_autre->getPrenom() : '',
             'email' => $user_autre ? $user_autre->getEmail() : '',
@@ -285,7 +249,7 @@ public function editDemandeEtape1(int $id, Request $request, EntityManagerInterf
             if ($demande->isAutrePersonne()) { 
                 $demande->setAutrePersonne(true);
                 $demande->setInfosPersonne([
-                    'nom' => $data['nom'],
+                'nom' => $data['nom'],
                 'prenom' => $data['prenom'],
                 'email' => $data['email'],
                 'date_de_naissance' => $data['date_de_naissance'],

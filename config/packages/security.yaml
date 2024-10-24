@@ -16,7 +16,7 @@ security:
     firewalls:
         ldap:
             
-            lazy: true
+            # lazy: true
             pattern: /formulaireldap/
             remote_user:
                 user: HTTP_CT_REMOTE_USER

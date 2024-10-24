@@ -35,6 +35,21 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-10">
+             
+            {% if demande.isAutrePersonne %}
+    <p style="font-size: 18px; line-height: 1.6; margin-bottom: 30px;">
+    La demande a été effectuée par : 
+    <span style="font-weight: bold;  ">
+        {{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}
+    </span> 
+    <span style=" color: #333;">
+        pour
+    </span> 
+    <span style="font-weight: bold; color: #e60000;">
+        {{ user.nom }} {{ user.prenom }}
+    </span>
+</p>
+{% endif %}
                 <div class="details-section">
                     <div class="details-section-title">Détails de la Demande</div>
                     <div class="details-group">
@@ -83,6 +98,10 @@
                             <label>Prénom :</label>
                             <span>{{ user.prenom }}</span>
                         </div>
+                         <div class="details-group">
+                            <label>Date de Naissance :</label>
+                             <span>{{ user.date_de_naissance.date ? (user.date_de_naissance.date|date('d/m/Y')) : '' }}</span>
+                        </div>
                         <div class="details-group">
                             <label>Email :</label>
                             <span>{{ user.email }}</span>
@@ -95,10 +114,7 @@
                             <label>Statut :</label>
                             <span>{{ user.statut }}</span>
                         </div>
-                        <div class="details-group">
-                            <label>Date de Naissance :</label>
-                             <span>{{ user.date_de_naissance.date ? (user.date_de_naissance.date|date('d/m/Y')) : '' }}</span>
-                        </div>
+                       
                     {% else %}
                         <!-- Affichage des informations à partir de l'objet user -->
                         <div class="details-group">
@@ -108,6 +124,10 @@
                         <div class="details-group">
                             <label>Prénom :</label>
                             <span>{{ user.prenom }}</span>
+                        </div>
+                         <div class="details-group">
+                            <label>Date de Naissance :</label>
+                            <span>{{ user.dateDeNaissance ? user.dateDeNaissance|date('d/m/Y') : '' }}</span>
                         </div>
                         <div class="details-group">
                             <label>Email :</label>
@@ -121,10 +141,7 @@
                             <label>Statut :</label>
                             <span>{{ user.statutPersonne }}</span>
                         </div>
-                        <div class="details-group">
-                            <label>Date de Naissance :</label>
-                            <span>{{ user.dateDeNaissance ? user.dateDeNaissance|date('d/m/Y') : '' }}</span>
-                        </div>
+                       
                         <div class="details-group" {% if user.statutPersonne == 'Titulaire' %} style="display:none" {% endif %}>
                             <label>Date de Début de Contrat :</label>
                             <span>{{ user.dateDebut ? user.dateDebut|date('d/m/Y') : '' }}</span>
@@ -145,6 +162,24 @@
                         <label>Service :</label>
                         <span>{{ demande.service }}</span>
                     </div>
+                     <div class="details-group">
+                        <label> Avez vous besoin d'un numéro de Téléphone Bureau ? :</label>
+                         <span>
+        {% if 'Num Tel' in ressources.contenu %}
+            Oui
+        {% else %}
+            Non
+        {% endif %}
+
+    </span>
+                    </div>
+                     <div class="details-group" >
+                            <label> Commentaire du valideur:</label>
+                            <span>{% if demande.commentaire %}
+                            {{ demande.commentaire }} {% else %}
+                            Pas de commentaire {% endif %}
+                            </span>
+                        </div>
                 </div>
             </div>
         </div>

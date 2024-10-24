@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Classe\MonApplication;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security; 
 use App\Security\UserInformation;
@@ -11,19 +12,26 @@ use App\Security\UserInformation;
 class ProfilController extends AbstractController
 {
     private Security $security; 
+    private $requestStack;
 
  
-    public function __construct(Security $security)
+    public function __construct(Security $security, RequestStack $requestStack)
     {
         $this->security = $security;
+        $this->requestStack = $requestStack;
+       
     }
 
     // Méthode  pour récupérer les informations de l'utilisateur
     private function getUserInfo(): array
     {
+        $session = $this->requestStack->getSession();
         $user = $this->security->getUser();
         $userInformation = new UserInformation(); 
         $infos_user = $userInformation->getUserInformation($user);
+        $userUrlPortail = $session->get('user_urlportail');
+       
+
 
         return [
             'nom' => $infos_user['sn'],
@@ -32,10 +40,11 @@ class ProfilController extends AbstractController
             'dateNaissance' => $infos_user['datenaissance'],
             'uid' => $infos_user['uid'],
             'codecivilite'=> $infos_user['codecivilite'],
+            
         ];
     }
 
-    #[Route(path: '/profil', name: 'profil')]
+    #[Route(path: 'formulaireldap/profil', name: 'profil')]
     public function profil(MonApplication $monApplication)
     {
         
@@ -45,10 +54,12 @@ class ProfilController extends AbstractController
             'monApplication' => $monApplication,
             'page' => 'profil',
             'user' => $userInfo, 
+            
+
         ]);
     }
 
-    #[Route("/profil/preferences", name: "preferences")]
+    #[Route("formulaireldap/profil/preferences", name: "preferences")]
     public function preferences(MonApplication $monApplication)
     {
       
@@ -61,7 +72,7 @@ class ProfilController extends AbstractController
         ]);
     }
 
-    #[Route("/profil/roles", name: "roles")]
+    #[Route("formulaireldap/profil/roles", name: "roles")]
     public function roles(MonApplication $monApplication)
     {
         

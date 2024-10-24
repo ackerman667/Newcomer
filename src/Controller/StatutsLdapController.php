@@ -128,20 +128,13 @@ class StatutsLdapController extends AbstractController
     private function getUserDataFromDemande(Demandes $demande): array
     {
         if ($demande->isAutrePersonne()) {
-            $infos_personne = $demande->getInfosPersonne();
-
-        
-            if (!is_array($infos_personne)) {
-                $infos_personne = json_decode($infos_personne, true) ?? [];
-            }
+            $userautre = $demande->getAutreUtilisateur();
+         
 
             return [
-                'nom' => $infos_personne['nom'] ?? '',
-                'prenom' => $infos_personne['prenom'] ?? '',
-                'email' => $infos_personne['email'] ?? '',
-                'date_de_naissance' => $infos_personne['date_de_naissance'] ?? '',
-                'fonction' => $infos_personne['fonction'] ?? '',
-                'statut' => $infos_personne['statut'] ?? ''
+                'nom' => $userautre ? $userautre->getNom() : '',
+                'prenom' => $userautre ? $userautre->getPrenom() : '',
+                'email' => $userautre? $userautre>getEmail() : '',
             ];
         } else {
             // Utiliser les informations de l'utilisateur lié à la demande
@@ -300,19 +293,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
         // Faire la distinction si la demande est pour une autre personne ou non
         if ($demande->isAutrePersonne()) {
             
-            $infos_personne = $demande->getInfosPersonne();
-            if (!is_array($infos_personne)) {
-                $infos_personne = json_decode($infos_personne, true) ?? [];
-            }
-    
-            // Formatage de la date de naissance
-            if (isset($infos_personne['date_de_naissance']) && is_array($infos_personne['date_de_naissance'])) {
-                $dateString = $infos_personne['date_de_naissance']['date'];
-                $dateNaissance = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s.u', $dateString);
-                $infos_personne['date_de_naissance'] = $dateNaissance;
-            }
-    
-            $user = $infos_personne; 
+            $user = $demande->getAutreUtilisateur();
         } else {
             // Si la demande n'est pas pour une autre personne, utiliser l'utilisateur lié à la demande
             $user = $demande->getIDutilisateur();
@@ -345,22 +326,17 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
        
         if ($demande->isAutrePersonne()) {
            
-            $infosPersonne = $demande->getInfosPersonne();
-    
-            if (is_string($infosPersonne)) {
-                $userInfos = json_decode($infosPersonne, true);
-            } else {
-               
-                $userInfos = $infosPersonne;
-            }
-    
-            // Convertir la date de naissance si elle est présente et au bon format
-            if (!empty($userInfos['date_de_naissance']) && is_array($userInfos['date_de_naissance'])) {
-                $userInfos['date_de_naissance'] = \DateTime::createFromFormat('Y-m-d H:i:s.u', $userInfos['date_de_naissance']['date']);
-            } elseif (!empty($userInfos['date_de_naissance']) && is_string($userInfos['date_de_naissance'])) {
-               
-                $userInfos['date_de_naissance'] = \DateTime::createFromFormat('Y-m-d', $userInfos['date_de_naissance']);
-            }
+            $user = $demande->getAutreUtilisateur(); 
+            $userInfos = [
+            'nom' => $user->getNom(),
+            'prenom' => $user->getPrenom(),
+            'email' => $user->getEmail(),
+            'date_de_naissance' => $user->getDateDeNaissance(),
+            'fonction' => $user->getFonction(),
+            'statut' => $user->getStatutPersonne(),
+            'date_debut' => $user->getDateDebut(),
+            'date_fin' => $user->getDateFin(),
+        ];
         } else {
             
             $user = $demande->getIDutilisateur();
@@ -378,7 +354,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
         $valideur = $demande->getUidValideur();
     
 
-        $imagePath = 'C:\Users\nbarbeu\newcomer\public\interfaceappli\css\images\logoaca\academie.png'; 
+      $imagePath = $this->getParameter('kernel.project_dir') . '/public/interfaceappli/css/images/10_logoAC_GUADELOUPE_web.png';
         $imageData = base64_encode(file_get_contents($imagePath));
         $imageSrc = 'data:image/png;base64,' . $imageData;
     

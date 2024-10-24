@@ -26,14 +26,19 @@ class LdapController extends AbstractController
         $this->requestStack = $requestStack;
     }
 
-    #[Route('/formulaireldap/statuts/1', name: 'ldap')]
+    #[Route('/formulaireldap/sessionstart', name: 'ldap')]
     public function Ldap(MonApplication $monApplication, UserRepository $userRepository, EntityManagerInterface $entityManager): Response
     {
 
         $user = $this->security->getUser();
         $session = $this->requestStack->getSession();
         $session->set('ldap_authenticated', true);
+        $session->set('user_urlportail', $user->getUrlPortail()); 
+        $session->set('user_urllogout', $user->getUrllogout()); 
+        $session->set('user_urlproxy', $user->getUrlproxy()); 
         return $this->redirectToRoute('liste_demandes');
+       
+
 
     }
 

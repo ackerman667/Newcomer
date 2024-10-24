@@ -11,16 +11,16 @@
     .photo {
         position: relative;
         margin-bottom: 20px;
-        width: 200px; /* Taille de l'image */
-        height: 200px; /* Taille de l'image */
+        width: 200px; 
+        height: 200px; 
         border-radius: 50%;
-        overflow: hidden; /* Empêche tout débordement */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optionnel: ajout d'un léger effet d'ombre */
+        overflow: hidden; 
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
     }
     .photo img {
         width: 100%;
         height: 100%;
-        object-fit: cover; /* Pour s'assurer que l'image est bien centrée et ne déborde pas */
+        object-fit: cover; 
     }
     .user-info {
         text-align: center;
@@ -69,15 +69,17 @@
     </figure>
 
     <div class="user-info">
-        <h2>M. {{ user.nom }} {{ user.prenom }}</h2>
+        <h2> {{user.codecivilite }} {{ user.nom }} {{ user.prenom }}</h2>
           {% if user.codecivilite== "M." %}
                  <p>né le : <span class="date-naissance">{{ user.dateNaissance }}</span></p>
             {% else %}
               <p>née le : <span class="date-naissance">{{ user.dateNaissance }}</span></p>
             {% endif %}
+       
 
        
         <p><strong>Courriel:</strong> <span class="email">{{ user.email }}</span></p>
+        
     </div>
 </main>
 {% else %}

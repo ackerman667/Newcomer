@@ -78,79 +78,60 @@ class StatutsExterneController extends AbstractController
 
         ]);
     }
-    // #[Route('/demande/consult/{id}', name: 'demande_consult')]
-    // public function consult(MonApplication $monApplication, int $id, EntityManagerInterface $entityManager): Response
-    // {
-    //     $demande = $entityManager->getRepository(Demandes::class)->find($id);
-    //     $valideur = $demande->getUidValideur();
-
-
-        
-
-
-    //     // if (!$demande || $demande->getTokenExpiration() < new \DateTime()) {
-    //     //     throw $this->createNotFoundException('Le lien a expiré ou est invalide.');
-    //     // }
-
-    //     $user = $demande->getIDutilisateur();
-    //     $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
-
-    //     return $this->render('consult/visualiser.html.twig', [
-    //         'demande' => $demande,
-    //         'user' => $user,
-    //         'monApplication' => $monApplication,
-    //         'ressources' => $ressources,
-    //         'valideur' => $valideur
-    //     ]);
-    // }
+  
 
     #[Route('/demande/pdf/{token}', name: 'demande_pdf')]
-public function generatePdf(Demandes $demande, MonApplication $monApplication,/* $token,*/ EntityManagerInterface $entityManager): Response
-{
+    public function generatePdf(/*Demandes $demande , */MonApplication $monApplication, $token, EntityManagerInterface $entityManager): Response
+    {
+        
+        // $token = $demande->getToken();
+        $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
     
-    $token = $demande->getToken();
-
-
-    $user = $demande->getIDutilisateur();
-    $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
-
-    $valideur = $demande->getUidValideur();
-
-    // Encoder l'image en base64
-    $imagePath = 'C:\Users\nbarbeu\newcomer\public\interfaceappli\css\images\logoaca\academie.png';
-    $imageData = base64_encode(file_get_contents($imagePath));
-    $imageSrc = 'data:image/png;base64,' . $imageData;
-
-    // Configurer Dompdf
-    $options = new Options();
-    $options->set('isRemoteEnabled', true);
-    $options->set('defaultFont', 'Arial');
-    $dompdf = new Dompdf($options);
-
+        $user = $demande->getIDutilisateur();
+        $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
     
-    $html = $this->renderView('visualiser-demandes/index.html.twig', [
-        'demande' => $demande,
-        'user' => $user,
-        'ressources' => $ressources,
-        'monApplication' => $monApplication,
-        'imageSrc' => $imageSrc,
-        'valideur' => $valideur, 
-    ]);
-
-   
-    $dompdf->loadHtml($html);
-
-    $dompdf->setPaper('A4', 'portrait');
-
-    // Rendre le PDF
-    $dompdf->render();
-
-    // Envoyer le PDF au navigateur
-    return new Response($dompdf->output(), 200, [
-        'Content-Type' => 'application/pdf',
-        'Content-Disposition' => 'inline; filename="demande.pdf"',
-    ]);
-}
+        $valideur = $demande->getUidValideur();
+    
+        // Encoder l'image en base64
+        $imagePath = $this->getParameter('kernel.project_dir') . '/public/interfaceappli/css/images/10_logoAC_GUADELOUPE_web.png';
+        
+        // $imagePath = 'C:\Users\nbarbeu\clonenewcomer\newcomer\public\interfaceappli\css\images\10_logoAC_GUADELOUPE_web.png';
+        $imageData = base64_encode(file_get_contents($imagePath));
+        $imageSrc = 'data:image/png;base64,' . $imageData;
+    
+        // Configurer Dompdf
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'Arial');
+        $dompdf = new Dompdf($options);
+    
+        
+        $html = $this->renderView('visualiser-demandes/pdf_externe.html.twig', [
+            'demande' => $demande,
+            'user' => $user,
+            'ressources' => $ressources,
+            'monApplication' => $monApplication,
+            'imageSrc' => $imageSrc,
+            'valideur' => $valideur, 
+    
+        ]);
+    
+       
+        $dompdf->loadHtml($html);
+    
+        $dompdf->setPaper('A4', 'portrait');
+    
+        // Rendre le PDF
+        $dompdf->render();
+    
+        // Envoyer le PDF au navigateur
+        return new Response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="demande.pdf"',
+        ]);
+    }
+    
+    
 
 
     #[Route('/formulaireexterne/nouvelle_demande/{token}', name: 'nouvelle_demande')]
@@ -259,22 +240,15 @@ public function generatePdf(Demandes $demande, MonApplication $monApplication,/*
                 $entityManager->persist($historique);
         $entityManager->flush();
 
-        $pdfResponse = $this->generatePdf($demande, $monApplication, $entityManager);
-
-
-       
-        $pdfOutput = $pdfResponse->getContent();
-    
         
         $email = (new Email())
             ->from('noreply@ac-guadeloupe.fr')
             ->to($user->getEmail())
             ->subject('Vous avez envoyé la demande.')
             ->text('Vous avez envoyé la demande.')
-            ->html('<p>Bonjour, vous trouverez ci-joint votre demande en PDF.</p>');
+            ->html('<p>Bonjour, votre demande a bien été envoyée à votre chef de service.</p>');
     
-        // Ajouter le PDF en pièce jointe
-        $email->attach($pdfOutput, 'demande.pdf', 'application/pdf');
+     
     
             $mailer->send($email);
     

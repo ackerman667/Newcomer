@@ -133,6 +133,10 @@
                             <span>{{ user.prenom }}</span>
                         </div>
                         <div class="details-group">
+                            <label>Date de Naissance :</label>
+                            <span>{{ user.date_de_naissance ? user.date_de_naissance|date('d/m/Y') : '' }}</span>
+                        </div>
+                        <div class="details-group">
                             <label>Email :</label>
                             <span>{{ user.email }}</span>
                         </div>
@@ -144,10 +148,15 @@
                             <label>Statut :</label>
                             <span>{{ user.statut }}</span>
                         </div>
-                        <div class="details-group">
-                            <label>Date de Naissance :</label>
-                            <span>{{ user.date_de_naissance ? user.date_de_naissance|date('d/m/Y') : '' }}</span>
+                         <div class="details-group" {% if user.statut == 'Titulaire' %} style="display:none" {% endif %}>
+                            <label>Date de Début de Contrat :</label>
+                            <span>{{ user.date_debut ? user.date_debut|date('d/m/Y') : '' }}</span>
                         </div>
+                        <div class="details-group" {% if user.statut == 'Titulaire' %} style="display:none" {% endif %}>
+                            <label>Date de Fin de Contrat :</label>
+                            <span>{{ user.date_fin ? user.date_fin|date('d/m/Y') : '' }}</span>
+                        </div>
+                        
                     {% else %}
                         <!-- Affichage des informations pour soi-même -->
                         <div class="details-group">
@@ -159,6 +168,10 @@
                             <span>{{ user.prenom }}</span>
                         </div>
                         <div class="details-group">
+                            <label>Date de Naissance :</label>
+                            <span>{{ user.date_de_naissance ? user.date_de_naissance|date('d/m/Y') : '' }}</span>
+                        </div>
+                        <div class="details-group">
                             <label>Email :</label>
                             <span>{{ user.email }}</span>
                         </div>
@@ -170,10 +183,8 @@
                             <label>Statut :</label>
                             <span>{{ user.statut }}</span>
                         </div>
-                        <div class="details-group">
-                            <label>Date de Naissance :</label>
-                            <span>{{ user.date_de_naissance ? user.date_de_naissance|date('d/m/Y') : '' }}</span>
-                        </div>
+                        
+                       
                         <div class="details-group" {% if user.statut == 'Titulaire' %} style="display:none" {% endif %}>
                             <label>Date de Début de Contrat :</label>
                             <span>{{ user.date_debut ? user.date_debut|date('d/m/Y') : '' }}</span>
@@ -195,6 +206,24 @@
                         <label>Service :</label>
                         <span>{{ demande.service }}</span>
                     </div>
+                     <div class="details-group">
+                        <label> Avez vous besoin d'un numéro de Téléphone Bureau ? :</label>
+                         <span>
+        {% if 'Num Tel' in ressources.contenu %}
+            Oui
+        {% else %}
+            Non
+        {% endif %}
+
+    </span>
+                    </div>
+                     <div class="details-group" >
+                            <label> Commentaire du valideur:</label>
+                            <span>{% if demande.commentaire %}
+                            {{ demande.commentaire }} {% else %}
+                            Pas de commentaire {% endif %}
+                            </span>
+                        </div>
                     
                 </div>
                 
