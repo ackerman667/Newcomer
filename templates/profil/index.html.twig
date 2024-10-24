@@ -61,29 +61,31 @@
         {{ message }}
     </div>
 {% endfor %}
-
-{% if app.session.get('ldap_authenticated') %}
+{# 
+{% if app.session.get('ldap_authenticated') %} #}
 <main class="main-container">
     <figure class="photo">
         <img src="{{ asset('css/images/avatar/avatar.png','interfaceappli') }}" alt="Avatar de l'utilisateur">
     </figure>
 
     <div class="user-info">
-        <h2> {{user.codecivilite }} {{ user.nom }} {{ user.prenom }}</h2>
-          {% if user.codecivilite== "M." %}
-                 <p>né le : <span class="date-naissance">{{ user.dateNaissance }}</span></p>
+        {# <h2> {{ app.user.codecivilite }} {{ app.user.cn }} {{ app.user.prenom }}</h2> #}
+         <h2 class="fn">{{app.user.codecivilite}} {{app.user.cn}}</h2>
+            {% if app.user.codecivilite== "M." %}
+                <h5> né le : {{app.user.datenaissance}}</h5>
             {% else %}
-              <p>née le : <span class="date-naissance">{{ user.dateNaissance }}</span></p>
+                <h5> née le : {{app.user.datenaissance}}</h5>
             {% endif %}
+            <span class="email"> <span class="type"><b>Courriel</b></span>: <span class="value">{{app.user.mail}}</span> </span></br>
        
 
        
-        <p><strong>Courriel:</strong> <span class="email">{{ user.email }}</span></p>
+        <p><strong>Courriel:</strong> <span class="email">{{ app.user.mail }}</span></p>
         
     </div>
 </main>
-{% else %}
-<main class="main-container">
+{# {% else %} #}
+{# <main class="main-container">
     <figure class="photo">
         <img src="{{ asset('css/images/avatar/avatar.png','interfaceappli') }}" alt="Avatar de l'utilisateur">
     </figure>
@@ -91,7 +93,7 @@
     <div class="user-info">
         <h2>Utilisateur anonyme</h2>
     </div>
-</main>
-{% endif %}
+</main> #}
+{# {% endif %} #}
 
 {% endblock %}

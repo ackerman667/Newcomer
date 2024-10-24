@@ -16,7 +16,7 @@ security:
     firewalls:
         ldap:
             
-            # lazy: true
+            lazy: true
             pattern: /formulaireldap/
             remote_user:
                 user: HTTP_CT_REMOTE_USER
@@ -44,7 +44,6 @@ security:
         - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profil, roles: ROLE_USER }
         - { path: ^/login, roles: PUBLIC_ACCESS }
-        - { path: ^/aide, roles: PUBLIC_ACCESS}
         - { path: ^/formulaire, roles: PUBLIC_ACCESS}
         - { path: ^/formulaireexterne, roles: PUBLIC_ACCESS}
         # - { path: ^/aide, roles: IS_AUTHENTICATED_FULLY}

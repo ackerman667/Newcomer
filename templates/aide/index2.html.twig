@@ -1,0 +1,88 @@
+{% extends 'layout_ag.html.twig' %}
+{% block title %}<title>Aide - {{monApplication.Appli}}</title>{% endblock %}
+{% block head_gene %}
+    <script type="text/javascript" src="{{ asset('js/documentation.js','interfaceappli') }}" defer></script>
+{% endblock %}
+{% block body %}<body class="page not-home">{% endblock %}
+{% block header %}
+    <div class="title_app" id="title">
+        <h1 class="title">{{monApplication.Appli}}</h1>
+        <h2 class="desc">{{monApplication.LibAppli}}</h2>
+    </div>
+    <div class="title_image">
+        <span>Rectorat</span>
+    </div>
+    <h3 class="page-title">Aide</h3>  
+{% endblock %}
+{% block main %}
+<main class="row justify-content-md-left">
+<div class="documentation col-md-12 col-sm-12 col-lg-9">
+    <div class="page-sous-menu"></div>
+
+    <h1>A - Pour commencer</h1>
+    <p>L'application <b>{{monApplication.Appli}}</b> permet de gérer les demandes liées aux postes de travail et les processus de validation associés. Les utilisateurs peuvent soumettre et suivre leurs demandes.</p>
+
+    <h1>B - Les menus de l'application</h1>
+    
+    <h2>B1 - Vue personnelle</h2>
+    <p>Dans la vue personnelle, les utilisateurs peuvent :</p>
+    <ul>
+        <li>Voir les demandes qu'ils ont soumises.</li>
+        <li>Modifier , supprimer , visualiser la demande ou meme cree une nouvelle demande.</li>
+        <li>Consulter les statuts de leurs demandes (En attente, Validée(Suivi dans LEKA), Refusée, etc.).</li>
+        
+    </ul>
+
+    <h2>B2 - Vue Valideur</h2>
+    <p>Cette vue est réservée aux utilisateurs ayant le rôle de valideur. Elle permet de :</p>
+    <ul>
+        <li>Voir les demandes à valider.</li>
+        <li>Accepter ou refuser les demandes.</li>
+        <li>Ajouter des commentaires avant de valider ou de refuser une demande.</li>
+    </ul>
+
+    {# {% if is_granted('ROLE_ADMIN') %}
+    <h2>B3 - Vue Administrateur</h2>
+    
+    <h3>B3_1 - Gestion des utilisateurs</h3>
+    <p>Les administrateurs ont la possibilité de gérer les utilisateurs de l'application :</p>
+    <ul>
+        <li>Ajouter de nouveaux utilisateurs.</li>
+        <li>Modifier les informations des utilisateurs existants.</li>
+        <li>Attribuer des rôles (Valideur, Administrateur, etc.).</li>
+    </ul>
+
+    <h3>B3_2 - Gestion des demandes</h3>
+    <p>Les administrateurs peuvent également intervenir sur les demandes :</p>
+    <ul>
+        <li>Consulter toutes les demandes.</li>
+        <li>Attribuer ou réassigner des demandes à d'autres valideurs.</li>
+        <li>Forcer la validation ou le refus d'une demande en cas de blocage.</li>
+    </ul>
+    
+    <h3>B3_3 - Paramètres généraux de l'application</h3>
+    <p>Les administrateurs ont accès à une page de configuration leur permettant de :</p>
+    <ul>
+        <li>Modifier les paramètres de l'application (ex : délais de validation, rôles).</li>
+        <li>Gérer les périodes d'activité pour les demandes.</li>
+    </ul>
+    {% endif %} #}
+    
+    <h1>C - Comment suivre une demande ?</h1>
+    <p>Une fois une demande soumise, l'utilisateur peut suivre son évolution depuis le tableau de bord :</p>
+    <ul>
+        <li>Statut de la demande : Chaque demande peut être "En attente", "Validée", ou "Refusée".</li>
+        {# <li>Commentaires : L'utilisateur peut ajouter ou consulter les commentaires associés à sa demande.</li> #}
+        <li>Notifications : L'application envoie des notifications par email lorsque le statut d'une demande change.</li>
+    </ul>
+
+    {# <h1>D - Autres fonctionnalités</h1>
+    <p>L'application propose également :</p>
+    <ul>
+        <li>Un historique des demandes pour consulter les anciennes soumissions.</li>
+        <li>Un moteur de recherche pour retrouver des demandes spécifiques par mots-clés ou par statut.</li>
+        <li>Une fonction de téléchargement des demandes validées au format PDF pour archivage.</li>
+    </ul> #}
+</div>
+</main>
+{% endblock %}
