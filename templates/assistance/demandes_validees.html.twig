@@ -139,6 +139,7 @@
                         <option value="all">Tout</option>
                         <option value="no-uid">Pas d'UID</option>
                         <option value="has-uid">Modifier UID</option>
+                        <option value="uid-non-modifiable">UID non modifiable</option>
                     </select>
                 </div>
 
@@ -164,7 +165,7 @@
                             {% for demandeInfo in demandesWithProvenance %}
                                 {% set demande = demandeInfo.demande %}
                                 {% set provenance = demandeInfo.provenance %}
-                                <tr data-status="{{ demande.statuts }}" data-uid="{{ demande.IDutilisateur.uid }}">
+                                <tr data-status="{{ demande.statuts }}" data-uid="{{ demande.IDutilisateur.uid }}"data-provenance="{{ demande.IDutilisateur.provenance }}">
                                     <td>{{ demande.id }}</td>
                                     {% if demande.isAutrePersonne %}
                                         <td>{{ demande.autreUtilisateur.nom }} {{ demande.autreUtilisateur.prenom }}</td>
@@ -186,7 +187,7 @@
                                             {{ demande.IDutilisateur.uid }}
                                         {% endif %}
                                     </td>
-                 <td>
+               <td>
     <form action="{{ path('ajouter_uid', {id: demande.IDutilisateur.id}) }}" method="post" class="input-group" style="flex-direction: column; align-items: flex-start;">
         {% if demande.IDutilisateur.provenance == 'ldap' %}
             <div style="display: flex; width: 100%;">
@@ -201,7 +202,16 @@
             </div>
         {% endif %}
     </form>
+
+   {% if demande.IDutilisateur.uid and demande.IDutilisateur.provenance != 'ldap' %}
+    <form action="{{ path('supprimer_uid', {id: demande.IDutilisateur.id}) }}" method="post" style="display: inline;">
+        <button type="submit" class="btn-link text-muted" style="border: none; background: none; cursor: pointer; font-size: 0.9em; padding: 0;">
+            Supprimer UID
+        </button>
+    </form>
+{% endif %}
 </td>
+
 <td>
     <a href="{{ path('historique', {id: demande.id}) }}" class="btn btn-info btn-sm">Voir l'historique</a>
 </td>
@@ -225,16 +235,19 @@
                 const filterValue = filterSelect.value;
                 rows.forEach(row => {
                     const uid = row.getAttribute('data-uid');
+                     const provenance = row.getAttribute('data-provenance');
 
                     if (filterValue === 'all') {
-                        row.style.display = '';
-                    } else if (filterValue === 'no-uid' && (!uid || uid === 'null')) {
-                        row.style.display = '';
-                    } else if (filterValue === 'has-uid' && uid) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
+                row.style.display = '';
+            } else if (filterValue === 'no-uid' && (!uid || uid === 'null')) {
+                row.style.display = '';
+            } else if (filterValue === 'has-uid' && uid && provenance !== 'ldap') {
+                row.style.display = ''; 
+            } else if (filterValue === 'uid-non-modifiable' && provenance === 'ldap') {
+                row.style.display = ''; 
+            } else {
+                row.style.display = 'none';
+            }
                 });
             });
 

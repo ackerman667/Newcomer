@@ -80,6 +80,27 @@ foreach ($demandesWithUsers as $demande) {
     }
 
 
+    #[Route('/supprimer_uid/{id}', name: 'supprimer_uid', methods: ['POST'])]
+public function supprimerUid(Request $request, EntityManagerInterface $entityManager, UserRepository $userRepository, $id): Response
+{
+    $user = $userRepository->find($id);
+
+    if ($user) {
+        // Supprimer l'UID en le mettant à null
+        $user->setUid(null);
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'UID supprimé avec succès.');
+    } else {
+        $this->addFlash('error', 'Utilisateur non trouvé.');
+    }
+
+    return $this->redirectToRoute('demandes_validees');
+}
+
+
+
 
 
 
