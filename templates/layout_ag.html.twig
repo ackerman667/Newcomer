@@ -236,10 +236,7 @@
             
             
           {# {% if app.session.get('ldap_authenticated') %} #}
-          {% if app.user %}
-            
-       
-            {% endif %}
+         
           </ul>
         </div>
       </nav>
@@ -248,7 +245,11 @@
           <!-- fil d'arianne -->
           <nav aria-label="breadcrumb">
           <!-- Encart Utilisateur -->
+           {% if app.user %}
+           <span class="current-user"><a href="{{ path('profil') }}"><i class="fas fa-user"></i> <span class="ident">Bienvenue {{app.user.codecivilite}} {{app.user.cn}}</span></a></span>
+             {% else %}
           <span class="current-user"><a href="{{ path('profil') }}"><i class="fas fa-user"></i> <span class="ident">Bienvenue !</span></a></span>
+             {% endif %}
           <ol class="breadcrumb">
             <li class="breadcrumb-item"><i class="fas fa-th"></i><a href="#">{{monApplication.TypeAppli}}</a></li>
             <li class="breadcrumb-item"><i class="fas fa-th"></i><a href="#">{{monApplication.DomaineAppli}}</a></li>
