@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Demandes;
 use App\Entity\User;
+use App\Entity\HistoriqueDemande;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class DetanController extends AbstractController
@@ -53,6 +54,39 @@ foreach ($demandesWithUsers as $demande) {
             'demandesWithProvenance' => $demandesWithProvenance,
         ]);
     }
+
+
+
+
+
+    #[Route('formulaireldap/voirhistorique/{id}', name: 'historique', methods: ['GET','POST'])]
+    public function voirHistorique(Request $request,  MonApplication $monApplication ,EntityManagerInterface $entityManager, UserRepository $userRepository, $id): Response
+    
+    {
+        $demande = $entityManager->getRepository(Demandes::class)->find($id);
+        // $historiques = $demande->getHistoriques();
+
+    $historique = $entityManager->getRepository(HistoriqueDemande::class)->findBy(['demande' => $id]);
+
+       
+
+        // return $this->redirectToRoute('demandes_validees');
+
+        return $this->render('assistance/historique.html.twig', [
+            'demande' => $demande,
+            'historique' => $historique,
+            'monApplication' => $monApplication,
+        ]);
+    }
+
+
+
+
+
+
+
+
+
 
     #[Route('/ajouter_uid/{id}', name: 'ajouter_uid', methods: ['POST'])]
     public function ajouterUid(Request $request, EntityManagerInterface $entityManager, UserRepository $userRepository, $id): Response

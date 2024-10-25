@@ -152,6 +152,7 @@
                             <th>Commentaire</th>
                             <th>UID</th>
                             <th>Entrer UID</th>
+                            <th>Historique</th> 
                         </tr>
                     </thead>
                     <tbody>
@@ -201,6 +202,9 @@
         {% endif %}
     </form>
 </td>
+<td>
+    <a href="{{ path('historique', {id: demande.id}) }}" class="btn btn-info btn-sm">Voir l'historique</a>
+</td>
 
                                 </tr>
                             {% endfor %}
@@ -210,6 +214,7 @@
             </div>
         </div>
     </div>
+    
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {

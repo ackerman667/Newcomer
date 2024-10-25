@@ -1,0 +1,147 @@
+{% extends 'layout_ag.html.twig' %}
+
+{% block title %}
+    <title>Historique de la Demande Numéro :  {{ demande.id }}</title>
+{% endblock %}
+
+{% block head_gene %}
+    <style>
+        .page-title {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 24px;
+        }
+        .table-container {
+            margin: 20px auto;
+            width: 90%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: center;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f8f8;
+            font-weight: bold;
+        }
+        td {
+            padding: 10px;
+        }
+        .status-creation {
+            background-color: #77b5fe ; 
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        display: inline-block;
+        min-width: 100px;
+        margin: 5px 0;
+        }
+        .status-leka {
+             background-color: #28A745;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        display: inline-block;
+        min-width: 100px;
+        margin: 5px 0;
+        }
+        .status-modification {
+            background-color: #FFC107;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+         .status-validee {
+        background-color: #007BFF;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+    }
+    .status-rejetee {
+        background-color: #FF0000;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            min-width: 100px;
+            margin: 5px 0;
+    }
+    .status-en-attente {
+     background-color: #D3D3D3;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        display: inline-block;
+        min-width: 100px;
+        margin: 5px 0;
+    }
+     .status-envoyee {
+           background-color: #28A745;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        display: inline-block;
+        min-width: 100px;
+        margin: 5px 0;
+    }
+    
+    .back-button {
+    text-align: right; 
+    margin: 20px 0; 
+}
+
+
+
+    
+    </style>
+{% endblock %}
+
+{% block main %}
+    <div class="container table-container">
+        <h3 class="page-title">Historique de la demande #{{ demande.id }}</h3>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Commentaire</th>
+                    <th>Statut</th>
+                    <th>Date</th>
+                    <th>Opération</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in historique %}
+                    <tr>
+                        <td>{{ entry.id }}</td>
+                        <td>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</td>
+                        <td>
+                            {% set statusClasses = {
+                                'Création': 'status-creation',
+                                'Suivi dans LEKA': 'status-leka',
+                                'Modification': 'status-modification',
+                                'Envoyée': 'status-envoyee',
+                                'Validée': 'status-validee',
+                                'Refusée': 'status-rejetee',
+                                'En attente': 'status-en-attente'
+                            } %}
+
+                            <span class="{{ statusClasses[entry.statut] | default('status-default') }}">
+                                {{ entry.statut }}
+                            </span>
+                        </td>
+                        <td>{{ entry.date ? entry.date|date('d/m/Y H:i:s') : '' }}</td>
+                        <td>{{ entry.statutoperation ? entry.statutoperation : 'Aucune opération' }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="back-button">
+            <a href="{{ path('demandes_validees') }}" class="btn btn-primary">Retour aux demandes validées</a>
+        </div>
+    </div>
+{% endblock %}
