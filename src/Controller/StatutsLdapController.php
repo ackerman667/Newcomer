@@ -89,7 +89,17 @@ class StatutsLdapController extends AbstractController
         
         // Si l'utilisateur n'est pas trouvé, retourner un tableau vide
         if (!$user_bdd) {
-            return [];
+            $queryBuilder = $entityManager->createQueryBuilder();
+            $queryBuilder
+            ->select('d')
+            ->from(Demandes::class, 'd')
+            ->leftJoin('d.IDutilisateur', 'u') 
+            ->where('u.uid = :uid') 
+            ->andWhere('d.statuts = :statut')         
+            ->setParameter('uid', $uid)
+            ->setParameter('statut', 'Suivi dans LEKA');
+            return $queryBuilder->getQuery()->getResult();
+
         }
     
         // Construire la requête pour récupérer les demandes selon les deux critères
@@ -99,9 +109,10 @@ class StatutsLdapController extends AbstractController
             ->from(Demandes::class, 'd')
             ->leftJoin('d.IDutilisateur', 'u') 
             ->where('d.IDutilisateur = :user') 
-            ->orWhere('u.uid = :uid')          
+            ->orWhere('(u.uid = :uid AND d.statuts = :statut)')          
             ->setParameter('user', $user_bdd)
-            ->setParameter('uid', $uid);
+            ->setParameter('uid', $uid)
+            ->setParameter('statut', 'Suivi dans LEKA');
     
      
         return $queryBuilder->getQuery()->getResult();
@@ -482,6 +493,8 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
             throw $this->createAccessDeniedException('Vous devez être un valideur pour accéder à cette section.');
         }
     }
+
+
 
 
 }

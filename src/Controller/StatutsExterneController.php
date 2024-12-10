@@ -11,10 +11,14 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 use App\Entity\User;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use App\Entity\Ressources;
+use Symfony\Component\HttpFoundation\Cookie; // Ajout du namespace correct
+
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Classe\MonApplication;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Bundle\SecurityBundle\Security;
 use Dompdf\Dompdf;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -24,20 +28,40 @@ class StatutsExterneController extends AbstractController
 {
 
     private $timezone;
+    private $requestStack;
 
-    public function __construct()
+    public function __construct(Security $security, RequestStack $requestStack)
     {
+        $this->security = $security;
+        $this->requestStack = $requestStack;
         
         $this->timezone = new \DateTimeZone('America/Guadeloupe'); 
     }
     #[Route('/statuts/{token}', name: 'demande_externe')]
-    public function index(SessionInterface $session, MonApplication $monApplication, EntityManagerInterface $entityManager, $token): Response
+    public function index( SessionInterface $session, MonApplication $monApplication, EntityManagerInterface $entityManager, $token): Response
     {
-        $session->clear();
+        // $session->clear();
+        $session->remove('form_data');
+        $session->remove('demande_id');
+        $session->remove('nouvelle_demande');
+        $session->remove('dossiers_partages');
+        $session->remove('_csrf/https-demande_etape1_form');
+        $session->remove('_csrf/https-demande_etape2_form');
+        $session->remove('_csrf/https-demande_etape3_form');
+        $session->remove('nom_service_selectionne');
+        $session->remove('nom_valideur');
+
+        $session = $this->requestStack->getSession();
+        $session->set('externe_auth', true);
+        $session->set('externe_token', $token);
+
+       
         $sessionData = $session->all();
 
         
         dump($sessionData);
+        
+
 
 
 
@@ -256,6 +280,20 @@ class StatutsExterneController extends AbstractController
 
         return $this->redirectToRoute('demande_externe', ['token' => $token]);
     }
+
+
+    #[Route('/logout', name: 'app_logout')]
+    public function logout(): Response
+    {
+       
+        $session = $this->requestStack->getSession();
+        $session->remove('externe_auth');
+        $session->clear();
+
+        
+        return $this->redirectToRoute('home');
+    }
+
 
 
 

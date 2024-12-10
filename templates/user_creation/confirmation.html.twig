@@ -1,12 +1,22 @@
 {% extends 'layout_ag.html.twig' %}
 
-{% block title %}<title>Confirmation de création de compte - {{ monApplication.Appli }}</title>{% endblock %}
+{% block title %}
+    <title>Confirmation de création de compte - {{ monApplication.Appli }}</title>
+{% endblock %}
 
 {% block main %}
-<div class="container mt-4">
-    <div class="alert alert-success" role="alert">
-        {{ app.flashes('success')|join('<br>') }}
+<div class="container mt-5">
+    <div class="text-center">
+        <div class="alert alert-success" role="alert">
+            <h4 class="alert-heading">Compte créé avec succès !</h4>
+            <p class="mb-2">Votre compte a bien été créé. Veuillez l'activer en cliquant sur le lien d'activation envoyé à votre adresse e-mail.</p>
+
+            
+        </div>
+    
+        <div class="mt-3">
+            <a href="{{ path('home') }}" class="btn btn-primary">Retour à l'accueil</a>
+        </div>
     </div>
-    <p>Votre compte a bien été créé. Veuillez l'activer par mail en cliquant sur le lien d'activation que nous vous avons envoyé.</p>
 </div>
 {% endblock %}

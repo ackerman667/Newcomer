@@ -75,10 +75,16 @@ class FormulaireLdapController extends AbstractController
         $user = $this->security->getUser();
         $userInformation = new UserInformation();
         $infos_user = $userInformation->getUserInformation($user);
+        $uid = $infos_user['uid'];
         $data = $session->get('form_data', []);
         $dateString = $infos_user['datenaissance'];
           $date = \DateTimeImmutable::createFromFormat('d/m/Y', $dateString);
-
+          $user1 = $entityManager->getRepository(User::class)->findOneBy([
+            'uid' => $uid,
+            'provenance' => 'ldap'
+        ]);
+    
+        if (!$user1) {
 
         $data = array_merge($data, [
             'nom' => $infos_user['sn'],
@@ -87,7 +93,22 @@ class FormulaireLdapController extends AbstractController
              'date_de_naissance' => $date,
 
             
-        ]);
+        ]); } 
+        elseif($user1) {
+            $data = array_merge($data, [
+                'nom' => $infos_user['sn'],
+                'prenom' => $infos_user['givenname'],
+                 'email' => $infos_user['mail'],
+                 'date_de_naissance' => $date,
+                 'fonction' => $user1->getFonction(),
+                 'statut' => $user1->getStatutPersonne(),
+                 'date_debut_contrat' => $user1->getDateDebut(),
+                 'date_fin_contrat' => $user1->getDateFin(),
+                ]);
+                 
+
+
+        }
         
     
 
@@ -229,6 +250,7 @@ class FormulaireLdapController extends AbstractController
                 $historique->setDemande($demande);
                 $historique->setStatut($demande->getStatuts());
                 $historique->setDate(new \DateTime('now', $this->timezone));
+                $historique->setStatut('Création');
                 $historique->setStatutOperation('Création');
                 $user1->setToken($token);
         
@@ -276,6 +298,7 @@ class FormulaireLdapController extends AbstractController
                     $historique->setDemande($demande);
                     $historique->setStatut($demande->getStatuts());
                     $historique->setDate(new \DateTime('now', $this->timezone));
+                    $historique->setStatut('Création');
                     $historique->setStatutOperation('Création');
                     $user1->setToken($token);
         
@@ -298,6 +321,7 @@ class FormulaireLdapController extends AbstractController
                 $historique->setDemande($demande);
                 $historique->setStatut($demande->getStatuts());
                 $historique->setDate(new \DateTime('now', $this->timezone));
+                $historique->setStatut('Création');
                 $historique->setStatutOperation('Création');
                 $user1->setToken($token);
         

@@ -1,43 +1,30 @@
 {% extends 'layout_ag.html.twig' %}
 
-{% block title %}<title>Redirection</title>{% endblock %}
-
-{% block body %}
-<body class="page not-home">
-{% endblock %}
-
-{% block header %}
-    <h1 class="page-title">Vérification de l'email</h1>
+{% block title %}
+    <title>Création de votre compte - Vérification de l'e-mail</title>
 {% endblock %}
 
 {% block main %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            {% for message in app.flashes('creation') %}
-                <div class="alert alert-creation">
-                    {{ message }}
-                </div>
-            {% endfor %}
-            <p>Vous serez redirigé dans quelques secondes...</p>
+<div class="container mt-5">
+    <div class="text-center">
+        <h2 class="page-title">Vérification de l'e-mail</h2>
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">Nous allons commencer la création de votre compte !</h4>
+            <p class="mb-2">
+                Merci de patienter, vous serez redirigé dans quelques secondes...
+            </p>
+          
         </div>
+ 
     </div>
 </div>
+
 <script>
     setTimeout(function() {
         window.location.href = "{{ redirect_url }}";
-    }, 5000); 
+    }, 7000); 
 </script>
 <style>
-    .form-group {
-        margin-bottom: 15px;
-    }
-    .form-group label {
-        font-weight: bold;
-    }
-    .btn-primary {
-        margin-top: 20px;
-    }
     .page-title {
         text-align: center;
         font-style: italic;
@@ -45,12 +32,11 @@
         margin-bottom: 20px;
     }
     .alert {
-        margin-top: 20px;
+        margin: 20px auto;
+        max-width: 600px;
     }
-    .alert-creation {
-        color: #155724;
-        background-color: #d4edda;
-        border-color: #c3e6cb;
+    .img-fluid {
+        margin-top: 20px;
     }
 </style>
 {% endblock %}

@@ -338,7 +338,24 @@ public function etape3(MonApplication $monApplication, Request $request, Session
         
 
         $url = $this->generateUrl('demande_externe', ['token' => $token_stat], UrlGeneratorInterface::ABSOLUTE_URL);
-        $session->clear();
+
+
+
+
+
+
+
+
+        $session->remove('form_data');
+        $session->remove('demande_id');
+        $session->remove('nouvelle_demande');
+        $session->remove('dossiers_partages');
+        $session->remove('_csrf/https-demande_etape1_form');
+        $session->remove('_csrf/https-demande_etape2_form');
+        $session->remove('_csrf/https-demande_etape3_form');
+        $session->remove('nom_service_selectionne');
+        $session->remove('nom_valideur');
+        // $session->clear();
        
 
         $email = (new Email())

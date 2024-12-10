@@ -10,6 +10,9 @@ namespace App\Controller;
 use App\Classe\MonApplication;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class AideController extends AbstractController
 {
@@ -24,8 +27,11 @@ class AideController extends AbstractController
 
 
     #[Route('/aide', name: 'aide_externe')]
-    public function index2(MonApplication $monApplication)
+    public function index2(MonApplication $monApplication, SessionInterface $session)
     {
+
+        
+      
         return $this->render('aide/index2.html.twig', [
             'monApplication' => $monApplication,
         ]);
