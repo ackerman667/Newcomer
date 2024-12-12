@@ -50,10 +50,18 @@ class StatutsExterneController extends AbstractController
         $session->remove('_csrf/https-demande_etape3_form');
         $session->remove('nom_service_selectionne');
         $session->remove('nom_valideur');
+     
+        if (!$session->has('externe_auth')) {
+            $session->set('externe_auth', true);
+        }
 
-        $session = $this->requestStack->getSession();
-        $session->set('externe_auth', true);
-        $session->set('externe_token', $token);
+        if (!$session->has('externe_token')) {
+            $session->set('externe_token', $token);
+        }
+        
+        // $session = $this->requestStack->getSession();
+        // $session->set('externe_auth', true);
+        // $session->set('externe_token', $token);
 
        
         $sessionData = $session->all();

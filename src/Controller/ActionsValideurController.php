@@ -72,31 +72,31 @@ class ActionsValideurController extends AbstractController
     // Récupérez l'email en fonction du type de demande
     $email = $demande->isAutrePersonne() ? $demande->getAutreUtilisateur()->getEmail() : $demande->getIDutilisateur()->getEmail();
     
-        $emailMessage = (new Email())
-            ->from('noreply@ac-guadeloupe.fr')
-            ->to($email)
-            ->subject('Votre demande a été envoyée dans LEKA')
-            ->html('<p>Votre demande a été envoyée dans LEKA.</p>');
+        // $emailMessage = (new Email())
+        //     ->from('noreply@ac-guadeloupe.fr')
+        //     ->to($email)
+        //     ->subject('Votre demande a été envoyée dans LEKA')
+        //     ->html('<p>Votre demande a été envoyée dans LEKA.</p>');
     
-        $mailer->send($emailMessage);
-    
-    
-        $valideurEmail = $this->getValideurMail($demande);
-    
-        $subject = "La demande numéro $id pour le service {$demande->getService()} a été validée";
+        // $mailer->send($emailMessage);
     
     
+        // $valideurEmail = $this->getValideurMail($demande);
+    
+        // $subject = "La demande numéro $id pour le service {$demande->getService()} a été validée";
     
     
     
-        $leka = (new Email())
-            ->from($valideurEmail)
-            ->to('lekadempp@ac-guadeloupe.fr') 
-            ->subject($subject) 
-            ->html('<p>Votre demande a été envoyée dans LEKA.</p>')
-            ->attach($pdfOutput, 'demande.pdf', 'application/pdf');
     
-        $mailer->send($leka);
+    
+        // $leka = (new Email())
+        //     ->from($valideurEmail)
+        //     ->to('lekadempp@ac-guadeloupe.fr') 
+        //     ->subject($subject) 
+        //     ->html('<p>Votre demande a été envoyée dans LEKA.</p>')
+        //     ->attach($pdfOutput, 'demande.pdf', 'application/pdf');
+    
+        // $mailer->send($leka);
 
     
         return $this->redirectToRoute('liste_demandes');
@@ -125,13 +125,13 @@ class ActionsValideurController extends AbstractController
         
     // Récupérez l'email en fonction du type de demande
     $email = $demande->isAutrePersonne() ? $demande->getAutreUtilisateur()->getEmail() : $demande->getIDutilisateur()->getEmail();
-        $emailMessage = (new Email())
-            ->from('noreply@ac-guadeloupe.fr')
-            ->to($email)
-            ->subject('Votre demande a été refusée')
-            ->html('<p>Votre demande a été refusée.</p>');
+        // $emailMessage = (new Email())
+        //     ->from('noreply@ac-guadeloupe.fr')
+        //     ->to($email)
+        //     ->subject('Votre demande a été refusée')
+        //     ->html('<p>Votre demande a été refusée.</p>');
     
-        $mailer->send($emailMessage);
+        // $mailer->send($emailMessage);
     
         return $this->redirectToRoute('liste_demandes');
     }
