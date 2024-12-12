@@ -72,6 +72,7 @@ class StatutsLdapController extends AbstractController
             'demandesAValider' => $demandesAValider,
             'monApplication' => $monApplication,
             'isValideur' => $isValideur,
+            'uiduser' => $uid,
         ]);
     }
 
@@ -123,15 +124,19 @@ class StatutsLdapController extends AbstractController
     private function getDemandesPourValideur(EntityManagerInterface $entityManager, string $uid): array
     {
         $statutExclus = 'Brouillons';
-
+    
         return $entityManager->getRepository(Demandes::class)->createQueryBuilder('d')
+            ->leftJoin('d.IDutilisateur', 'u') // Jointure avec l'utilisateur
             ->where('d.uid_valideur = :uid')
-            ->andWhere('d.statuts <> :statutExclus') 
+            ->andWhere('d.statuts <> :statutExclus')
+            ->andWhere('NOT (u.provenance = :provenance AND u.uid = d.uid_valideur)') // Condition supplémentaire
             ->setParameter('uid', $uid)
             ->setParameter('statutExclus', $statutExclus)
+            ->setParameter('provenance', 'ldap') // Paramètre pour la provenance
             ->getQuery()
             ->getResult();
     }
+    
 
     /**
      * Récupère les informations de l'utilisateur à partir d'une demande.

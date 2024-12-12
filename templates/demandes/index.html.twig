@@ -231,7 +231,7 @@
                                     {% if demande.statuts == 'En attente' %}
                                         <a href="{{ path('modifier_demandesvalideur_etape1', {id: demande.id}) }}"><i class="fas fa-edit"></i></a>
                                         <a href="{{ path('visualiser_demande', {id: demande.id}) }}"><i class="fas fa-search"></i></a>
-                                        <a href="{{ path('valider_demande', {id: demande.id}) }}"><i class="fas fa-thumbs-up"></i></a>
+                                        <a href="#" onclick="return validateRequest('{{ demande.id }}');"><i class="fas fa-thumbs-up"></i></a>
                                         <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}"><i class="fas fa-file-pdf"></i></a>
                                         <a href="{{ path('refuser_demande', {id: demande.id}) }}" onclick="return checkComment('{{ demande.id }}')"><i class="fas fa-thumbs-down"></i></a>
                                     {% else %}
@@ -267,18 +267,41 @@
                                             <a href="{{ path('modifier_demandespourautre', {id: demande.id}) }}"><i class="fas fa-edit icon-edit"></i></a>
                                             <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}"><i class="fas fa-search icon-search"></i></a>
                                             <a href="{{ path('supprimer_demandespourautre', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');"><i class="fas fa-trash-alt icon-trash"></i></a>
-                                            <a href="{{ path('valider_demandespourautre', {id: demande.id}) }}"><i class="fas fa-thumbs-up icon-thumbs-up"></i></a>
+
+                                                     {% if uiduser == demande.uidValideur %}
+                                                        <a href="{{ path('valider_demande', {id: demande.id}) }}" class="text-success"><i class="fas fa-thumbs-up"></i> </a>
+                                                    {% else %}
+                                                        <a href="{{ path('valider_demandespourautre', {id: demande.id}) }}"><i class="fas fa-thumbs-up icon-thumbs-up"></i></a>
+                                                    {% endif %}
+
+
+                                            {# <a href="{{ path('valider_demandespourautre', {id: demande.id}) }}"><i class="fas fa-thumbs-up icon-thumbs-up"></i></a> #}
                                             <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}"><i class="fas fa-file-pdf icon-pdf"></i></a>
-                                        {% else %}
-                                            <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}"><i class="fas fa-search icon-search"></i></a>
-                                            <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}"><i class="fas fa-file-pdf icon-pdf"></i></a>
-                                        {% endif %}
+                                            {% else %}
+                                                <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}"><i class="fas fa-search icon-search"></i></a>
+                                                <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}"><i class="fas fa-file-pdf icon-pdf"></i></a>
+                                            {% endif %}
+
+
+
                                     {% else %}
                                         {% if demande.statuts == 'Brouillons' %}
                                             <a href="{{ path('modifier_demandesldap', {id: demande.id}) }}"><i class="fas fa-edit icon-edit"></i></a>
                                             <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}"><i class="fas fa-search icon-search"></i></a>
                                             <a href="{{ path('formulaireldap_supprimer', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');"><i class="fas fa-trash-alt icon-trash"></i></a>
-                                            <a href="{{ path('valider_demandesldap', {id: demande.id}) }}"><i class="fas fa-thumbs-up icon-thumbs-up"></i></a>
+                                           
+                                           
+                                           
+                                                     {% if uiduser == demande.uidValideur %}
+                                                        <a href="{{ path('valider_demande', {id: demande.id}) }}" class="text-success"><i class="fas fa-thumbs-up"></i> </a>
+                                                    {% else %}
+                                                       <a href="{{ path('valider_demandesldap', {id: demande.id}) }}"><i class="fas fa-thumbs-up icon-thumbs-up"></i></a>
+                                                    {% endif %}
+                                           
+                                           
+                                           
+                                           
+                                            
                                             <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}"><i class="fas fa-file-pdf icon-pdf"></i></a>
                                         {% else %}
                                             <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}"><i class="fas fa-search icon-search"></i></a>
@@ -346,29 +369,73 @@ window.addEventListener('pageshow', function(event) {
     }
 });
 
-// Fonction de vérification de commentaire avant le refus
+// Fonction de vérification de commentaire avant le refuss
 function checkComment(demandeId) {
     const commentaireElement = document.getElementById('commentaire-' + demandeId);
     const commentaireForm = commentaireElement.closest('form');
     const commentaire = commentaireElement.value.trim();
 
-    // Vérifier si le champ commentaire est vide
+    // Vérifiez si le champ commentaire est vide
     if (commentaire === '') {
         alert('Veuillez ajouter un commentaire avant de refuser la demande.');
         commentaireElement.focus();
-        return false; // Empêche la soumission si le commentaire est vide
+        return false; // Empêche l'exécution si le commentaire est vide
     }
 
-    // Soumettre le commentaire avant le refus
-    commentaireForm.submit(); // Soumettre le formulaire de commentaire
+    // Utilisez `fetch()` pour envoyer le commentaire
+    const formData = new FormData(commentaireForm);
 
-    // Attendre la soumission du commentaire avant de refuser
-    setTimeout(function() {
-        // Rediriger vers la route de refus après que le commentaire soit soumis
-         window.location.href = "{{ path('refuser_demande', {id: 'ID_DEMANDE'}) }}".replace('ID_DEMANDE', demandeId);
-    }, 1000); // Attendre 1 seconde avant de rediriger vers la route de refus
+    fetch(commentaireForm.action, {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => {
+            if (response.ok) {
+                // Une fois la soumission terminée, redirigez vers la route de refus
+                window.location.href = "{{ path('refuser_demande', {id: 'ID_DEMANDE'}) }}".replace('ID_DEMANDE', demandeId);
+            } else {
+                alert('Une erreur est survenue lors de la soumission du commentaire.');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de la soumission :', error);
+            alert('Impossible de soumettre le commentaire. Veuillez réessayer.');
+        });
 
-    return false; // Empêche la soumission immédiate du refus jusqu'à ce que le commentaire soit soumis
+    return false; // Empêche la soumission normale du formulaire
+}
+
+function validateRequest(demandeId) {
+    const commentaireElement = document.getElementById('commentaire-' + demandeId);
+    const commentaire = commentaireElement.value.trim();
+
+    if (commentaire !== '') {
+        // Soumettre le commentaire s'il est présent
+        const commentaireForm = commentaireElement.closest('form');
+        const formData = new FormData(commentaireForm);
+
+        fetch(commentaireForm.action, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                // Une fois le commentaire soumis, valider la demande
+                window.location.href = "{{ path('valider_demande', {id: 'ID_DEMANDE'}) }}".replace('ID_DEMANDE', demandeId);
+            } else {
+                alert('Une erreur est survenue lors de la soumission du commentaire.');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de la soumission :', error);
+            alert('Impossible de soumettre le commentaire. Veuillez réessayer.');
+        });
+    } else {
+        // Si aucun commentaire, validez directement
+        window.location.href = "{{ path('valider_demande', {id: 'ID_DEMANDE'}) }}".replace('ID_DEMANDE', demandeId);
+    }
+
+    return false;
 }
 
 
