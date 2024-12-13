@@ -139,6 +139,12 @@
         align-items: center;    
         width: 100%;             
     }
+    .service-column {
+    color: #00008B; /* Bleu foncé */
+    font-weight: bold;
+}
+
+
    
 </style>
 {% endblock %}
@@ -207,7 +213,7 @@
                         {% for demande in demandesAValider %}
                             <tr data-status="{{ demande.statuts }}" data-type="À Valider">
                                 <td>À Valider</td>
-                                <td>{{ demande.service }}</td>
+                                <td class="service-column">{{ demande.service }}</td>
                                 {% if demande.isAutrePersonne %}
                                     {% set infosPersonne = demande.infosPersonne %}
                                     <td>{{ infosPersonne.nom }} {{ infosPersonne.prenom }}</td>
@@ -246,7 +252,7 @@
                            <tr data-status="{{ demande.statuts }}" data-type="Mes Demandes">
 
                                 <td>Mes Demandes</td>
-                                <td>{{ demande.service }}</td>
+                                <td class="service-column">{{ demande.service }}</td>
                                 {% if demande.isAutrePersonne %}
                                     {% set infosPersonne = demande.infosPersonne %}
                                     <td>{{ infosPersonne.nom }} {{ infosPersonne.prenom }}</td>
