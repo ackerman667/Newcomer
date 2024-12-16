@@ -260,6 +260,8 @@ class StatutsExterneController extends AbstractController
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
         }
+        $demande->setDate((new \DateTime('now', $this->timezone)));
+        $demande->setHeureSoumission((new \DateTime('now', $this->timezone)));
         $demande->setStatuts('En attente');
         $entityManager->persist($demande);
         $historique = new HistoriqueDemande();

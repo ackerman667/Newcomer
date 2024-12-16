@@ -74,7 +74,7 @@ class UserCreationController extends AbstractController
 
             $mailer->send($email);
 
-            $this->addFlash('success', 'Votre compte a bien été créé. Veuillez l\'activer par mail.');
+            // $this->addFlash('success', 'Votre compte a bien été créé. Veuillez l\'activer par mail.');
 
             return $this->redirectToRoute('user_creation_confirmation');
         }

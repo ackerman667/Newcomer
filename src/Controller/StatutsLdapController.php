@@ -276,6 +276,8 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
         }
+        $demande->setDate((new \DateTime('now', $this->timezone)));
+        $demande->setHeureSoumission((new \DateTime('now', $this->timezone)));
         $demande->setStatuts('En attente');
         $entityManager->persist($demande);
         $historique = new HistoriqueDemande();
@@ -458,6 +460,8 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
         }
+        $demande->setDate((new \DateTime('now', $this->timezone)));
+        $demande->setHeureSoumission((new \DateTime('now', $this->timezone)));
 
         $demande->setStatuts('En attente');
         $entityManager->persist($demande);
