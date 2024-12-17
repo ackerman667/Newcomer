@@ -42,15 +42,15 @@ class StatutsLdapController extends AbstractController
     #[Route('formulaireldap/listedemandes', name: 'liste_demandes')]
     public function index(SessionInterface $session, MonApplication $monApplication, EntityManagerInterface $entityManager): Response
     {
-        $session->remove('form_data');
-        $session->remove('demande_id');
-        $session->remove('nouvelle_demande');
-        $session->remove('dossiers_partages');
-        $session->remove('_csrf/https-demande_etape1_form');
-        $session->remove('_csrf/https-demande_etape2_form');
-        $session->remove('_csrf/https-demande_etape3_form');
-        $session->remove('nom_service_selectionne');
-        $session->remove('nom_valideur');
+        // $session->remove('form_data');
+        // $session->remove('demande_id');
+        // $session->remove('nouvelle_demande');
+        // $session->remove('dossiers_partages');
+        // $session->remove('_csrf/https-demande_etape1_form');
+        // $session->remove('_csrf/https-demande_etape2_form');
+        // $session->remove('_csrf/https-demande_etape3_form');
+        // $session->remove('nom_service_selectionne');
+        // $session->remove('nom_valideur');
         $user = $this->security->getUser();
         $uid = $user->getUid();
 

@@ -201,10 +201,6 @@ public function editDemandeEtape1(int $id, Request $request, EntityManagerInterf
             $data = $form->getData();
             $choix = $data['replace_someone'];
             $demande->setUidValideur($nomValideur);
-
-
-            $demande->setDate((new \DateTime('now', $this->timezone)));
-            $demande->setHeureSoumission((new \DateTime('now', $this->timezone)));
             
            
     

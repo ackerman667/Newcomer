@@ -19,12 +19,10 @@
         <span id="vcard" class="vcard">
             <figure class="photo"><img src="{{ asset('css/images/avatar/avatar.png','interfaceappli') }}"></figure>
             <ol>
-         {% if app.session.get('ldap_authenticated') %}
+         
            <h5> Rôle utilisateur </h5>
     
-{% else %}
-  <h5> Rôle inconnu </h5>
-{% endif %}
+
               
             </ol>
         </span>
