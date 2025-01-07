@@ -76,7 +76,7 @@
             </div>
 
             <div class="btn-group">
-                 <a href="{{ path('modifier_demandesvalideur_etape2', {id: demande.id}) }}" class="btn btn-secondary">Précédent</a>
+                 <a href="{{ path('modifier_demandesvalideur_etape2', {id: demande.id, token: token}) }}" class="btn btn-secondary">Précédent</a>
                 <button class="btn btn-primary">Soumettre</button>
             </div>
             {{ form_end(form) }}

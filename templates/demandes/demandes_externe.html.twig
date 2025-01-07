@@ -1,6 +1,10 @@
 {% extends 'layout_ag.html.twig' %}
 {% block title %}<title>Historique de vos demandes - {{ monApplication.Appli }}</title>{% endblock %}
 {% block head_gene %}
+<script>
+    const logoutUrl = '{{ path('app_logout') }}'; // Générer l'URL dynamique
+</script>
+<script type="text/javascript" src="{{ asset('js/inactivity.js') }}" defer></script>
     <style>
         .table-container {
             margin: 20px auto;

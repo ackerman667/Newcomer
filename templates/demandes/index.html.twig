@@ -235,7 +235,7 @@
                                 </td>
                                 <td class="toolbar">
                                     {% if demande.statuts == 'En attente' %}
-                                        <a href="{{ path('modifier_demandesvalideur_etape1', {id: demande.id}) }}"><i class="fas fa-edit"></i></a>
+                                        <a href="{{ path('preparer_modification_valideur', {id: demande.id}) }}"><i class="fas fa-edit"></i></a>
                                         <a href="{{ path('visualiser_demande', {id: demande.id}) }}"><i class="fas fa-search"></i></a>
                                         <a href="#" onclick="return validateRequest('{{ demande.id }}');"><i class="fas fa-thumbs-up"></i></a>
                                         <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}"><i class="fas fa-file-pdf"></i></a>

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Classe\MonApplication;
+use App\Entity\TemporaryData;
 use App\Entity\Demandes;
 use App\Entity\Ressources;
 use Doctrine\ORM\EntityManagerInterface;
@@ -28,29 +29,33 @@ class ModificationValideurController extends AbstractController
 
 {
     private $timezone;
-
-    public function __construct()
+    private $security;
+   
+    public function __construct(Security $security)
     {
         $this->timezone = new \DateTimeZone('America/Guadeloupe'); 
+        $this->security = $security;
+       
     }
 
 
 
 
 
-
-
-
-#[Route('formulaireldap/modifierdemandes/etape1/{id}', name: 'modifier_demandesvalideur_etape1')]
-public function editDemandeEtape1(int $id, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, MonApplication $monApplication): Response
+#[Route('formulaireldap/modifierdemandes/etape1/{id}/{token}', name: 'modifier_demandesvalideur_etape1')]
+public function editDemandeEtape1(int $id, string $token, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, MonApplication $monApplication): Response
 {
     $demande = $entityManager->getRepository(Demandes::class)->find($id);
+    $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $token]);
+    $userLdap = $this->security->getUser();
 
     if (!$demande) {
         throw $this->createNotFoundException('Demande non trouvée.');
     }
+    if ($temporaryData->getUser()->getUid() !== $userLdap->getUid()) {
+        throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cette demande.');
+    }
 
-    // Préparer les données en fonction du type de demande (pour soi-même ou pour une autre personne)
     if ($demande->isAutrePersonne()) {
         
         $user_autre= $demande->getAutreUtilisateur();
@@ -97,28 +102,64 @@ public function editDemandeEtape1(int $id, Request $request, EntityManagerInterf
 
     if ($form->isSubmitted() && $form->isValid()) {
         $data = $form->getData();
-        $session->set('form_data', $data);
+        $temporaryData->setData($form->getData());
+        $entityManager->flush();
 
-        return $this->redirectToRoute('modifier_demandesvalideur_etape2', ['id' => $id]);
+        return $this->redirectToRoute('modifier_demandesvalideur_etape2', [
+            'id' => $id,
+            'token' => $token,
+        ]);
     }
 
     return $this->render('valideur/modifier_etape1.html.twig', [
         'form' => $form->createView(),
         'monApplication' => $monApplication,
-        'demande' => $demande
+        'demande' => $demande,
+        'token' => $token,
+        
     ]);
 }
 
-    #[Route('formulaireldap/modifierdemandes/etape2/{id}', name: 'modifier_demandesvalideur_etape2')]
-    public function editDemandeEtape2(int $id, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, HttpClientInterface $httpClient, MonApplication $monApplication): Response
+    #[Route('formulaireldap/modifierdemandes/etape2/{id}/{token}', name: 'modifier_demandesvalideur_etape2')]
+    public function editDemandeEtape2(int $id, string $token, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, HttpClientInterface $httpClient, MonApplication $monApplication): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
 
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
         }
+        $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $token]);
 
-        $data = $session->get('form_data', []);
+        $data = $temporaryData->getData();
+        if (!empty($data['date_de_naissance'])) {
+            if (is_array($data['date_de_naissance']) && isset($data['date_de_naissance']['date'])) {
+                $data['date_de_naissance'] = new \DateTime($data['date_de_naissance']['date']);
+            } elseif (is_string($data['date_de_naissance'])) {
+                $data['date_de_naissance'] = new \DateTime($data['date_de_naissance']);
+            }
+        }
+        
+        if (!empty($data['date_debut_contrat'])) {
+            if (is_array($data['date_debut_contrat']) && isset($data['date_debut_contrat']['date'])) {
+                $data['date_debut_contrat'] = new \DateTime($data['date_debut_contrat']['date']);
+            } elseif (is_string($data['date_debut_contrat'])) {
+                $data['date_debut_contrat'] = new \DateTime($data['date_debut_contrat']);
+            }
+        }
+        
+        if (!empty($data['date_fin_contrat'])) {
+            if (is_array($data['date_fin_contrat']) && isset($data['date_fin_contrat']['date'])) {
+                $data['date_fin_contrat'] = new \DateTime($data['date_fin_contrat']['date']);
+            } elseif (is_string($data['date_fin_contrat'])) {
+                $data['date_fin_contrat'] = new \DateTime($data['date_fin_contrat']);
+            }
+        }
+
+
+        $userLdap = $this->security->getUser();
+        if ($temporaryData->getUser()->getUid() !== $userLdap->getUid()) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cette demande.');
+        }
 
         $apiUrl = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/services';
         $apiToken = 'b97b055g210125afb4c5f507dc823958ff18dfa56a12c7n12agch8db58e21767';
@@ -139,17 +180,14 @@ public function editDemandeEtape1(int $id, Request $request, EntityManagerInterf
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
-            $session->set('form_data', $data);
+            $updatedData = $form->getData();
+            $temporaryData->setData($updatedData);
             $selectedServiceId = $form->get('selectedService')->getData();
+
             foreach ($services as $service) {
                 if ($service['id_service'] == $selectedServiceId) {
-                    $session->set('nom_service_selectionne', $service['service']);
-                    if (isset($service['dossiers_partages']) && !empty($service['dossiers_partages'])) {
-                        $session->set('dossiers_partages', $service['dossiers_partages']);
-                    } else {
-                        $session->set('dossiers_partages', []);
-                    }
+                    $updatedData['nom_service_selectionne'] = $service['service'];
+                    $updatedData['dossiers_partages'] = $service['dossiers_partages'] ?? [];
                     break;
                 }
             }
@@ -161,11 +199,16 @@ public function editDemandeEtape1(int $id, Request $request, EntityManagerInterf
                 ],
             ]);
 
-            $apiDataSecond = $responseSecond->toArray();
-            $nomValideur = $apiDataSecond[0]['valideur'];
-            $session->set('nom_valideur', $nomValideur);
+        $apiDataSecond = $responseSecond->toArray();
+        $updatedData['nom_valideur'] = $apiDataSecond[0]['valideur'] ?? null;
+        $temporaryData->setData($updatedData);
+        $entityManager->flush();
+    
 
-            return $this->redirectToRoute('modifier_demandesvalideur_etape3', ['id' => $id]);
+        return $this->redirectToRoute('modifier_demandesvalideur_etape3', [
+            'id' => $id,
+            'token' => $token,
+        ]);
         }
 
         return $this->render('valideur/modifier_etape2.html.twig', [
@@ -173,23 +216,32 @@ public function editDemandeEtape1(int $id, Request $request, EntityManagerInterf
             'monApplication' => $monApplication,
             'servicesDropdownData' => $servicesDropdownData,
             'demande' => $demande,
+            'token' => $token,
+
         ]);
     }
 
-    #[Route('formulaireldap/modifierdemandes/etape3/{id}', name: 'modifier_demandesvalideur_etape3')]
-    public function editDemandeEtape3(int $id, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, MailerInterface $mailer, MonApplication $monApplication): Response
+    #[Route('formulaireldap/modifierdemandes/etape3/{id}/{token}', name: 'modifier_demandesvalideur_etape3')]
+    public function editDemandeEtape3(int $id, string $token, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, MailerInterface $mailer, MonApplication $monApplication): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande->getId()]);
+        $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $token]);
+        
+        $userLdap = $this->security->getUser();
+        if ($temporaryData->getUser()->getUid() !== $userLdap->getUid()) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cette demande.');
+        }
     
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
         }
     
-        $data = $session->get('form_data', []);
-        $dossiersPartages = $session->get('dossiers_partages', []);
-        $nomServiceSelectionne = $session->get('nom_service_selectionne', '');
-        $nomValideur = $session->get('nom_valideur', '');
+        $data = $temporaryData->getData();
+        $dossiersPartages = $data['dossiers_partages'] ?? [];
+        $nomServiceSelectionne = $data['nom_service_selectionne'] ?? '';
+        $nomValideur = $data['nom_valideur'] ?? '';
+       
     
         $form = $this->createForm(DemandeEtape3FormType::class, $data, [
             'dossiers_partages' => $dossiersPartages,
@@ -198,24 +250,24 @@ public function editDemandeEtape1(int $id, Request $request, EntityManagerInterf
         $form->handleRequest($request);
     
         if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
-            $choix = $data['replace_someone'];
+            $finalData = $form->getData();
+            $choix = $finalData['replace_someone'];
             $demande->setUidValideur($nomValideur);
             
            
     
             if ($choix === 'oui') {
                 $demande->setRemplacant(true);
-                $demande->setNomRemplacant($data['remplacement_nom']);
-                $demande->setPrenomRemplacant($data['remplacement_prenom']);
-                $demande->setTelephoneRemplacant($data['telephone_avant_service']);
-                $depart = $data['parti_rectorat'];
+                $demande->setNomRemplacant($finalData['remplacement_nom']);
+                $demande->setPrenomRemplacant($finalData['remplacement_prenom']);
+                $demande->setTelephoneRemplacant($finalData['telephone_avant_service']);
+                $depart = $finalData['parti_rectorat'];
                 if ($depart == true) {
                     $demande->setDepart(true);
                     $demande->setAffectationRemplacant('Aucune');
                 } else {
                     $demande->setDepart(false);
-                    $demande->setAffectationRemplacant($data['nouvelle_affectation_service']);
+                    $demande->setAffectationRemplacant($finalData['nouvelle_affectation_service']);
                 }
             } else {
                 $demande->setRemplacant(false);
@@ -244,30 +296,31 @@ public function editDemandeEtape1(int $id, Request $request, EntityManagerInterf
                 $ressources->setContenu('Pas de Ressources disponible pour ce Service.');
             }
 
-            $statut_utilisateur = $data['statut'];
+            $statut_utilisateur = $finalData['statut'];
 
             if ($demande->isAutrePersonne()) { 
                 $demande->setAutrePersonne(true);
                 $demande->setInfosPersonne([
-                'nom' => $data['nom'],
-                'prenom' => $data['prenom'],
-                'email' => $data['email'],
-                'date_de_naissance' => $data['date_de_naissance'],
-                'statut' => $data['statut'],
-                'fonction' => $data['fonction'],
+                'nom' => $finalData['nom'],
+                'prenom' => $finalData['prenom'],
+                'email' => $finalData['email'],
+                'date_de_naissance' => $finalData['date_de_naissance'],
+                'statut' => $finalData['statut'],
+                'fonction' => $finalData['fonction'],
                 
                 ]);
 
 
                 $user = $demande->getAutreUtilisateur();
-                $fonction = $data['fonction'];
+                $fonction = $finalData['fonction'];
                 $user->setFonction($fonction);
                 if ($statut_utilisateur !== 'Titulaire') {
-                    $date_debut_contrat = $data['date_debut_contrat'];
-                    $date_fin_contrat = $data['date_fin_contrat'];
-                    $user->setDateDebut($date_debut_contrat);
-                    $user->setDateFin($date_fin_contrat);
+                    $dateDebutContrat = new \DateTime($finalData['date_debut_contrat']['date']);
+                    $user->setDateDebut($dateDebutContrat);
+                    $dateFinContrat = new \DateTime($finalData['date_fin_contrat']['date']);
+                    $user->setDateFin($dateFinContrat);
                     $user->setStatutPersonne($statut_utilisateur);
+
                 } else {
                     $user->setStatutPersonne($statut_utilisateur);
                     $user->setDateDebut(null);
@@ -278,13 +331,13 @@ public function editDemandeEtape1(int $id, Request $request, EntityManagerInterf
             } else {
                 $demande->setAutrePersonne(false);
                 $user = $demande->getIDutilisateur();
-                $fonction = $data['fonction'];
+                $fonction = $finalData['fonction'];
                 $user->setFonction($fonction);
                 if ($statut_utilisateur !== 'Titulaire') {
-                    $date_debut_contrat = $data['date_debut_contrat'];
-                    $date_fin_contrat = $data['date_fin_contrat'];
-                    $user->setDateDebut($date_debut_contrat);
-                    $user->setDateFin($date_fin_contrat);
+                    $dateDebutContrat = new \DateTime($finalData['date_debut_contrat']['date']);
+                    $user->setDateDebut($dateDebutContrat);
+                    $dateFinContrat = new \DateTime($finalData['date_fin_contrat']['date']);
+                    $user->setDateFin($dateFinContrat);
                     $user->setStatutPersonne($statut_utilisateur);
                 } else {
                     $user->setStatutPersonne($statut_utilisateur);
@@ -293,11 +346,12 @@ public function editDemandeEtape1(int $id, Request $request, EntityManagerInterf
                 }
 
             }
-            $missions = $data['missions'];
+            $missions = $finalData['missions'];
             $demande->SetMissions($missions);
             $entityManager->persist($demande);
             $entityManager->persist($historique);
             $entityManager->persist($ressources);
+            $entityManager->remove($temporaryData);
             $entityManager->flush();
     
             $this->addFlash('success', 'La demande a été modifiée avec succès.');
@@ -311,7 +365,8 @@ public function editDemandeEtape1(int $id, Request $request, EntityManagerInterf
             'dossiersPartages' => $dossiersPartages,
             'nomServiceSelectionne' => $nomServiceSelectionne,
             'nomValideur' => $nomValideur,
-            'demande' => $demande
+            'demande' => $demande,
+            'token' => $token,
         ]);
     }
 

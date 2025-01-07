@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use App\Entity\TemporaryData;
 use App\Entity\User;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,6 +38,38 @@ class ActionsValideurController extends AbstractController
         $this->timezone = new \DateTimeZone('America/Guadeloupe');
         $this->isValideur = $this->roleChecker->isUserValideur();
     }
+
+
+
+    #[Route('/formulaireldap/modifierdemandes/{id}', name: 'preparer_modification_valideur')]
+public function preparerModificationValideur(int $id, EntityManagerInterface $entityManager): Response
+{
+    $this->denyAccessUnlessValideur();
+
+    $demande = $entityManager->getRepository(Demandes::class)->find($id);
+
+    if (!$demande) {
+        throw $this->createNotFoundException('Demande non trouvée.');
+    }
+
+   
+    $userBdd = $this->findOrCreateLdapUser($entityManager);
+    $temporaryData = new TemporaryData();
+    $temporaryData->setUser($userBdd);
+    $temporaryData->setAction('modifier'); 
+    $temporaryData->setData([]); 
+    $temporaryData->setExpiration((new \DateTime())->modify('+30 minutes'));
+
+    $entityManager->persist($temporaryData);
+    $entityManager->flush();
+
+    // Rediriger vers l'étape 1
+    return $this->redirectToRoute('modifier_demandesvalideur_etape1', [
+        'id' => $id,
+        'token' => $temporaryData->getToken(),
+    ]);
+}
+
 
 
 
@@ -103,6 +136,8 @@ class ActionsValideurController extends AbstractController
     
         return $this->redirectToRoute('liste_demandes');
     }
+
+
     
     
     #[Route('formulaireldap/refuserdemande/{id}', name: 'refuser_demande')]
@@ -319,5 +354,52 @@ class ActionsValideurController extends AbstractController
             throw $this->createAccessDeniedException('Vous devez être un valideur pour accéder à cette section.');
         }
     }
+
+    public function findOrCreateLdapUser(EntityManagerInterface $entityManager): User
+    {
+        // Récupérer l'utilisateur actuellement connecté
+        $currentUser = $this->security->getUser();
+
+        if (!$currentUser) {
+            throw new \LogicException('Aucun utilisateur connecté.');
+        }
+
+        $uid = $currentUser->getUid();
+
+        // Recherche de l'utilisateur en base
+        $user = $entityManager->getRepository(User::class)->findOneBy([
+            'uid' => $uid,
+            'provenance' => 'ldap',
+        ]);
+
+        // Si l'utilisateur n'existe pas, le créer
+        if (!$user) {
+            $userInformation = new UserInformation();
+            $infos_user = $userInformation->getUserInformation($currentUser);
+
+            $nom_utilisateur = $infos_user['sn'];
+            $prenom_utilisateur = $infos_user['givenname'];
+            $email_utilisateur = $infos_user['mail'];
+            $dateString = $infos_user['datenaissance'];
+            $date = \DateTimeImmutable::createFromFormat('d/m/Y', $dateString);
+            $datedenaissance_utilisateur = $date;
+            $user = new User();
+            $user->setNom($nom_utilisateur);
+            $user->setPrenom($prenom_utilisateur);
+            $user->setDateDeNaissance($datedenaissance_utilisateur);
+            $user->setEmail($email_utilisateur);
+            $user->setCompteActif(true);
+            $user->setUid($uid);
+            $user->setProvenance('ldap');
+            $entityManager->persist($user);
+            $entityManager->flush();
+        }
+
+        return $user;
+    }
+
+
+
+
 
 }

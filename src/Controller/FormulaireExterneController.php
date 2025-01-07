@@ -7,6 +7,7 @@ use App\Entity\Demandes;
 use App\Entity\Ressources;
 use App\Entity\HistoriqueDemande;
 use App\Entity\User;
+use App\Entity\TemporaryData;
 use App\Form\DemandeEtape1FormType;
 use App\Form\DemandeEtape2FormType;
 use App\Form\DemandeEtape3FormType;
@@ -32,72 +33,124 @@ class FormulaireExterneController extends AbstractController
         $this->timezone = new \DateTimeZone('America/Guadeloupe'); 
     }
 
-    #[Route('/formulaireexterne/etape1/{token}', name: 'formulaireexterne_etape1')]
-    public function etape1(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, $token): Response
+
+
+    #[Route('/formulaireexterne/etape1/{token}/{uuid}', name: 'formulaireexterne_etape1')]
+    public function etape1(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, $token, $uuid): Response
     {
 
-        $data = $session->get('form_data', []);
+
+        $info = $this->getVerif($entityManager, $uuid, $token);
+        // Récupérer l'utilisateur à partir du token
+        // try {
+        //     $info = $this->getVerif($entityManager, $token, $uuid);
+        // } catch (\Exception $e) {
+        //     return $this->redirectToRoute('session_expired');
+        // }
+        
+    
+        
+
+        // Charger les données stockées (ou initialiser un tableau vide si aucune donnée)
+        $data = $info['data'];
+        $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $uuid]);
+        if (!$temporaryData) {
+            throw $this->createNotFoundException('Données temporaires introuvables.');
+        }
+
+        // Créer le formulaire avec les données chargées
         $form = $this->createForm(DemandeEtape1FormType::class, $data);
         $form->handleRequest($request);
 
+        // Traiter le formulaire lorsqu'il est soumis
         if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
-            $session->set('form_data', $data);
+            // Mettre à jour les données dans TemporaryData
+            $temporaryData->setData($form->getData());
+            $entityManager->flush();
 
-            return $this->redirectToRoute('formulaireexterne_etape2', ['token' => $token]);
+            // Rediriger vers l'étape 2
+            return $this->redirectToRoute('formulaireexterne_etape2', [
+                'token' => $token,
+                'uuid' => $uuid,
+            ]);
         }
 
+        // Rendre le formulaire pour l'étape 1
         return $this->render('formulaire/etape1.html.twig', [
             'form' => $form->createView(),
-            'monApplication' => $monApplication,
             'current_step' => 1,
             'total_steps' => 3,
-            'token' => $token
+            'token' => $token,
+            'uuid' => $uuid,
+            'monApplication' => $monApplication,
         ]);
     }
 
-    #[Route('/formulaireexterne/etape2/{token}', name: 'formulaireexterne_etape2')]
-    public function etape2(MonApplication $monApplication, Request $request, SessionInterface $session, HttpClientInterface $httpClient, EntityManagerInterface $entityManager, $token): Response
-    {
 
 
-       
+
+    #[Route('/formulaireexterne/etape2/{token}/{uuid}', name: 'formulaireexterne_etape2')]
+    public function etape2(
+        MonApplication $monApplication,
+        Request $request,
+        HttpClientInterface $httpClient,
+        EntityManagerInterface $entityManager,
+        $token,
+        $uuid
+    ): Response {
+
+        // Récupérer les informations via getVerif
+$info = $this->getVerif($entityManager, $uuid, $token);
+
+$user = $info['user'];  // L'utilisateur associé
+$data = $info['data'];  // Les données temporaires
+
+$temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $uuid]);
+
+if (!$temporaryData) {
+    throw $this->createNotFoundException('Données temporaires introuvables.');
+}
+if (!empty($data['date_de_naissance'])) {
+    if (is_array($data['date_de_naissance']) && isset($data['date_de_naissance']['date'])) {
+        $data['date_de_naissance'] = new \DateTime($data['date_de_naissance']['date']);
+    } elseif (is_string($data['date_de_naissance'])) {
+        $data['date_de_naissance'] = new \DateTime($data['date_de_naissance']);
+    }
+}
+
+if (!empty($data['date_debut_contrat'])) {
+    if (is_array($data['date_debut_contrat']) && isset($data['date_debut_contrat']['date'])) {
+        $data['date_debut_contrat'] = new \DateTime($data['date_debut_contrat']['date']);
+    } elseif (is_string($data['date_debut_contrat'])) {
+        $data['date_debut_contrat'] = new \DateTime($data['date_debut_contrat']);
+    }
+}
+
+if (!empty($data['date_fin_contrat'])) {
+    if (is_array($data['date_fin_contrat']) && isset($data['date_fin_contrat']['date'])) {
+        $data['date_fin_contrat'] = new \DateTime($data['date_fin_contrat']['date']);
+    } elseif (is_string($data['date_fin_contrat'])) {
+        $data['date_fin_contrat'] = new \DateTime($data['date_fin_contrat']);
+    }
+}
+
+// Compléter les données utilisateur si elles manquent
+$data['nom'] = $data['nom'] ?? $user->getNom();
+$data['prenom'] = $data['prenom'] ?? $user->getPrenom();
+$data['email'] = $data['email'] ?? $user->getEmail();
+$data['date_de_naissance'] = $data['date_de_naissance'] ?? $user->getDateDeNaissance();
+$data['fonction'] = $data['fonction'] ?? $user->getFonction();
+$data['statut'] = $data['statut'] ?? $user->getStatutPersonne();
+
+if ($user->getStatutPersonne() !== 'Titulaire') {
+    $data['date_debut_contrat'] = $data['date_debut_contrat'] ?? $user->getDateDebut();
+    $data['date_fin_contrat'] = $data['date_fin_contrat'] ?? $user->getDateFin();
+}
+
         
-        $nouvelleDemande = $session->get('nouvelle_demande', false);
-        if ($nouvelleDemande)        {
-            $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
-                } else {
-            $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
-                     if($demande) {
-                $id_user = $demande->getIDutilisateur();
-                $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
-
-                         } else {
-                $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
-                                }
-            
-                                     }
-          
-
-        
-
-
-
-
-        $data = $session->get('form_data', []);
-        $data['nom'] = $user->getNom();
-        $data['prenom'] = $user->getPrenom();
-        $data['email'] = $user->getEmail();
-        $data['date_de_naissance'] = $user->getDateDeNaissance();
-        $data['fonction'] = $user->getFonction();
-        $data['statut'] = $user->getStatutPersonne();
-
-        if($user->getStatutPersonne()!= 'Titulaire') {
-            $data['date_debut_contrat'] = $user->getDateDebut();
-            $data['date_fin_contrat'] = $user->getDateFin();
-        }
-
-       
+    
+    
+        // Appel API pour récupérer les services
         $apiUrl = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/services';
         $apiToken = 'b97b055g210125afb4c5f507dc823958ff18dfa56a12c7n12agch8db58e21767';
         $response = $httpClient->request('GET', $apiUrl, [
@@ -106,41 +159,36 @@ class FormulaireExterneController extends AbstractController
                 'Accept' => 'application/json',
             ],
         ]);
-
+    
         $services = $response->toArray();
-
-        dump($services);
-
-       
-
         $servicesTree = $this->buildTree($services);
-
         $servicesDropdownData = $this->transformServicesForDropdown($servicesTree);
-        dump($servicesDropdownData);
-
+    
+        // Créer le formulaire
         $form = $this->createForm(DemandeEtape2FormType::class, $data, [
             'services' => $servicesDropdownData,
-            
         ]);
-
+    
         $form->handleRequest($request);
-
+    
+        // Traiter le formulaire
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
-            $session->set('form_data', $data);
+    
+            // Mettre à jour les données temporaires
+            $temporaryData->setData($data);
+    
+            // Identifier le service sélectionné
             $selectedServiceId = $form->get('selectedService')->getData();
-
             foreach ($services as $service) {
                 if ($service['id_service'] == $selectedServiceId) {
-                    $session->set('nom_service_selectionne', $service['service']);
-                    if (isset($service['dossiers_partages']) && !empty($service['dossiers_partages'])) {
-                        $session->set('dossiers_partages', $service['dossiers_partages']);
-                    } else {
-                        $session->set('dossiers_partages', []);
-                    }
+                    $data['nom_service_selectionne'] = $service['service'];
+                    $data['dossiers_partages'] = $service['dossiers_partages'] ?? [];
                     break;
                 }
             }
+    
+            // Appel API pour récupérer le valideur
             $apiUrlSecond = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/valideur/' . $selectedServiceId;
             $responseSecond = $httpClient->request('GET', $apiUrlSecond, [
                 'headers' => [
@@ -148,234 +196,259 @@ class FormulaireExterneController extends AbstractController
                     'Accept' => 'application/json',
                 ],
             ]);
-
+    
             $apiDataSecond = $responseSecond->toArray();
-       
-            $nomValideur = $apiDataSecond[0]['valideur'];
-            $session->set('nom_valideur', $nomValideur);
-
-            return $this->redirectToRoute('formulaireexterne_etape3', ['token' => $token]);
+            $data['nom_valideur'] = $apiDataSecond[0]['valideur'] ?? null;
+    
+            // Sauvegarder les données dans TemporaryData
+            $temporaryData->setData($data);
+            $entityManager->flush();
+    
+            // Rediriger vers l'étape 3
+            return $this->redirectToRoute('formulaireexterne_etape3', [
+                'token' => $token,
+                'uuid' => $uuid,
+            ]);
         }
-
+    
+        // Rendre le formulaire pour l'étape 2
         return $this->render('formulaire/etape2.html.twig', [
             'form' => $form->createView(),
             'monApplication' => $monApplication,
             'servicesDropdownData' => $servicesDropdownData,
             'current_step' => 2,
             'total_steps' => 3,
-            'token' => $token
+            'token' => $token,
+            'uuid' => $uuid,
         ]);
     }
-
-    #[Route('/formulaireexterne/etape3/{token}', name: 'formulaireexterne_etape3')]
-public function etape3(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, MailerInterface $mailer, $token): Response
-{
     
-    $sessionData = $session->all();
 
- 
-    dump($sessionData);
-    $data = $session->get('form_data', []);
-    $dossiersPartages = $session->get('dossiers_partages', []);
-  
 
-    $nomServiceSelectionne = $session->get('nom_service_selectionne', '');
-    $nomValideur = $session->get('nom_valideur', '');
 
+
+
+
+    #[Route('/formulaireexterne/etape3/{token}/{uuid}', name: 'formulaireexterne_etape3')]
+public function etape3(
+    MonApplication $monApplication,
+    Request $request,
+    EntityManagerInterface $entityManager,
+    MailerInterface $mailer,
+    $token,
+    $uuid
+): Response {
+    // Récupérer l'utilisateur à partir du token
+    try {
+        $info = $this->getVerif($entityManager, $uuid, $token);
+    } catch (\Exception $e) {
+        return $this->redirectToRoute('session_expired');
+    }
+
+    $user = $info['user'];  // L'utilisateur associé
+    $data = $info['data'];  // Les données temporaires
+    $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $uuid]);
+        if (!$temporaryData) {
+            throw $this->createNotFoundException('Données temporaires introuvables.');
+        }
+
+    // Compléter les valeurs par défaut si nécessaire
+    $dossiersPartages = $data['dossiers_partages'] ?? [];
+    $nomServiceSelectionne = $data['nom_service_selectionne'] ?? '';
+    $nomValideur = $data['nom_valideur'] ?? '';
+
+    // Créer le formulaire avec les données chargées
     $form = $this->createForm(DemandeEtape3FormType::class, $data, [
         'dossiers_partages' => $dossiersPartages,
         'data_class' => null, 
     ]);
     $form->handleRequest($request);
 
+    // Traiter le formulaire lorsqu'il est soumis
     if ($form->isSubmitted() && $form->isValid()) {
         $data = $form->getData();
         $historique = new HistoriqueDemande();
+        $action = $temporaryData->getAction();
 
-
-        $nouvelleDemande = $session->get('nouvelle_demande', false);
-
-        if ($nouvelleDemande ) {
+        if ($action === 'create' ) {
            
-                                        $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
-                                        
-                                        $demande = new Demandes();
-                                        $token = bin2hex(random_bytes(32)); 
-                                        $demande->setToken($token);
-                                        $historique->setDemande($demande);
-                                        $historique->setStatut('Création');
-                                        $historique->setDate(new \DateTime('now', $this->timezone));
-                                        $historique->setStatutOperation('Création');
-
-                                        $ressources = new Ressources();
-                                        $ressources->setNom('Ressources');
-                                        $ressources->setDemande($demande);
-                                        $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
-                                        if (!empty($dossiersSelectionnes)) {
-                                            $ressources->setContenu(json_encode($dossiersSelectionnes));
-                                        } else {
-                                            $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
-                                        }
-                                        $this->addFlash('success', 'Votre demande a été créé.');
-         } else {
-
-                     $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
-                    if (!$demande) {
-                                    $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
-                             
-                                    
-                                    $demande = new Demandes();
-                                    $token = bin2hex(random_bytes(32)); 
-                                    $demande->setToken($token);
-                                    $historique->setDemande($demande);
-                                    $historique->setStatut('Création');
-                                    $historique->setDate(new \DateTime('now', $this->timezone));
-                                    $historique->setStatutOperation('Création');
-
-                                    $ressources = new Ressources();
-                                    $ressources->setNom('Ressources');
-                                    $ressources->setDemande($demande);
-                                    $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
-                                    if (!empty($dossiersSelectionnes)) {
-                                        $ressources->setContenu(json_encode($dossiersSelectionnes));
-                                    } else {
-                                        $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
-                                    }
-                                    $this->addFlash('success', 'Votre demande a été créé.');
-                     } elseif($demande) {
-                                    $id_user = $demande->getIDutilisateur();
-                                    $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
-                                    $historique->setDemande($demande);
-                                    $historique->setStatut('Modification');
-                                    $historique->setDate(new \DateTime('now', $this->timezone));
-                                    $historique->setStatutOperation('Modification');
-                                    $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
-                                    if (!$ressources) {
-                                        $ressources = new Ressources();
-                                    }
-                                    $ressources->setNom('Ressources');
-                                    $ressources->setDemande($demande);
-                                    $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
-                                    if (!empty($dossiersSelectionnes)) {
-                                        $ressources->setContenu(json_encode($dossiersSelectionnes));
-                                    } else {
-                                        $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
-                                    }
-
-                                         }   
-                                         $this->addFlash('success', 'Votre demande a été modifiée.');
-           
-          
-                   }
-
-        $token_stat=$user->getToken();
-
-
-
-        $choix = $data['replace_someone'];
-        $statut_utilisateur = $data['statut'];
-        $nom = $data['nom'];
-        $prenom = $data['prenom'];
-        $fonction = $data['fonction'];
-        $missions = $data['missions'];
-        $datedenaissance = $data['date_de_naissance'];
-        $user->setNom($nom);
-        $user->setPrenom($prenom);
-        $user->setFonction($fonction);
-        $demande->setMissions($missions);
-        $user->setFonction($fonction);
-        $user->setDateDeNaissance($datedenaissance);
-       
-        if ($choix === 'oui') {
-            $demande->setRemplacant(true);
-            $demande->setNomRemplacant($data['remplacement_nom']);
-            $demande->setPrenomRemplacant($data['remplacement_prenom']);
-            $demande->setTelephoneRemplacant($data['telephone_avant_service']);
-            $depart = $data['parti_rectorat'];
-            if ($depart == true) {
-                $demande->setDepart(true);
-                $demande->setAffectationRemplacant('Aucune');
+            $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+            $demande = new Demandes();
+            $token = bin2hex(random_bytes(32)); 
+            $demande->setToken($token);
+            $historique->setDemande($demande);
+            $historique->setStatut('Création');
+            $historique->setDate(new \DateTime('now', $this->timezone));
+            $historique->setStatutOperation('Création');
+            $ressources = new Ressources();
+            $ressources->setNom('Ressources');
+            $ressources->setDemande($demande);
+            $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
+            if (!empty($dossiersSelectionnes)) {
+                $ressources->setContenu(json_encode($dossiersSelectionnes));
             } else {
-                $demande->setDepart(false);
-                $demande->setAffectationRemplacant($data['nouvelle_affectation_service']);
+                $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
             }
-        } else {
-            $demande->setRemplacant(false);
-            $demande->setNomRemplacant('Pas de remplacant.');
-            $demande->setPrenomRemplacant('Pas de remplacant.');
-            $demande->setTelephoneRemplacant('Pas de remplacant.');
-            $demande->setAffectationRemplacant('Pas de remplacant.');
-            $demande->setDepart(false);
-        }
+            $this->addFlash('success', 'Votre demande a été créé.');
+} else {
 
-        if ($statut_utilisateur !== 'Titulaire') {
-            $date_debut_contrat = $data['date_debut_contrat'];
-            $date_fin_contrat = $data['date_fin_contrat'];
-            $user->setDateDebut($date_debut_contrat);
-            $user->setDateFin($date_fin_contrat);
-            $user->setStatutPersonne($statut_utilisateur);
-        } else {
-            $user->setStatutPersonne($statut_utilisateur);
-            $user->setDateDebut(null);
-            $user->setDateFin(null);
-        }
+    $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+    if (!$demande) {
+                    $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+             
+                    
+                    $demande = new Demandes();
+                    $token = bin2hex(random_bytes(32)); 
+                    $demande->setToken($token);
+                    $historique->setDemande($demande);
+                    $historique->setStatut('Création');
+                    $historique->setDate(new \DateTime('now', $this->timezone));
+                    $historique->setStatutOperation('Création');
 
-        $demande->setIDutilisateur($user);
-        $demande->setAutrePersonne(false);
-        $demande->setDate(new \DateTime('now', $this->timezone));
-        $demande->setHeureSoumission(new \DateTime('now', $this->timezone));
-        $demande->setTitre('Demande d\'accès à un poste informatique');
-        $demande->setStatuts('Brouillons');
-        $demande->setUidValideur($nomValideur);
-        $demande->setService($nomServiceSelectionne);
+                    $ressources = new Ressources();
+                    $ressources->setNom('Ressources');
+                    $ressources->setDemande($demande);
+                    $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
+                    if (!empty($dossiersSelectionnes)) {
+                        $ressources->setContenu(json_encode($dossiersSelectionnes));
+                    } else {
+                        $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
+                    }
+                    $this->addFlash('success', 'Votre demande a été créé.');
+     } elseif($demande) {
+                    $id_user = $demande->getIDutilisateur();
+                    $user = $entityManager->getRepository(User::class)->findOneBy(['id' => $id_user]);
+                    $historique->setDemande($demande);
+                    $historique->setStatut('Modification');
+                    $historique->setDate(new \DateTime('now', $this->timezone));
+                    $historique->setStatutOperation('Modification');
+                    $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
+                    if (!$ressources) {
+                        $ressources = new Ressources();
+                    }
+                    $ressources->setNom('Ressources');
+                    $ressources->setDemande($demande);
+                    $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
+                    if (!empty($dossiersSelectionnes)) {
+                        $ressources->setContenu(json_encode($dossiersSelectionnes));
+                    } else {
+                        $ressources->setContenu('Pas de ressources sélectionnées / disponible pour ce Service.');
+                    }
 
-        $entityManager->persist($user);
-        $entityManager->persist($demande);
-        $entityManager->persist($historique);
-         $entityManager->persist($ressources);
-        $entityManager->flush();
+                         }   
+                         $this->addFlash('success', 'Votre demande a été modifiée.');
 
+
+   }
+
+
+
+
+
+
+
+   $choix = $data['replace_someone'];
+   $statut_utilisateur = $data['statut'];
+   $nom = $data['nom'];
+   $prenom = $data['prenom'];
+   $fonction = $data['fonction'];
+   $missions = $data['missions'];
+   $dateDeNaissance = new \DateTime($data['date_de_naissance']['date']);
+    $user->setDateDeNaissance($dateDeNaissance);
+   $user->setNom($nom);
+   $user->setPrenom($prenom);
+   $user->setFonction($fonction);
+   $demande->setMissions($missions);
+   $user->setFonction($fonction);
+//    $user->setDateDeNaissance($datedenaissance);
+  
+   if ($choix === 'oui') {
+       $demande->setRemplacant(true);
+       $demande->setNomRemplacant($data['remplacement_nom']);
+       $demande->setPrenomRemplacant($data['remplacement_prenom']);
+       $demande->setTelephoneRemplacant($data['telephone_avant_service']);
+       $depart = $data['parti_rectorat'];
+       if ($depart == true) {
+           $demande->setDepart(true);
+           $demande->setAffectationRemplacant('Aucune');
+       } else {
+           $demande->setDepart(false);
+           $demande->setAffectationRemplacant($data['nouvelle_affectation_service']);
+       }
+   } else {
+       $demande->setRemplacant(false);
+       $demande->setNomRemplacant('Pas de remplacant.');
+       $demande->setPrenomRemplacant('Pas de remplacant.');
+       $demande->setTelephoneRemplacant('Pas de remplacant.');
+       $demande->setAffectationRemplacant('Pas de remplacant.');
+       $demande->setDepart(false);
+   }
+
+   if ($statut_utilisateur !== 'Titulaire') {
+    $dateDebutContrat = new \DateTime($data['date_debut_contrat']['date']);
+    $dateFinContrat = new \DateTime($data['date_fin_contrat']['date']);
+       $user->setDateDebut($dateDebutContrat);
+       $user->setDateFin($dateFinContrat);
+       $user->setStatutPersonne($statut_utilisateur);
+   } else {
+       $user->setStatutPersonne($statut_utilisateur);
+       $user->setDateDebut(null);
+       $user->setDateFin(null);
+   }
+
+   $demande->setIDutilisateur($user);
+   $demande->setAutrePersonne(false);
+   $demande->setDate(new \DateTime('now', $this->timezone));
+   $demande->setHeureSoumission(new \DateTime('now', $this->timezone));
+   $demande->setTitre('Demande d\'accès à un poste informatique');
+   $demande->setStatuts('Brouillons');
+   $demande->setUidValideur($nomValideur);
+   $demande->setService($nomServiceSelectionne);
+
+   $entityManager->persist($user);
+   $entityManager->persist($demande);
+   $entityManager->persist($historique);
+    $entityManager->persist($ressources);
+    $entityManager->remove($temporaryData);
         
+   $entityManager->flush();
 
-        $url = $this->generateUrl('demande_externe', ['token' => $token_stat], UrlGeneratorInterface::ABSOLUTE_URL);
-
-
-
-
+   
+      
 
 
 
 
-        $session->remove('form_data');
-        $session->remove('demande_id');
-        $session->remove('nouvelle_demande');
-        $session->remove('dossiers_partages');
-        $session->remove('_csrf/https-demande_etape1_form');
-        $session->remove('_csrf/https-demande_etape2_form');
-        $session->remove('_csrf/https-demande_etape3_form');
-        $session->remove('nom_service_selectionne');
-        $session->remove('nom_valideur');
-        // $session->clear();
-       
 
+
+
+
+
+
+
+
+
+
+        // Envoyer l'email de confirmation
+        $url = $this->generateUrl('demande_externe', ['token' => $user->getToken()], UrlGeneratorInterface::ABSOLUTE_URL);
         $email = (new Email())
             ->from('noreply@ac-guadeloupe.fr')
             ->to($user->getEmail())
-            ->subject('Votre lien de connexion')
-            ->cc('Nicolas.Barbeu@ac-guadeloupe.fr')
-            ->text('Voici votre lien de connexion :')
-            ->html('
-            <p>Bonjour ' . $nom . ' ' . $prenom . ',</p>
-            <p>Nous avons bien reçu votre demande d\'accès à un poste de travail informatique.</p>
-            <p>Pour accéder à votre compte, veuillez cliquer sur le lien ci-dessous :</p>
-            <p><a href="' . $url . '">Cliquez ici pour vous connecter</a></p>
-            <p>Bien cordialement,</p>
-            <p><strong>Votre équipe informatique</strong></p>
-        ');
-       
+            ->subject('Votre demande a été enregistrée')
+            ->html("
+                <p>Bonjour {$user->getPrenom()} {$user->getNom()},</p>
+                <p>Votre demande d'accès à un poste informatique a bien été enregistrée.</p>
+                <p>Pour consulter ou modifier votre demande, veuillez cliquer sur le lien suivant :</p>
+                <p><a href='{$url}'>Consulter ma demande</a></p>
+                <p>Bien cordialement,<br>L'équipe informatique</p>
+            ");
         $mailer->send($email);
 
-        return $this->redirectToRoute('demande_externe', ['token' => $token_stat]);
+        // Supprimer les données temporaires
+        $entityManager->remove($temporaryData);
+        $entityManager->flush();
+
+        return $this->redirectToRoute('demande_externe', ['token' => $user->getToken()]);
     }
 
     return $this->render('formulaire/etape3.html.twig', [
@@ -385,9 +458,13 @@ public function etape3(MonApplication $monApplication, Request $request, Session
         'current_step' => 3,
         'total_steps' => 3,
         'nomServiceSelectionne' => $nomServiceSelectionne,
-        'token' => $token
+        'token' => $token,
+        'uuid' => $uuid,
     ]);
 }
+
+
+    
 
     private function buildTree(array &$services, $parentId = 0) {
         $branch = [];
@@ -420,5 +497,59 @@ public function etape3(MonApplication $monApplication, Request $request, Session
         }
         return $servicesDropdownData;
     }
+
+    private function getVerif(EntityManagerInterface $entityManager, string $uuid, string $token): ?array
+{
+    // Récupérer la ligne de TemporaryData en fonction de l'UUID
+    $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $uuid]);
+
+    if (!$temporaryData) {
+        throw $this->createNotFoundException('Données temporaires introuvables.');
+    }
+
+    // Vérifier l'action (create ou modifier)
+    $action = $temporaryData->getAction();
+
+    if ($action === 'create') {
+        // Si l'action est "create", récupérer l'utilisateur via le token
+        $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+
+        if (!$user) {
+            throw $this->createNotFoundException('Utilisateur introuvable.');
+        }
+
+        return [
+            'user' => $user,
+            'action' => 'create',
+            'data' => $temporaryData->getData(),
+        ];
+    } elseif ($action === 'modifier') {
+        // Si l'action est "modifier", récupérer la demande via le token
+        $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+
+        if (!$demande) {
+            throw $this->createNotFoundException('Demande introuvable.');
+        }
+
+        $user = $demande->getIDutilisateur();
+
+        return [
+            'user' => $user,
+            'action' => 'modifier',
+            'data' => $temporaryData->getData(),
+            'demande' => $demande,
+        ];
+    }
+
+    throw new \LogicException('Action non valide dans TemporaryData.');
+}
+
+
+
+
+
+
+
+
     
 }

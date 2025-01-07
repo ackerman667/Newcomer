@@ -108,7 +108,8 @@
             </div>
 
             <div class="btn-group">
-                <a href="{{ path('formulaireexterne_etape1',{'token': token}) }}" class="btn btn-secondary">Précédent</a>
+                <a href="{{ path('formulaireexterne_etape1', {'token': token, 'uuid': uuid}) }}" class="btn btn-secondary">Précédent</a>
+
                 <button class="btn btn-primary">Suivant</button>
             </div>
             {{ form_end(form) }}

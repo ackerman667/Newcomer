@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Classe\MonApplication;
 use App\Entity\User;
 use App\Entity\UserAutre;
+use App\Entity\TemporaryData;
 use App\Entity\Demandes;
 use App\Entity\HistoriqueDemande;
 use App\Entity\Ressources;
@@ -36,19 +37,32 @@ class FormulaireAutreController extends AbstractController
         $this->timezone = new \DateTimeZone('America/Guadeloupe');
     }
 
-    #[Route('/formulaireldap/a/etape1', name: 'formulaireldap-etape1')]
-    public function etape1PourAutre(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager): Response
+    #[Route('/formulaireldap/a/etape1/{token}', name: 'formulaireldap-etape1')]
+    public function etape1PourAutre(string $token,MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager): Response
     {
-        $data = $session->get('form_data', []);
+        $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $token]);
+        if (!$temporaryData) {
+            throw $this->createNotFoundException('Données temporaires introuvables.');
+        }
+       
+        $data = $temporaryData->getData();
+
+        $user_ldap = $this->security->getUser();
+
+        if ($temporaryData->getUser()->getUid() !== $user_ldap->getUid()) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
+        }
 
         $form = $this->createForm(DemandeEtape1FormType::class, $data);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
-            $session->set('form_data', $data);
 
-            return $this->redirectToRoute('formulaireldap-etape2');
+            $data = $form->getData();
+            $temporaryData->setData($form->getData());
+            $entityManager->flush();
+
+           return $this->redirectToRoute('formulaireldap-etape2', ['token' => $token]);
         }
 
         return $this->render('formulaireautre/etape1.html.twig', [
@@ -56,14 +70,52 @@ class FormulaireAutreController extends AbstractController
             'monApplication' => $monApplication,
             'current_step' => 1,
             'total_steps' => 3,
+            'token' => $token,
+
         ]);
     }
 
-    #[Route('/formulaireldap/a/etape2', name: 'formulaireldap-etape2')]
-    public function etape2PourAutre(MonApplication $monApplication, Request $request, SessionInterface $session, HttpClientInterface $httpClient, EntityManagerInterface $entityManager): Response
+    #[Route('/formulaireldap/a/etape2/{token}', name: 'formulaireldap-etape2')]
+    public function etape2PourAutre(string $token,MonApplication $monApplication, Request $request, SessionInterface $session, HttpClientInterface $httpClient, EntityManagerInterface $entityManager): Response
     {
       
-        $data = $session->get('form_data', []);
+        $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $token]);
+        if (!$temporaryData) {
+            throw $this->createNotFoundException('Données temporaires introuvables.');
+        }
+       
+        $data = $temporaryData->getData();
+        if (!empty($data['date_de_naissance'])) {
+            if (is_array($data['date_de_naissance']) && isset($data['date_de_naissance']['date'])) {
+                $data['date_de_naissance'] = new \DateTime($data['date_de_naissance']['date']);
+            } elseif (is_string($data['date_de_naissance'])) {
+                $data['date_de_naissance'] = new \DateTime($data['date_de_naissance']);
+            }
+        }
+        
+        if (!empty($data['date_debut_contrat'])) {
+            if (is_array($data['date_debut_contrat']) && isset($data['date_debut_contrat']['date'])) {
+                $data['date_debut_contrat'] = new \DateTime($data['date_debut_contrat']['date']);
+            } elseif (is_string($data['date_debut_contrat'])) {
+                $data['date_debut_contrat'] = new \DateTime($data['date_debut_contrat']);
+            }
+        }
+        
+        if (!empty($data['date_fin_contrat'])) {
+            if (is_array($data['date_fin_contrat']) && isset($data['date_fin_contrat']['date'])) {
+                $data['date_fin_contrat'] = new \DateTime($data['date_fin_contrat']['date']);
+            } elseif (is_string($data['date_fin_contrat'])) {
+                $data['date_fin_contrat'] = new \DateTime($data['date_fin_contrat']);
+            }
+        }
+        
+
+
+        $user_ldap = $this->security->getUser();
+
+        if ($temporaryData->getUser()->getUid() !== $user_ldap->getUid()) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
+        }
 
         $apiUrl = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/services';
         $apiToken = 'b97b055g210125afb4c5f507dc823958ff18dfa56a12c7n12agch8db58e21767';
@@ -84,14 +136,14 @@ class FormulaireAutreController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
-            $session->set('form_data', $data);
+            $updatedData = $form->getData();
+            $temporaryData->setData($updatedData);
             $selectedServiceId = $form->get('selectedService')->getData();
 
             foreach ($services as $service) {
                 if ($service['id_service'] == $selectedServiceId) {
-                    $session->set('nom_service_selectionne', $service['service']);
-                    $session->set('dossiers_partages', $service['dossiers_partages'] ?? []);
+                    $updatedData['nom_service_selectionne'] = $service['service'];
+                    $updatedData['dossiers_partages'] = $service['dossiers_partages'] ?? [];
                     break;
                 }
             }
@@ -105,10 +157,13 @@ class FormulaireAutreController extends AbstractController
             ]);
 
             $apiDataSecond = $responseSecond->toArray();
-            $nomValideur = $apiDataSecond[0]['valideur'];
-            $session->set('nom_valideur', $nomValideur);
+        $updatedData['nom_valideur'] = $apiDataSecond[0]['valideur'] ?? null;
 
-            return $this->redirectToRoute('formulaireldap-etape3');
+        // Sauvegarder les données mises à jour
+        $temporaryData->setData($updatedData);
+        $entityManager->flush();
+    
+        return $this->redirectToRoute('formulaireldap-etape3', ['token' => $token]);
         }
 
         return $this->render('formulaireautre/etape2.html.twig', [
@@ -117,17 +172,29 @@ class FormulaireAutreController extends AbstractController
             'servicesDropdownData' => $servicesDropdownData,
             'current_step' => 2,
             'total_steps' => 3,
+            'token' => $token,
         ]);
     }
 
-    #[Route('/formulaireldap/a/etape3', name: 'formulaireldap-etape3')]
-    public function etape3PourAutre(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
+    #[Route('/formulaireldap/a/etape3/{token}', name: 'formulaireldap-etape3')]
+    public function etape3PourAutre(string $token,MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
 
-        $data = $session->get('form_data', []);
-        $dossiersPartages = $session->get('dossiers_partages', []);
-        $nomServiceSelectionne = $session->get('nom_service_selectionne', '');
-        $nomValideur = $session->get('nom_valideur', '');
+        $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $token]);
+        if (!$temporaryData) {
+            throw $this->createNotFoundException('Données temporaires introuvables.');
+        }
+       
+        $data = $temporaryData->getData();
+
+        $user_ldap = $this->security->getUser();
+
+        if ($temporaryData->getUser()->getUid() !== $user_ldap->getUid()) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
+        }
+        $dossiersPartages = $data['dossiers_partages'] ?? [];
+        $nomServiceSelectionne = $data['nom_service_selectionne'] ?? '';
+        $nomValideur = $data['nom_valideur'] ?? '';
         
 
         $form = $this->createForm(DemandeEtape3FormType::class, $data, [
@@ -137,9 +204,9 @@ class FormulaireAutreController extends AbstractController
         $form->handleRequest($request);
     
         if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
-            $demandeId = $session->get('demande_id');
-            $nouvelleDemande = $session->get('nouvelle_demande', false);
+            $finalData = $form->getData();
+            $action = $temporaryData->getAction();
+           
             $historique = new HistoriqueDemande();
             $user = $this->security->getUser();
             $userInformation = new UserInformation();
@@ -151,21 +218,25 @@ class FormulaireAutreController extends AbstractController
             ]);
             
             
-            if ($nouvelleDemande) {
+            if ($action === 'create') {
   
                 $user_infos = new UserAutre();
-                $user_infos->setNom($data['nom']);
-                $user_infos->setPrenom( $data['prenom']);
-                $user_infos->setEmail( $data['email']);
-                $user_infos->setDateDeNaissance($data['date_de_naissance']);
-                $user_infos->setFonction($data['fonction']);
-                $user_infos->setStatutPersonne($data['statut']);
-                $statut_pers = ($data['statut']);
+                $user_infos->setNom($finalData['nom']);
+                $user_infos->setPrenom( $finalData['prenom']);
+                $user_infos->setEmail( $finalData['email']);
+
+    $dateDeNaissance = new \DateTime($finalData['date_de_naissance']['date']);
+    $user_infos->setDateDeNaissance($dateDeNaissance);
+
+                $user_infos->setFonction($finalData['fonction']);
+                $user_infos->setStatutPersonne($finalData['statut']);
+                $statut_pers = ($finalData['statut']);
                 if ($statut_pers !== 'Titulaire') {
-                    $date_debut_contrat = $data['date_debut_contrat'];
-                    $date_fin_contrat = $data['date_fin_contrat'];
-                    $user_infos->setDateDebut($date_debut_contrat);
-                    $user_infos->setDateFin($date_fin_contrat);
+                    $dateDebutContrat = new \DateTime($finalData['date_debut_contrat']['date']);
+                    $user_infos->setDateDebut($dateDebutContrat);
+                    $dateFinContrat = new \DateTime($finalData['date_fin_contrat']['date']);
+                    $user_infos->setDateFin($dateFinContrat);
+                    
                     
                 } else {
                     
@@ -181,24 +252,40 @@ class FormulaireAutreController extends AbstractController
                 $historique->setStatut('Création');
                 $historique->setStatutOperation('Création');
                 $this->addFlash('success', 'Votre demande a été créé.');
-            } elseif (!$nouvelleDemande && $demandeId) {
+            } elseif ($action === 'modifier') {
                 // Modification d'une demande existante
+                $demandeId = $finalData['demande_id'] ?? null;
                 $demande = $entityManager->getRepository(Demandes::class)->find($demandeId);
             
                 if ($demande) {
                     $user_infos = $demande->getAutreUtilisateur();
-                    $user_infos->setNom($data['nom']);
-                    $user_infos->setPrenom( $data['prenom']);
-                    $user_infos->setEmail( $data['email']);
-                    $user_infos->setDateDeNaissance($data['date_de_naissance']);
-                    $user_infos->setFonction($data['fonction']);
-                    $user_infos->setStatutPersonne($data['statut']);
-                    $statut_pers = ($data['statut']);
+                    $user_infos->setNom($finalData['nom']);
+                    $user_infos->setPrenom( $finalData['prenom']);
+                    $user_infos->setEmail( $finalData['email']);
+                    if (isset($finalData['date_de_naissance'])) {
+                        if (is_array($finalData['date_de_naissance']) && isset($finalData['date_de_naissance']['date'])) {
+                            $dateDeNaissance = new \DateTime($finalData['date_de_naissance']['date']);
+                        } elseif (is_string($finalData['date_de_naissance'])) {
+                            $dateDeNaissance = new \DateTime($finalData['date_de_naissance']);
+                        } else {
+                            $dateDeNaissance = null; // Vous pouvez définir une valeur par défaut ou lever une exception
+                        }
+                    
+                        if ($dateDeNaissance) {
+                            $user_infos->setDateDeNaissance($dateDeNaissance);
+                        }
+                    }
+                    
+                    // $user_infos->setDateDeNaissance($finalData['date_de_naissance']);
+                    $user_infos->setFonction($finalData['fonction']);
+                    $user_infos->setStatutPersonne($finalData['statut']);
+                    $statut_pers = ($finalData['statut']);
                     if ($statut_pers !== 'Titulaire') {
-                        $date_debut_contrat = $data['date_debut_contrat'];
-                        $date_fin_contrat = $data['date_fin_contrat'];
-                        $user_infos->setDateDebut($date_debut_contrat);
-                        $user_infos->setDateFin($date_fin_contrat);
+                        
+                        $dateDebutContrat = new \DateTime($finalData['date_debut_contrat']['date']);
+                        $user_infos->setDateDebut($dateDebutContrat);
+                        $dateFinContrat = new \DateTime($finalData['date_fin_contrat']['date']);
+                        $user_infos->setDateFin($dateFinContrat);
                         
                     } else {
                         
@@ -226,16 +313,16 @@ class FormulaireAutreController extends AbstractController
                 }
             } else {
                 $user_infos = new UserAutre();
-                $user_infos->setNom($data['nom']);
-                $user_infos->setPrenom( $data['prenom']);
-                $user_infos->setEmail( $data['email']);
-                $user_infos->setDateDeNaissance($data['date_de_naissance']);
-                $user_infos->setFonction($data['fonction']);
-                $user_infos->setStatutPersonne($data['statut']);
-                $statut_pers = ($data['statut']);
+                $user_infos->setNom($finalData['nom']);
+                $user_infos->setPrenom( $finalData['prenom']);
+                $user_infos->setEmail( $finalData['email']);
+                $user_infos->setDateDeNaissance($finalData['date_de_naissance']);
+                $user_infos->setFonction($finalData['fonction']);
+                $user_infos->setStatutPersonne($finalData['statut']);
+                $statut_pers = ($finalData['statut']);
                 if ($statut_pers !== 'Titulaire') {
-                    $date_debut_contrat = $data['date_debut_contrat'];
-                    $date_fin_contrat = $data['date_fin_contrat'];
+                    $date_debut_contrat = $finalData['date_debut_contrat'];
+                    $date_fin_contrat = $finalData['date_fin_contrat'];
                     $user_infos->setDateDebut($date_debut_contrat);
                     $user_infos->setDateFin($date_fin_contrat);
                     
@@ -286,35 +373,35 @@ class FormulaireAutreController extends AbstractController
            
            
             $demande->setInfosPersonne([
-                'nom' => $data['nom'],
-                'prenom' => $data['prenom'],
-                'email' => $data['email'],
-                'date_de_naissance' => $data['date_de_naissance'],
-                'statut' => $data['statut'],
-                'fonction' => $data['fonction'],
+                'nom' => $finalData['nom'],
+                'prenom' => $finalData['prenom'],
+                'email' => $finalData['email'],
+                'date_de_naissance' => $finalData['date_de_naissance'],
+                'statut' => $finalData['statut'],
+                'fonction' => $finalData['fonction'],
                 
             ]);
             $demande->setService($nomServiceSelectionne);
             $demande->setStatuts('Brouillons');
             $demande->setUidValideur($nomValideur);
-            $demande->setMissions($data['missions']);
+            $demande->setMissions($finalData['missions']);
             $demande->setDate((new \DateTime('now', $this->timezone)));
             $demande->setHeureSoumission((new \DateTime('now', $this->timezone)));
             $demande->setAutrePersonne(true);
           
-            $choix = $data['replace_someone'];
+            $choix = $finalData['replace_someone'];
             if ($choix === 'oui') {
                 $demande->setRemplacant(true);
-                $demande->setNomRemplacant($data['remplacement_nom']);
-                $demande->setPrenomRemplacant($data['remplacement_prenom']);
-                $demande->setTelephoneRemplacant($data['telephone_avant_service']);
-                $depart = $data['parti_rectorat'];
+                $demande->setNomRemplacant($finalData['remplacement_nom']);
+                $demande->setPrenomRemplacant($finalData['remplacement_prenom']);
+                $demande->setTelephoneRemplacant($finalData['telephone_avant_service']);
+                $depart = $finalData['parti_rectorat'];
                 if ($depart) {
                     $demande->setDepart(true);
                     $demande->setAffectationRemplacant('Aucune');
                 } else {
                     $demande->setDepart(false);
-                    $demande->setAffectationRemplacant($data['nouvelle_affectation_service']);
+                    $demande->setAffectationRemplacant($finalData['nouvelle_affectation_service']);
                 }
             } else {
                 $demande->setRemplacant(false);
@@ -338,19 +425,13 @@ class FormulaireAutreController extends AbstractController
             $entityManager->persist($demande);
             $entityManager->persist($historique);
             $entityManager->persist($ressources);
+            $entityManager->remove($temporaryData);
+        $entityManager->flush();
             
-            $entityManager->flush();
+            // $entityManager->flush();
     
             // Nettoyage de la session
-              $session->remove('form_data');
-            $session->remove('demande_id');
-            $session->remove('nouvelle_demande');
-            $session->remove('dossiers_partages');
-            $session->remove('_csrf/https-demande_etape1_form');
-            $session->remove('_csrf/https-demande_etape2_form');
-            $session->remove('_csrf/https-demande_etape3_form');
-            $session->remove('nom_service_selectionne');
-            $session->remove('nom_valideur');
+    
     
             // Envoi d'e-mail de notification
             // $email = (new Email())
@@ -378,6 +459,7 @@ class FormulaireAutreController extends AbstractController
             'total_steps' => 3,
             'dossiersPartages' => $dossiersPartages,
             'nomServiceSelectionne' => $nomServiceSelectionne,
+            'token' => $token,
         ]);
     }
     

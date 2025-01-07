@@ -9,10 +9,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use App\Entity\User;
+use App\Entity\TemporaryData;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use App\Entity\Ressources;
-use Symfony\Component\HttpFoundation\Cookie; // Ajout du namespace correct
-
+use Symfony\Component\HttpFoundation\Cookie; 
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Classe\MonApplication;
@@ -50,6 +51,11 @@ class StatutsExterneController extends AbstractController
         // $session->remove('_csrf/https-demande_etape3_form');
         // $session->remove('nom_service_selectionne');
         // $session->remove('nom_valideur');
+
+        $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+        if (!$user) {
+            return $this->redirectToRoute('session_expired');
+        }
      
         if (!$session->has('externe_auth')) {
             $session->set('externe_auth', true);
@@ -73,7 +79,7 @@ class StatutsExterneController extends AbstractController
 
 
 
-        $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+       
         $demandes = $entityManager->getRepository(Demandes::class)->findBy(['IDutilisateur' => $user]);
 
         dump($demandes);
@@ -167,15 +173,28 @@ class StatutsExterneController extends AbstractController
 
 
     #[Route('/formulaireexterne/nouvelle_demande/{token}', name: 'nouvelle_demande')]
-    public function nouvelleDemande(SessionInterface $session, $token): Response
+    public function nouvelleDemande(EntityManagerInterface $entityManager, $token, ): Response
     {
-       
-        $session->remove('form_data');
-        $session->remove('demande_id');
-        $session->set('nouvelle_demande', true);
+    
+
+        $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+        $temporaryData = new TemporaryData();
+        $temporaryData->setUser($user);
+        $temporaryData->setAction('create'); 
+        $temporaryData->setData([]); 
+        $temporaryData->setExpiration((new \DateTime())->modify('+30 minutes'));
+        $entityManager->persist($temporaryData);
+        $entityManager->flush();
+
+
+
     
         
-        return $this->redirectToRoute('formulaireexterne_etape1', ['token' => $token]);
+        return $this->redirectToRoute('formulaireexterne_etape1', [
+            'token' => $token,
+            'uuid' => $temporaryData->getToken(),
+        ]);
+        
     }
     
 
@@ -241,10 +260,20 @@ class StatutsExterneController extends AbstractController
             
         ];
 
-        $session->set('form_data', $data);
-        $session->set('demande_id', $id);
+        // $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+        $temporaryData = new TemporaryData();
+        $temporaryData->setUser($user);
+        $temporaryData->setAction('modifier'); 
+        $temporaryData->setData($data);
+        $temporaryData->setExpiration((new \DateTime())->modify('+30 minutes'));
+        $entityManager->persist($temporaryData);
+        $entityManager->flush();
 
-        return $this->redirectToRoute('formulaireexterne_etape1', ['token' => $token]);
+        return $this->redirectToRoute('formulaireexterne_etape1', [
+            'token' => $token,
+            'uuid' => $temporaryData->getToken(),
+        ]);
+        
     }
 
     #[Route('/formulaireexterne/valider/{id}', name: 'valider_demandes')]
@@ -293,17 +322,42 @@ class StatutsExterneController extends AbstractController
 
 
     #[Route('/logout', name: 'app_logout')]
-    public function logout(): Response
+    public function logout(EntityManagerInterface $entityManager, MailerInterface $mailer, RequestStack $requestStack, UrlGeneratorInterface $urlGenerator): Response
     {
-       
-        $session = $this->requestStack->getSession();
-        $session->remove('externe_auth');
+        $session = $requestStack->getSession();
+    
+        // Vérifiez si un token est présent
+        $token = $session->get('externe_token');
+        if ($token) {
+            // Trouver l'utilisateur correspondant au token
+            $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+    
+            if ($user) {
+                // Générer un nouveau token
+                $newToken = bin2hex(random_bytes(32));
+                $user->setToken($newToken);
+                $entityManager->flush();
+    
+                // Envoyer un email avec le nouveau token
+                $url = $urlGenerator->generate('demande_externe', ['token' => $newToken], UrlGeneratorInterface::ABSOLUTE_URL);
+    
+                $email = (new Email())
+                    ->from('noreply@ac-guadeloupe.fr')
+                    ->to($user->getEmail())
+                    ->subject('Votre session a expiré - Nouveau lien de connexion')
+                    ->html('<p>Bonjour,</p><p>Votre session a expiré. Cliquez sur le lien suivant pour vous reconnecter : <a href="' . $url . '">' . $url . '</a></p>');
+    
+                $mailer->send($email);
+            }
+        }
+    
+        // Supprimer les données de session
         $session->clear();
-
-        
-        return $this->redirectToRoute('home');
+    
+        // Rediriger vers la page d'accueil ou une autre page
+        return $this->redirectToRoute('session_expired');
     }
-
+    
 
 
 

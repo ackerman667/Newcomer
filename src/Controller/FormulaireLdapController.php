@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Classe\MonApplication;
 use App\Entity\User;
 use App\Entity\Demandes;
+use App\Entity\TemporaryData;
 use App\Form\DemandeEtape1FormType;
 use App\Form\DemandeEtape2FormType;
 use App\Form\DemandeEtape3FormType;
@@ -39,20 +40,30 @@ class FormulaireLdapController extends AbstractController
     }
 
 
-    #[Route('/formulaireldap/etape1', name: 'formulaireldap_etape1')]
-    public function etape1(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager): Response
+    #[Route('/formulaireldap/etape1/{token}', name: 'formulaireldap_etape1')]
+    public function etape1(string $token,MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager): Response
     {
-        $data = $session->get('form_data', []);
+        $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $token]);
+        if (!$temporaryData) {
+            throw $this->createNotFoundException('Données temporaires introuvables.');
+        }
+        $data = $temporaryData->getData();
+        $user = $this->security->getUser();
+
+        if ($temporaryData->getUser()->getUid() !== $user->getUid()) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
+        }
        
         $form = $this->createForm(DemandeEtape1FormType::class, $data);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
-            $session->set('form_data', $data);
+            $temporaryData->setData($form->getData());
+            $entityManager->flush();
           
 
-            return $this->redirectToRoute('formulaireldap_etape2');
+            return $this->redirectToRoute('formulaireldap_etape2', ['token' => $token]);
         }
         $sessionData = $session->all();
 
@@ -64,19 +75,28 @@ class FormulaireLdapController extends AbstractController
             'monApplication' => $monApplication,
             'current_step' => 1,
             'total_steps' => 3,
+            'token' => $token,
         ]);
     }
 
 
 
-    #[Route('/formulaireldap/etape2', name: 'formulaireldap_etape2')]
-    public function etape2(MonApplication $monApplication, Request $request, SessionInterface $session, HttpClientInterface $httpClient, EntityManagerInterface $entityManager): Response
+    #[Route('/formulaireldap/etape2/{token}', name: 'formulaireldap_etape2')]
+    public function etape2(string $token, MonApplication $monApplication, Request $request, SessionInterface $session, HttpClientInterface $httpClient, EntityManagerInterface $entityManager): Response
     {
+        $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $token]);
+        if (!$temporaryData) {
+            throw $this->createNotFoundException('Données temporaires introuvables.');
+        }
+
         $user = $this->security->getUser();
+        if ($temporaryData->getUser()->getUid() !== $user->getUid()) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
+        }
         $userInformation = new UserInformation();
         $infos_user = $userInformation->getUserInformation($user);
         $uid = $infos_user['uid'];
-        $data = $session->get('form_data', []);
+        $data = $temporaryData->getData();
         $dateString = $infos_user['datenaissance'];
           $date = \DateTimeImmutable::createFromFormat('d/m/Y', $dateString);
           $user1 = $entityManager->getRepository(User::class)->findOneBy([
@@ -135,21 +155,20 @@ class FormulaireLdapController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
-            $session->set('form_data', $data);
+            $updatedData = $form->getData();
+            $temporaryData->setData($updatedData);
+    
+            // Identifier le service sélectionné
             $selectedServiceId = $form->get('selectedService')->getData();
-
+    
             foreach ($services as $service) {
                 if ($service['id_service'] == $selectedServiceId) {
-                    $session->set('nom_service_selectionne', $service['service']);
-                    if (isset($service['dossiers_partages']) && !empty($service['dossiers_partages'])) {
-                        $session->set('dossiers_partages', $service['dossiers_partages']);
-                    } else {
-                        $session->set('dossiers_partages', []);
-                    }
+                    $updatedData['nom_service_selectionne'] = $service['service'];
+                    $updatedData['dossiers_partages'] = $service['dossiers_partages'] ?? [];
                     break;
                 }
             }
+    
         $apiUrlSecond = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/valideur/' . $selectedServiceId;
         $responseSecond = $httpClient->request('GET', $apiUrlSecond, [
             'headers' => [
@@ -158,14 +177,12 @@ class FormulaireLdapController extends AbstractController
             ],
         ]);
 
-            $apiDataSecond = $responseSecond->toArray();
-           
-            $nomValideur = $apiDataSecond[0]['valideur'];
-            $session->set('nom_valideur', $nomValideur);
-            $sessionData = $session->all();
+        $apiDataSecond = $responseSecond->toArray();
+        $updatedData['nom_valideur'] = $apiDataSecond[0]['valideur'] ?? null;
 
-            
-            dump($sessionData);
+        // Sauvegarder les données mises à jour
+        $temporaryData->setData($updatedData);
+        $entityManager->flush();
     
             
         
@@ -173,7 +190,7 @@ class FormulaireLdapController extends AbstractController
            
 
 
-            return $this->redirectToRoute('formulaireldap_etape3');
+        return $this->redirectToRoute('formulaireldap_etape3', ['token' => $token]);
         }
 
         return $this->render('formulaireldap/etape2ldap.html.twig', [
@@ -182,20 +199,27 @@ class FormulaireLdapController extends AbstractController
             'servicesDropdownData' => $servicesDropdownData,
             'current_step' => 2,
             'total_steps' => 3,
+            'token' => $token,
         ]);
     }
 
 
-    #[Route('/formulaireldap/etape3', name: 'formulaireldap_etape3')]
-    public function etape3(MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
+    #[Route('/formulaireldap/etape3/{token}', name: 'formulaireldap_etape3')]
+    public function etape3(string $token,MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
-        dump($session);
-        $sessionData = $session->all();
+        $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $token]);
 
+    if (!$temporaryData) {
+        throw $this->createNotFoundException('Données temporaires introuvables.');
+    }
 
-        dump($sessionData);
+    $data = $temporaryData->getData();
 
         $user = $this->security->getUser();
+
+        if ($temporaryData->getUser()->getUid() !== $user->getUid()) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
+        }
         $userInformation = new UserInformation();
         $infos_user = $userInformation->getUserInformation($user);
         $nom_utilisateur = $infos_user['sn'];
@@ -205,10 +229,9 @@ class FormulaireLdapController extends AbstractController
         $uid = $infos_user['uid'];
         $date = \DateTimeImmutable::createFromFormat('d/m/Y', $dateString);
         $datedenaissance_utilisateur = $date;
-        $dossiersPartages = $session->get('dossiers_partages', []);
-        $nomServiceSelectionne = $session->get('nom_service_selectionne', '');
-        $nomValideur = $session->get('nom_valideur', '');
-       
+        $dossiersPartages = $data['dossiers_partages'] ?? [];
+        $nomServiceSelectionne = $data['nom_service_selectionne'] ?? '';
+        $nomValideur = $data['nom_valideur'] ?? '';
        
     
         $user1 = $entityManager->getRepository(User::class)->findOneBy([
@@ -227,22 +250,22 @@ class FormulaireLdapController extends AbstractController
             $user1->setProvenance('ldap');
         }
    
-    
-        $data = $session->get('form_data', []);
+ 
         $form = $this->createForm(DemandeEtape3FormType::class, $data, [
             'dossiers_partages' => $dossiersPartages,
             'data_class' => null, 
         ]);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
+            $finalData = $form->getData();
+          
             $historique = new HistoriqueDemande();
-            $fonction = $data['fonction'];
+            $fonction = $finalData['fonction'];
            
-            $demandeId = $session->get('demande_id');
-            $nouvelleDemande = $session->get('nouvelle_demande', false);
+            $action = $temporaryData->getAction();
+            
         
-            if ($nouvelleDemande) {
+            if ($action === 'create') {
                 // Création d'une nouvelle demande
                 $demande = new Demandes();
                 $token = bin2hex(random_bytes(32));
@@ -267,9 +290,10 @@ class FormulaireLdapController extends AbstractController
                 }
                 $this->addFlash('success', 'Votre demande a été créé.');
         
-            } elseif (!$nouvelleDemande && $demandeId) {
+            } elseif ($action === 'modifier') {
                 // Modification d'une demande existante
-                $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['id' => $demandeId]);
+                $demandeId = $finalData['demande_id'] ?? null;
+                $demande = $entityManager->getRepository(Demandes::class)->find($demandeId);
         
                 if ($demande) {
                     $historique->setDemande($demande);
@@ -337,22 +361,22 @@ class FormulaireLdapController extends AbstractController
                 $this->addFlash('success', 'Votre demande a été créé.');
             }
         
-            $choix = $data['replace_someone'];
-            $statut_utilisateur = $data['statut'];
+            $choix = $finalData['replace_someone'];
+            $statut_utilisateur = $finalData['statut'];
         
     
             if ($choix === 'oui') {
                 $demande->setRemplacant(true);
-                $demande->setNomRemplacant($data['remplacement_nom']);
-                $demande->setPrenomRemplacant($data['remplacement_prenom']);
-                $demande->setTelephoneRemplacant($data['telephone_avant_service']);
-                $depart = $data['parti_rectorat'];
+                $demande->setNomRemplacant($finalData['remplacement_nom']);
+                $demande->setPrenomRemplacant($finalData['remplacement_prenom']);
+                $demande->setTelephoneRemplacant($finalData['telephone_avant_service']);
+                $depart = $finalData['parti_rectorat'];
                 if ($depart == true) {
                     $demande->setDepart(true);
                     $demande->setAffectationRemplacant('Aucune');
                 } else {
                     $demande->setDepart(false);
-                    $demande->setAffectationRemplacant($data['nouvelle_affectation_service']);
+                    $demande->setAffectationRemplacant($finalData['nouvelle_affectation_service']);
                 }
             } else {
                 $demande->setRemplacant(false);
@@ -364,10 +388,10 @@ class FormulaireLdapController extends AbstractController
             }
     
             if ($statut_utilisateur !== 'Titulaire') {
-                $date_debut_contrat = $data['date_debut_contrat'];
-                $date_fin_contrat = $data['date_fin_contrat'];
-                $user1->setDateDebut($date_debut_contrat);
-                $user1->setDateFin($date_fin_contrat);
+                $dateDebutContrat = new \DateTime($finalData['date_debut_contrat']['date']);
+                $user1->setDateDebut($dateDebutContrat);
+                $dateFinContrat = new \DateTime($finalData['date_fin_contrat']['date']);
+                $user1->setDateFin($dateFinContrat);
                 $user1->setStatutPersonne($statut_utilisateur);
             } else {
                 $user1->setStatutPersonne($statut_utilisateur);
@@ -375,7 +399,7 @@ class FormulaireLdapController extends AbstractController
                 $user1->setDateFin(null);
             }
             $user1->setFonction($fonction);
-            $missions = $data['missions'];
+            $missions = $finalData['missions'];
     
             $demande->setIDutilisateur($user1);
             $demande->setAutrePersonne(false);
@@ -397,16 +421,8 @@ class FormulaireLdapController extends AbstractController
             $prenom = $user1->getPrenom();
             $url = $this->generateUrl('liste_demandes', [], UrlGeneratorInterface::ABSOLUTE_URL);
 
-            $session->remove('form_data');
-    $session->remove('demande_id');
-    $session->remove('nouvelle_demande');
-    $session->remove('dossiers_partages');
-    $session->remove('_csrf/https-demande_etape1_form');
-    $session->remove('_csrf/https-demande_etape2_form');
-    $session->remove('_csrf/https-demande_etape3_form');
-    $session->remove('nom_service_selectionne');
-    $session->remove('nom_valideur');
-    
+            $entityManager->remove($temporaryData);
+        $entityManager->flush();
             // $email = (new Email())
             //     ->from('noreply@ac-guadeloupe.fr')
             //     ->to($user1->getEmail())
@@ -435,6 +451,7 @@ class FormulaireLdapController extends AbstractController
             'nomServiceSelectionne' => $nomServiceSelectionne,
             'total_steps' => 3,
             'dossiersPartages' => $dossiersPartages,
+            'token' => $token,
         ]);
     }
 

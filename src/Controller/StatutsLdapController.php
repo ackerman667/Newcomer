@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use App\Entity\TemporaryData;
 use App\Entity\User;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -169,27 +170,157 @@ class StatutsLdapController extends AbstractController
 #[Route('/formulaireldap/nouvelle_demande', name: 'nouvelle_demande_ldap')]
 public function nouvelleDemande(SessionInterface $session, EntityManagerInterface $entityManager): Response
 {
-    
-    $session->remove('form_data');
-    $session->remove('demande_id');
+    $userBdd = $this->findOrCreateLdapUser($entityManager);
+    $temporaryData = new TemporaryData();
+    $temporaryData->setUser($userBdd);
+    $temporaryData->setAction('create'); 
+    $temporaryData->setData([]); 
+    $temporaryData->setExpiration((new \DateTime())->modify('+30 minutes'));
+    $entityManager->persist($temporaryData);
+    $entityManager->flush();
 
-    $session->set('nouvelle_demande', true);
+    
+    return $this->redirectToRoute('formulaireldap_etape1', ['token' => $temporaryData->getToken()]);
+
+}
+
+
+#[Route('/formulaireldap/modifier/{id}', name: 'modifier_demandesldap')]
+public function modifierDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
+{
+    $demande = $entityManager->getRepository(Demandes::class)->find($id);
+
+    if (!$demande) {
+        throw $this->createNotFoundException('Demande non trouvée.');
+    }
+    $user = $this->security->getUser();
+    $userInformation = new UserInformation();
+    $infos_user = $userInformation->getUserInformation($user);
+    $email_utilisateur= $infos_user['mail'];
+    $user1 = $entityManager->getRepository(User::class)->findOneBy(['email' => $email_utilisateur]);
+    // $token = $demande->getToken();
+
+    // Pré-remplir les données pour le formulaire
+    $data = [
+        'demande_id' => $id,
+        'nom' => $user1->getNom(),
+        'prenom' => $user1->getPrenom(),
+        'email' => $user1->getEmail(),
+        'date_de_naissance' => $user1->getDateDeNaissance(),
+        'fonction' => $user1->getFonction(),
+        'replace_someone' => $demande->isRemplacant() ? 'oui' : 'non',
+        'remplacement_nom' => $demande->getNomRemplacant(),
+        'remplacement_prenom' => $demande->getPrenomRemplacant(),
+        'telephone_avant_service' => $demande->getTelephoneRemplacant(),
+        'parti_rectorat' => $demande->isDepart(),
+        'nouvelle_affectation_service' => $demande->getAffectationRemplacant(),
+        'statut' => $user1->getStatutPersonne(),
+        'fonction' => $user1->getFonction(),
+        'date_debut_contrat' => $user1->getDateDebut(),
+        'date_fin_contrat' => $user1->getDateFin(),
+        'missions' => $demande->getMissions(),
+    ];
+
     
 
-    return $this->redirectToRoute('formulaireldap_etape1');
+    
+    $userBdd = $this->findOrCreateLdapUser($entityManager);
+
+    $temporaryData = new TemporaryData();
+    $temporaryData->setUser($userBdd);
+    $temporaryData->setAction('modifier'); // Marque comme une modification
+    $temporaryData->setData($data); // Stocker les données pré-remplies
+    $temporaryData->setExpiration((new \DateTime())->modify('+30 minutes'));
+
+    // Sauvegarder dans la base de données
+    $entityManager->persist($temporaryData);
+    $entityManager->flush();
+
+    // Rediriger vers l'étape 1 avec le token généré
+    return $this->redirectToRoute('formulaireldap_etape1', ['token' => $temporaryData->getToken()]);
 }
 #[Route('/formulaireldap/a/nouvelle_demande', name: 'nouvelle-demande-ldap')]
 public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInterface $entityManager): Response
 {
   
-    $session->remove('form_data');
-    $session->remove('demande_id');
+  
 
-    $session->set('nouvelle_demande', true);
-    
+    $userBdd = $this->findOrCreateLdapUser($entityManager);
+    $temporaryData = new TemporaryData();
+    $temporaryData->setUser($userBdd);
+    $temporaryData->setAction('create'); // Marque comme une nouvelle demande
+    $temporaryData->setData([]); // Données initiales vides
+    $temporaryData->setExpiration((new \DateTime())->modify('+30 minutes'));
 
-    return $this->redirectToRoute('formulaireldap-etape1');
+    // Sauvegarder dans la base de données
+    $entityManager->persist($temporaryData);
+    $entityManager->flush();
+
+    // Rediriger vers l'étape 1 avec le token généré
+    return $this->redirectToRoute('formulaireldap-etape1', ['token' => $temporaryData->getToken()]);
 }
+
+
+
+
+
+
+#[Route('/formulaireldap/a/modifier/{id}', name: 'modifier_demandespourautre')]
+    public function modifierDemandePourAutre(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
+    {
+        $demande = $entityManager->getRepository(Demandes::class)->find($id);
+
+        if (!$demande) {
+            throw $this->createNotFoundException('Demande non trouvée.');
+        }
+        $user1 = $demande->getAutreUtilisateur();
+
+        // $data = $demande->getInfosPersonne();
+        // if (isset($data['date_de_naissance']) && is_array($data['date_de_naissance'])) {
+        //     $dateString = $data['date_de_naissance']['date']; 
+        //     $dateNaissance = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s.u', $dateString);
+        //     $data['date_de_naissance'] = $dateNaissance; 
+        // }
+        $data = [
+            'demande_id' => $id,
+            'nom' => $user1->getNom(),
+            'prenom' => $user1->getPrenom(),
+            'email' => $user1->getEmail(),
+            'date_de_naissance' => $user1->getDateDeNaissance() ? $user1->getDateDeNaissance()->format('Y-m-d') : null,
+            'fonction' => $user1->getFonction(),
+            'replace_someone' => $demande->isRemplacant() ? 'oui' : 'non',
+            'remplacement_nom' => $demande->getNomRemplacant(),
+            'remplacement_prenom' => $demande->getPrenomRemplacant(),
+            'telephone_avant_service' => $demande->getTelephoneRemplacant(),
+            'parti_rectorat' => $demande->isDepart(),
+            'nouvelle_affectation_service' => $demande->getAffectationRemplacant(),
+            'statut' => $user1->getStatutPersonne(),
+            'date_debut_contrat' => $user1->getDateDebut() ? $user1->getDateDebut()->format('Y-m-d') : null,
+            'date_fin_contrat' => $user1->getDateFin() ? $user1->getDateFin()->format('Y-m-d') : null,
+            'missions' => $demande->getMissions(),
+        ];
+        
+       
+    
+     $userBdd = $this->findOrCreateLdapUser($entityManager);
+    $temporaryData = new TemporaryData();
+    $temporaryData->setUser($userBdd);
+    $temporaryData->setAction('modifier'); 
+    $temporaryData->setData($data); 
+    $temporaryData->setExpiration((new \DateTime())->modify('+30 minutes'));
+
+    $entityManager->persist($temporaryData);
+    $entityManager->flush();
+
+
+    return $this->redirectToRoute('formulaireldap-etape1', ['token' => $temporaryData->getToken()]);
+    }
+
+
+
+
+
+
 
 
 #[Route('/formulaireldap/supprimer/{id}', name: 'formulaireldap_supprimer')]
@@ -226,46 +357,6 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
 
 
 
-    #[Route('/formulaireldap/modifier/{id}', name: 'modifier_demandesldap')]
-    public function modifierDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
-    {
-        $demande = $entityManager->getRepository(Demandes::class)->find($id);
-
-        if (!$demande) {
-            throw $this->createNotFoundException('Demande non trouvée.');
-        }
-        $user = $this->security->getUser();
-        $userInformation = new UserInformation();
-        $infos_user = $userInformation->getUserInformation($user);
-        $email_utilisateur= $infos_user['mail'];
-        $user1 = $entityManager->getRepository(User::class)->findOneBy(['email' => $email_utilisateur]);
-        $token = $demande->getToken();
-
-        // Pré-remplir les données pour le formulaire
-        $data = [
-            'nom' => $user1->getNom(),
-            'prenom' => $user1->getPrenom(),
-            'email' => $user1->getEmail(),
-            'date_de_naissance' => $user1->getDateDeNaissance(),
-            'fonction' => $user1->getFonction(),
-            'replace_someone' => $demande->isRemplacant() ? 'oui' : 'non',
-            'remplacement_nom' => $demande->getNomRemplacant(),
-            'remplacement_prenom' => $demande->getPrenomRemplacant(),
-            'telephone_avant_service' => $demande->getTelephoneRemplacant(),
-            'parti_rectorat' => $demande->isDepart(),
-            'nouvelle_affectation_service' => $demande->getAffectationRemplacant(),
-            'statut' => $user1->getStatutPersonne(),
-            'fonction' => $user1->getFonction(),
-            'date_debut_contrat' => $user1->getDateDebut(),
-            'date_fin_contrat' => $user1->getDateFin(),
-            'missions' => $demande->getMissions(),
-        ];
-
-        $session->set('form_data', $data);
-        $session->set('demande_id', $id);
-
-        return $this->redirectToRoute('formulaireldap_etape1', ['id' => $id]);
-    }
 
 
     #[Route('/formulaireldap/valider/{id}', name: 'valider_demandesldap')]
@@ -407,25 +498,6 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
   
 
 
-#[Route('/formulaireldap/a/modifier/{id}', name: 'modifier_demandespourautre')]
-    public function modifierDemandePourAutre(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
-    {
-        $demande = $entityManager->getRepository(Demandes::class)->find($id);
-        if (!$demande) {
-            throw $this->createNotFoundException('Demande non trouvée.');
-        }
-
-        $data = $demande->getInfosPersonne();
-        if (isset($data['date_de_naissance']) && is_array($data['date_de_naissance'])) {
-            $dateString = $data['date_de_naissance']['date']; 
-            $dateNaissance = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s.u', $dateString);
-            $data['date_de_naissance'] = $dateNaissance; 
-        }
-        $session->set('form_data', $data);
-        $session->set('demande_id', $id);
-
-        return $this->redirectToRoute('formulaireldap-etape1', ['id' => $id]);
-    }
 
     #[Route('/formulaireldap/a/supprimer/{id}', name: 'supprimer_demandespourautre')]
     public function supprimerDemandePourAutre($id, EntityManagerInterface $entityManager): RedirectResponse
@@ -504,6 +576,50 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     }
 
 
+    public function findOrCreateLdapUser(EntityManagerInterface $entityManager): User
+    {
+        // Récupérer l'utilisateur actuellement connecté
+        $currentUser = $this->security->getUser();
 
+        if (!$currentUser) {
+            throw new \LogicException('Aucun utilisateur connecté.');
+        }
 
+        $uid = $currentUser->getUid();
+
+        // Recherche de l'utilisateur en base
+        $user = $entityManager->getRepository(User::class)->findOneBy([
+            'uid' => $uid,
+            'provenance' => 'ldap',
+        ]);
+
+        // Si l'utilisateur n'existe pas, le créer
+        if (!$user) {
+            $userInformation = new UserInformation();
+            $infos_user = $userInformation->getUserInformation($currentUser);
+
+            $nom_utilisateur = $infos_user['sn'];
+            $prenom_utilisateur = $infos_user['givenname'];
+            $email_utilisateur = $infos_user['mail'];
+            $dateString = $infos_user['datenaissance'];
+            $date = \DateTimeImmutable::createFromFormat('d/m/Y', $dateString);
+            $datedenaissance_utilisateur = $date;
+            $user = new User();
+            $user->setNom($nom_utilisateur);
+            $user->setPrenom($prenom_utilisateur);
+            $user->setDateDeNaissance($datedenaissance_utilisateur);
+            $user->setEmail($email_utilisateur);
+            $user->setCompteActif(true);
+            $user->setUid($uid);
+            $user->setProvenance('ldap');
+            $entityManager->persist($user);
+            $entityManager->flush();
+        }
+
+        return $user;
+    }
 }
+
+
+
+
