@@ -44,6 +44,8 @@ class LdapController extends AbstractController
 
     }
 
+    
+
 
 
     #[Route('/formulaireldap/logout', name: 'ldap_logout')]

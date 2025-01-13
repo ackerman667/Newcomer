@@ -39,8 +39,40 @@ class StatutsExterneController extends AbstractController
         $this->timezone = new \DateTimeZone('America/Guadeloupe'); 
     }
     #[Route('/statuts/{token}', name: 'demande_externe')]
-    public function index( SessionInterface $session, MonApplication $monApplication, EntityManagerInterface $entityManager, $token): Response
+    public function index( Request $request , SessionInterface $session, MonApplication $monApplication, EntityManagerInterface $entityManager, $token): Response
     {
+        $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+
+        if (!$user) {
+            throw $this->createNotFoundException('Utilisateur introuvable.');
+        }
+        // $now = new \DateTime();
+        // $expiration = $user->getTokenExpiration();
+    
+        // if (!$expiration || $expiration <= $now || $expiration->getTimestamp() - $now->getTimestamp() <= 1200) {
+        //     // Générer un nouveau token
+        //     $newToken = bin2hex(random_bytes(32));
+        //     $user->setToken($newToken);
+        //     $user->setTokenExpiration((new \DateTime())->modify('+24 hours'));
+        //     $entityManager->flush();
+    
+        //     // Envoyer un e-mail avec le nouveau lien
+        //     $url = $request->getSchemeAndHttpHost() . $this->generateUrl('demande_externe', ['token' => $newToken]);
+    
+        //     $email = (new Email())
+        //         ->from('noreply@ac-guadeloupe.fr')
+        //         ->to($user->getEmail())
+        //         ->subject('Votre session a expiré - Nouveau lien de connexion')
+        //         ->html('<p>Bonjour,</p><p>Votre session a expiré. Cliquez sur le lien suivant pour vous reconnecter : <a href="' . $url . '">' . $url . '</a></p>');
+    
+        //     $mailer->send($email);
+    
+        //     // Rediriger vers la route session_expired
+        //     return $this->redirectToRoute('session_expired');
+        // }
+
+        
+
         // $session->clear();
         // $session->remove('form_data');
         // $session->remove('demande_id');
@@ -52,10 +84,6 @@ class StatutsExterneController extends AbstractController
         // $session->remove('nom_service_selectionne');
         // $session->remove('nom_valideur');
 
-        $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
-        if (!$user) {
-            return $this->redirectToRoute('session_expired');
-        }
      
         if (!$session->has('externe_auth')) {
             $session->set('externe_auth', true);

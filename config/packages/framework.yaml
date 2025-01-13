@@ -1,7 +1,5 @@
 # see https://symfony.com/doc/current/reference/configuration/framework.html
 framework:
-    scheduler:
-        enabled: true
     secret: '%env(APP_SECRET)%'
     #csrf_protection: true
     annotations: false
@@ -14,6 +12,11 @@ framework:
         handler_id: null
         cookie_secure: auto
         cookie_samesite: lax
+        # handler_id: App\Session\CustomSessionHandler
+        # gc_maxlifetime: 30
+        # cookie_lifetime: 0
+
+        
 
     #esi: true
     #fragments: true

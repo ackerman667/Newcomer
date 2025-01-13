@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     const updateLastActivityCookie = () => {
         const expiryDate = new Date();
-        expiryDate.setTime(expiryDate.getTime() + 60000); // 20 minutes
+        expiryDate.setTime(expiryDate.getTime() + 6000000); // 20 minutes
         document.cookie = `last_activity=${Date.now()}; path=/; expires=${expiryDate.toUTCString()}`;
     };
 
