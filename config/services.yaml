@@ -7,6 +7,9 @@ parameters:
     disabled_services: '%env(DISABLED_SERVICES)%'
 
 services:
+
+
+
     App\EventSubscriber\SessionTimeoutSubscriber:
         autowire: true
         autoconfigure: true

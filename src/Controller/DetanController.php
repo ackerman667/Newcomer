@@ -34,7 +34,7 @@ class DetanController extends AbstractController
         
 
         $demandesWithUsers = $query->getResult();
-        dump($demandesWithUsers);
+        // dump($demandesWithUsers);
         $alertUsers = $this->getUsersWithMultipleLEKADemandes($entityManager);
 
 

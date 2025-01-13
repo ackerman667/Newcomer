@@ -8,6 +8,14 @@ document.addEventListener('DOMContentLoaded', function () {
     // Mettez à jour le cookie à chaque interaction utilisateur
     document.addEventListener('mousemove', updateLastActivityCookie);
     document.addEventListener('keypress', updateLastActivityCookie);
+    document.addEventListener('click', updateLastActivityCookie);
+    document.addEventListener('scroll', updateLastActivityCookie);
+    document.addEventListener('input', updateLastActivityCookie);
+    document.addEventListener('change', updateLastActivityCookie);
+    document.addEventListener('touchstart', updateLastActivityCookie);
+    document.addEventListener('touchend', updateLastActivityCookie);
+    window.addEventListener('focus', updateLastActivityCookie);
+
 
     // Initialisez le cookie à chaque chargement de page
     updateLastActivityCookie();

@@ -21,6 +21,20 @@ class TemporaryDataRepository extends ServiceEntityRepository
         parent::__construct($registry, TemporaryData::class);
     }
 
+    public function deleteExpiredData(): int
+    {
+        $qb = $this->createQueryBuilder('td')
+            ->delete()
+            ->where('td.expiration <= :now')
+            ->setParameter('now', new \DateTime());
+
+        return $qb->getQuery()->execute(); // Retourne le nombre de lignes supprimées
+    }
+
+
+
+
+
 //    /**
 //     * @return TemporaryData[] Returns an array of TemporaryData objects
 //     */

@@ -73,7 +73,7 @@ class StatutsExterneController extends AbstractController
         $sessionData = $session->all();
 
         
-        dump($sessionData);
+        // dump($sessionData);
         
 
 
@@ -82,7 +82,7 @@ class StatutsExterneController extends AbstractController
        
         $demandes = $entityManager->getRepository(Demandes::class)->findBy(['IDutilisateur' => $user]);
 
-        dump($demandes);
+        // dump($demandes);
         
 
         return $this->render('demandes/demandes_externe.html.twig', [
@@ -182,7 +182,7 @@ class StatutsExterneController extends AbstractController
         $temporaryData->setUser($user);
         $temporaryData->setAction('create'); 
         $temporaryData->setData([]); 
-        $temporaryData->setExpiration((new \DateTime())->modify('+30 minutes'));
+        $temporaryData->setExpiration((new \DateTime())->modify('+1 minutes'));
         $entityManager->persist($temporaryData);
         $entityManager->flush();
 
@@ -333,6 +333,15 @@ class StatutsExterneController extends AbstractController
             $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
     
             if ($user) {
+
+                $temporaryDataEntries = $entityManager->getRepository(\App\Entity\TemporaryData::class)
+                ->findBy(['user' => $user]);
+
+            foreach ($temporaryDataEntries as $entry) {
+                $entityManager->remove($entry);
+            }
+            $entityManager->flush();
+
                 // Générer un nouveau token
                 $newToken = bin2hex(random_bytes(32));
                 $user->setToken($newToken);

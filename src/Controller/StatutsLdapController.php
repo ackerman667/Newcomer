@@ -66,7 +66,7 @@ class StatutsLdapController extends AbstractController
 
         $sessionData = $session->all();
 
-        dump($sessionData);
+        // dump($sessionData);
 
         return $this->render('demandes/index.html.twig', [
             'mesDemandes' => $userDemandes,
@@ -175,7 +175,7 @@ public function nouvelleDemande(SessionInterface $session, EntityManagerInterfac
     $temporaryData->setUser($userBdd);
     $temporaryData->setAction('create'); 
     $temporaryData->setData([]); 
-    $temporaryData->setExpiration((new \DateTime())->modify('+30 minutes'));
+    $temporaryData->setExpiration((new \DateTime())->modify('+1 minutes'));
     $entityManager->persist($temporaryData);
     $entityManager->flush();
 
@@ -230,7 +230,7 @@ public function modifierDemande(MonApplication $monApplication, Request $request
     $temporaryData->setUser($userBdd);
     $temporaryData->setAction('modifier'); // Marque comme une modification
     $temporaryData->setData($data); // Stocker les données pré-remplies
-    $temporaryData->setExpiration((new \DateTime())->modify('+30 minutes'));
+    $temporaryData->setExpiration((new \DateTime())->modify('+1 minutes'));
 
     // Sauvegarder dans la base de données
     $entityManager->persist($temporaryData);
@@ -250,7 +250,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     $temporaryData->setUser($userBdd);
     $temporaryData->setAction('create'); // Marque comme une nouvelle demande
     $temporaryData->setData([]); // Données initiales vides
-    $temporaryData->setExpiration((new \DateTime())->modify('+30 minutes'));
+    $temporaryData->setExpiration((new \DateTime())->modify('+1 minutes'));
 
     // Sauvegarder dans la base de données
     $entityManager->persist($temporaryData);
@@ -307,7 +307,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     $temporaryData->setUser($userBdd);
     $temporaryData->setAction('modifier'); 
     $temporaryData->setData($data); 
-    $temporaryData->setExpiration((new \DateTime())->modify('+30 minutes'));
+    $temporaryData->setExpiration((new \DateTime())->modify('+1 minutes'));
 
     $entityManager->persist($temporaryData);
     $entityManager->flush();

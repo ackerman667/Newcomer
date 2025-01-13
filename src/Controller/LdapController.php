@@ -11,6 +11,8 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use App\Entity\User;
 use App\Entity\Demandes;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Entity\TemporaryData;
+use Symfony\Component\HttpFoundation\Request;
 
 use App\Security\UserInformation;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -41,6 +43,47 @@ class LdapController extends AbstractController
 
 
     }
+
+
+
+    #[Route('/formulaireldap/logout', name: 'ldap_logout')]
+public function ldapLogout(EntityManagerInterface $entityManager, UserRepository $userRepository, Request $request): Response
+{
+    $user = $this->security->getUser();
+    if ($user && $user instanceof \App\Security\User) {
+        // Récupérer l'utilisateur Doctrine (persisté en base de données) à partir de l'UID et de la provenance LDAP
+        $doctrineUser = $entityManager->getRepository(\App\Entity\User::class)->findOneBy([
+            'uid' => $user->getUid(),
+            'provenance' => 'ldap',
+        ]);
+    
+        if ($doctrineUser) {
+            // Récupérer les entrées TemporaryData associées à cet utilisateur
+            $temporaryDataEntries = $entityManager->getRepository(\App\Entity\TemporaryData::class)
+                ->findBy(['user' => $doctrineUser]);
+    
+            // Supprimer les entrées TemporaryData
+            foreach ($temporaryDataEntries as $entry) {
+                $entityManager->remove($entry);
+            }
+    
+            // Appliquer les modifications à la base de données
+            $entityManager->flush();
+        }
+    }
+
+    // Redirigez vers l'URL réelle de déconnexion
+    return $this->redirect($user->getUrllogout());
+}
+
+
+
+
+
+
+
+
+
 
     // #[Route('/logout', name: 'app_logout')]
     // public function logout(): Response

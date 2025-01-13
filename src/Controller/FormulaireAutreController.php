@@ -85,6 +85,11 @@ class FormulaireAutreController extends AbstractController
         }
        
         $data = $temporaryData->getData();
+
+        
+
+
+
         if (!empty($data['date_de_naissance'])) {
             if (is_array($data['date_de_naissance']) && isset($data['date_de_naissance']['date'])) {
                 $data['date_de_naissance'] = new \DateTime($data['date_de_naissance']['date']);
@@ -366,7 +371,7 @@ class FormulaireAutreController extends AbstractController
                 $entityManager->persist($user);
                 $demande->setIDutilisateur($user);
 
-                dump($user);
+                // dump($user);
 
             }
 

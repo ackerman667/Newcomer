@@ -68,7 +68,7 @@ class FormulaireLdapController extends AbstractController
         $sessionData = $session->all();
 
         
-        dump($sessionData);
+        // dump($sessionData);
 
         return $this->render('formulaireldap/etape1ldap.html.twig', [
             'form' => $form->createView(),
@@ -88,6 +88,7 @@ class FormulaireLdapController extends AbstractController
         if (!$temporaryData) {
             throw $this->createNotFoundException('Données temporaires introuvables.');
         }
+        $temp = 
 
         $user = $this->security->getUser();
         if ($temporaryData->getUser()->getUid() !== $user->getUid()) {
@@ -96,39 +97,53 @@ class FormulaireLdapController extends AbstractController
         $userInformation = new UserInformation();
         $infos_user = $userInformation->getUserInformation($user);
         $uid = $infos_user['uid'];
-        $data = $temporaryData->getData();
+        $tmp = $temporaryData->getData();
         $dateString = $infos_user['datenaissance'];
           $date = \DateTimeImmutable::createFromFormat('d/m/Y', $dateString);
           $user1 = $entityManager->getRepository(User::class)->findOneBy([
             'uid' => $uid,
             'provenance' => 'ldap'
         ]);
-    
-        if (!$user1) {
 
-        $data = array_merge($data, [
-            'nom' => $infos_user['sn'],
-            'prenom' => $infos_user['givenname'],
-             'email' => $infos_user['mail'],
-             'date_de_naissance' => $date,
+        $data = array_merge($tmp, [
+                    'nom' => $infos_user['sn'],
+                    'prenom' => $infos_user['givenname'],
+                     'email' => $infos_user['mail'],
+                     'date_de_naissance' => $date,
+                     'fonction' => !empty($tmp['fonction']) ? $tmp['fonction'] : ($user1->getFonction() ?? ''),
+                     'statut' => !empty($tmp['statut']) ? $tmp['statut'] : ($user1->getStatutPersonne() ?? ''),
+                     'date_debut_contrat' => isset($tmp['date_debut_contrat']) && is_string($tmp['date_debut_contrat'])
+                     ? new \DateTime($tmp['date_debut_contrat'])
+                     : ($user1->getDateDebut() ?? null),
+                 'date_fin_contrat' => isset($tmp['date_fin_contrat']) && is_string($tmp['date_fin_contrat'])
+                     ? new \DateTime($tmp['date_fin_contrat'])
+                     : ($user1->getDateFin() ?? null),
+             ]);
+        // if (!$user1) {
+
+        // $data = array_merge($data, [
+        //     'nom' => $infos_user['sn'],
+        //     'prenom' => $infos_user['givenname'],
+        //      'email' => $infos_user['mail'],
+        //      'date_de_naissance' => $date,
 
             
-        ]); } 
-        elseif($user1) {
-            $data = array_merge($data, [
-                'nom' => $infos_user['sn'],
-                'prenom' => $infos_user['givenname'],
-                 'email' => $infos_user['mail'],
-                 'date_de_naissance' => $date,
-                 'fonction' => $user1->getFonction(),
-                 'statut' => $user1->getStatutPersonne(),
-                 'date_debut_contrat' => $user1->getDateDebut(),
-                 'date_fin_contrat' => $user1->getDateFin(),
-                ]);
+        // ]); } 
+        // elseif($user1) {
+        //     $data = array_merge($data, [
+        //         'nom' => $infos_user['sn'],
+        //         'prenom' => $infos_user['givenname'],
+        //          'email' => $infos_user['mail'],
+        //          'date_de_naissance' => $date,
+        //          'fonction' => $user1->getFonction(),
+        //          'statut' => $user1->getStatutPersonne(),
+        //          'date_debut_contrat' => $user1->getDateDebut(),
+        //          'date_fin_contrat' => $user1->getDateFin(),
+        //         ]);
                  
 
 
-        }
+        // }
         
     
 

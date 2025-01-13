@@ -2,6 +2,7 @@
 
 {% endblock %}
 {% block head_gene %}
+<script type="text/javascript" src="{{ asset('js/inactivity.js') }}" defer></script>
     <style>
         .details-section {
             border: 1px solid #000;
@@ -89,6 +90,12 @@
                         <label>Heure de Soumission :</label>
                         <span>{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</span>
                     </div>
+                    {% if demande.statuts == 'Suivi dans LEKA' %}
+                    <div class="details-group" style="color: green;">
+                        <label>Date de Validation de la demande :</label>
+                        <span>{{ demande.dateValidation ? demande.dateValidation|date('d/m/Y') : '' }}</span>
+                    </div>
+                {% endif %}
                    
                     <div class="details-group">
                         <label>Nom Remplaçant :</label>
