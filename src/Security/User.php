@@ -272,11 +272,6 @@ class User implements UserInterface
 
     public function isLdapUser(): bool
     {
-        $utilisateur = $this->getUid();
-        if ($utilisateur) {
-            return true;
-        } else {
-            return false;
-        }
+      return true;
     }
 }

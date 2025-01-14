@@ -388,10 +388,10 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     }
 
 
-    #[Route('formulaireldap/demande/consult/{token}', name: 'demande_consult_ldap')]
-    public function consult(MonApplication $monApplication, $token, EntityManagerInterface $entityManager): Response
+    #[Route('formulaireldap/demande/consult/{id}', name: 'demande_consult_ldap')]
+    public function consult(MonApplication $monApplication, $id, EntityManagerInterface $entityManager): Response
     {
-        $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+       $demande = $entityManager->getRepository(Demandes::class)->find($id);
     
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
@@ -420,10 +420,10 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
 
 
 
-        #[Route('formulaireldap/demande/pdf/{token}', name: 'demande_pdf_ldap')]
-    public function generatePdfldap($token, EntityManagerInterface $entityManager): Response
+        #[Route('formulaireldap/demande/pdf/{id}', name: 'demande_pdf_ldap')]
+    public function generatePdfldap($id, EntityManagerInterface $entityManager): Response
     {
-        $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+       $demande = $entityManager->getRepository(Demandes::class)->find($id);
     
        
         if (!$demande) {

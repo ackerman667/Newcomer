@@ -275,7 +275,7 @@
                       {% if demande.isAutrePersonne %} {#       SI LA DEMANDE EST POUR UNE AUTRE PERSONNE ET EST EN BROUILLONS     #}
                                         {% if demande.statuts == 'Brouillons' %}
                                             <a href="{{ path('modifier_demandespourautre', {id: demande.id}) }}"><i class="fas fa-edit icon-edit"></i></a>
-                                            <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}"><i class="fas fa-search icon-search"></i></a>
+                                            <a href="{{ path('demande_consult_ldap', {id: demande.id}) }}"><i class="fas fa-search icon-search"></i></a>
                                             <a href="{{ path('supprimer_demandespourautre', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');"><i class="fas fa-trash-alt icon-trash"></i></a>
                                                     {#       SI LA DEMANDE EST POUR UNE AUTRE PERSONNE ET EST EN BROUILLONS ET C'est le valideur du service    #}
                                                      {% if uiduser == demande.uidValideur %} 
@@ -287,7 +287,7 @@
 
 
                                             
-                                            <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}"><i class="fas fa-file-pdf icon-pdf"></i></a>
+                                            <a href="{{ path('demande_pdf_ldap', {id: demande.id}) }}"><i class="fas fa-file-pdf icon-pdf"></i></a>
                                         {% else %}
 
 
@@ -296,8 +296,8 @@
                                                     <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}"><i class="fas fa-file-pdf"></i></a>
                                                                 
                                                     {% else %}
-                                                     <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}"><i class="fas fa-search icon-search"></i></a>
-                                                    <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}"><i class="fas fa-file-pdf icon-pdf"></i></a>
+                                                     <a href="{{ path('demande_consult_ldap', {id: demande.id}) }}"><i class="fas fa-search icon-search"></i></a>
+                                                    <a href="{{ path('demande_pdf_ldap', {id: demande.id}) }}"><i class="fas fa-file-pdf icon-pdf"></i></a>
                                                                 
                                                     {% endif %}
 
@@ -308,7 +308,7 @@
                             {% else %} {#       SI LA DEMANDE EST POUR SOIS MEME  ET EST EN BROUILLONS   #}
                                         {% if demande.statuts == 'Brouillons' %}
                                             <a href="{{ path('modifier_demandesldap', {id: demande.id}) }}"><i class="fas fa-edit icon-edit"></i></a>
-                                            <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}"><i class="fas fa-search icon-search"></i></a>
+                                            <a href="{{ path('demande_consult_ldap', {id: demande.id}) }}"><i class="fas fa-search icon-search"></i></a>
                                             <a href="{{ path('formulaireldap_supprimer', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');"><i class="fas fa-trash-alt icon-trash"></i></a>
         
                                                         {% if uiduser == demande.uidValideur %} {#      SI LA DEMANDE EST POUR SOIS MEME  ET C'est le valideur de son propre service    #}
@@ -318,15 +318,15 @@
                                                         {% endif %} 
                                            
                                            
-                                            <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}"><i class="fas fa-file-pdf icon-pdf"></i></a>
+                                            <a href="{{ path('demande_pdf_ldap', {id: demande.id}) }}"><i class="fas fa-file-pdf icon-pdf"></i></a>
                                          {% else %}
                                                          {% if uiduser == demande.uidValideur %}
                                                             <a href="{{ path('visualiser_demande', {id: demande.id}) }}"><i class="fas fa-search"></i></a>
                                                             <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}"><i class="fas fa-file-pdf"></i></a>
                                                                         
                                                         {% else %}
-                                                             <a href="{{ path('demande_consult_ldap', {token: demande.token}) }}"><i class="fas fa-search icon-search"></i></a>
-                                                             <a href="{{ path('demande_pdf_ldap', {token: demande.token}) }}"><i class="fas fa-file-pdf icon-pdf"></i></a>
+                                                             <a href="{{ path('demande_consult_ldap', {id: demande.id}) }}"><i class="fas fa-search icon-search"></i></a>
+                                                             <a href="{{ path('demande_pdf_ldap', {id: demande.id}) }}"><i class="fas fa-file-pdf icon-pdf"></i></a>
                                                                         
                                                         {% endif %}
 

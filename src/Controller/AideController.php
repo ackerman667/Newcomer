@@ -26,8 +26,19 @@ class AideController extends AbstractController
     }
 
 
-    #[Route('/aide', name: 'aide_externe')]
+    #[Route('formulaireext/aide', name: 'aide_externe')]
     public function index2(MonApplication $monApplication, SessionInterface $session)
+    {
+
+        
+      
+        return $this->render('aide/index2.html.twig', [
+            'monApplication' => $monApplication,
+        ]);
+    }
+
+    #[Route('/aide', name: 'aide_externe_anon')]
+    public function index3(MonApplication $monApplication, SessionInterface $session)
     {
 
         

@@ -7,6 +7,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security; 
+use App\Entity\User;
 use App\Security\UserInformation;
 
 class ProfilController extends AbstractController
@@ -23,7 +24,7 @@ class ProfilController extends AbstractController
     }
 
     // Méthode  pour récupérer les informations de l'utilisateur
-    private function getUserInfo(): array
+    private function getUserInfoLdap(): array
     {
         $session = $this->requestStack->getSession();
         $user = $this->security->getUser();
@@ -44,11 +45,18 @@ class ProfilController extends AbstractController
         ];
     }
 
+
+
+
+
+
+   
+
     #[Route(path: 'formulaireldap/profil', name: 'profil')]
     public function profil(MonApplication $monApplication)
     {
         
-        $userInfo = $this->getUserInfo();
+        $userInfo = $this->getUserInfoLdap();
 
         return $this->render('profil/index.html.twig', [
             'monApplication' => $monApplication,
@@ -63,7 +71,7 @@ class ProfilController extends AbstractController
     public function preferences(MonApplication $monApplication)
     {
       
-        $userInfo = $this->getUserInfo();
+        $userInfo = $this->getUserInfoLdap();
 
         return $this->render('profil/preferences.html.twig', [
             'monApplication' => $monApplication,
@@ -74,6 +82,68 @@ class ProfilController extends AbstractController
 
     #[Route("formulaireldap/profil/roles", name: "roles")]
     public function roles(MonApplication $monApplication)
+    {
+        
+        $userInfo = $this->getUserInfoLdap();
+
+        return $this->render('profil/roles.html.twig', [
+            'monApplication' => $monApplication,
+            'page' => 'roles',
+            'user' => $userInfo, 
+        ]);
+    }
+
+
+
+
+
+    // Partie externe
+
+    private function getUserInfo(): array
+    {
+       
+        $user = $this->getUser();
+    
+       
+        return [
+            'nom' => $user->getNom(),
+            'prenom' => $user->getPrenom(),
+            'email' => $user->getEmail(),
+            'dateNaissance' => $user->getDateDeNaissance()?->format('Y-m-d'),
+            
+        ];
+    }
+
+    #[Route(path: 'formulaireext/profil', name: 'profil_')]
+    public function profil2(MonApplication $monApplication)
+    {
+        
+        $userInfo = $this->getUserInfo();
+
+        return $this->render('profil/index.html.twig', [
+            'monApplication' => $monApplication,
+            'page' => 'profil',
+            'user' => $userInfo, 
+            
+
+        ]);
+    }
+
+    #[Route("formulaireext/profil/preferences", name: "preferences_")]
+    public function preferences2(MonApplication $monApplication)
+    {
+      
+        $userInfo = $this->getUserInfo();
+
+        return $this->render('profil/preferences.html.twig', [
+            'monApplication' => $monApplication,
+            'page' => 'preferences',
+            'user' => $userInfo, 
+        ]);
+    }
+
+    #[Route("formulaireext/profil/roles", name: "roles_")]
+    public function roles2(MonApplication $monApplication)
     {
         
         $userInfo = $this->getUserInfo();

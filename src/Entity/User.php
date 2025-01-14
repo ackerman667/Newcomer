@@ -110,6 +110,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         $roles = $this->roles;
+
+        // Assurez-vous que chaque utilisateur possède au moins ROLE_USER
+        $roles[] = 'ROLE_USER';
+
         return array_unique($roles);
     }
 
@@ -325,6 +329,10 @@ public function setProvenance(?string $provenance): static
 
     return $this;
 }
+public function isLdapUser(): bool
+    {
+      return false;
+    }
 
 
 }

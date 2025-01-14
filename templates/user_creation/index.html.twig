@@ -43,6 +43,14 @@
                     {{ form_label(form.date_de_naissance) }}
                     {{ form_widget(form.date_de_naissance, { 'attr': {'class': 'form-control'} }) }}
                 </div>
+                 <div class="form-group">
+        {{ form_label(form.password) }}
+        {{ form_widget(form.password, { 'attr': {'class': 'form-control'} }) }}
+    </div>
+    <div class="form-group">
+        {{ form_label(form.confirm_password) }}
+        {{ form_widget(form.confirm_password, { 'attr': {'class': 'form-control'} }) }}
+    </div>
               
             </div>
             <div class="form-group text-center">

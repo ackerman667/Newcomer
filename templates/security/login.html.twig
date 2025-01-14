@@ -1,0 +1,91 @@
+{% extends 'layout_ag.html.twig' %}
+
+{% block title %}
+    <title>Connexion - {{monApplication.Appli}}</title>
+{% endblock %}
+
+{% block head_gene %}
+    <script type="text/javascript" src="{{ asset('js/documentation.js', 'interfaceappli') }}" defer></script>
+    <style>
+    .info-box {
+        background-color: #e7f3fe;
+        border: 1px solid #b3d4fc;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        text-align: center;
+        font-size: 16px;
+        color: #31708f;
+    }
+    </style>
+
+{% endblock %}
+
+{% block body %}
+<body class="page not-home">
+{% endblock %}
+
+{% block header %}
+    <div class="title_app" id="title">
+        <h1 class="title">{{monApplication.Appli}}</h1>
+        <h2 class="desc">{{monApplication.LibAppli}}</h2>
+    </div>
+    <div class="title_image">
+        <span>Rectorat</span>
+    </div>
+    
+{% endblock %}
+
+{% block main %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="info-box">
+                <p>Cette page est destinée aux utilisateurs qui n'ont pas d'adresse email académique. Veuillez entrer votre adresse email personnelle pour procéder.</p>
+            </div>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h1 class="h3 mb-3 font-weight-normal text-center">Se connecter</h1>
+
+                    <form method="post" action="{{ path('app_login') }}">
+                        {% if error %}
+                            <div class="alert alert-danger text-center">
+                                {{ error.messageKey|trans(error.messageData, 'security') }}
+                            </div>
+                        {% endif %}
+
+                        {% if app.user %}
+                            <div class="mb-3 text-center">
+                                Vous êtes connecté en tant que {{ app.user.username }},
+                                <a href="{{ path('app_logout') }}">Déconnexion</a>
+                            </div>
+                        {% endif %}
+
+                        <div class="form-group">
+                            <label for="inputEmail">Adresse email</label>
+                            <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" required autofocus placeholder="Votre email">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="inputPassword">Mot de passe</label>
+                            <input type="password" name="password" id="inputPassword" class="form-control" required placeholder="Votre mot de passe">
+                        </div>
+
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                        <div class="form-group text-center">
+                            <button class="btn btn-primary btn-lg w-100 mt-3" type="submit">Se connecter</button>
+                        </div>
+                    </form>
+
+                    <div class="mt-4 text-center">
+                        <p>Vous n'avez pas de compte ? <a href="{{ path('user_creation') }}">Inscrivez-vous ici</a>.</p>
+                        <p>Si vous disposez d'un compte académique, <a href="{{ path('liste_demandes') }}">cliquez ici</a>.</p>
+                        <p>MDP oublié <a href="{{ path('forgot_password') }}">cliquez ici</a>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

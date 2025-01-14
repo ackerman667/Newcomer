@@ -68,6 +68,7 @@
         <img src="{{ asset('css/images/avatar/avatar.png','interfaceappli') }}" alt="Avatar de l'utilisateur">
     </figure>
 
+ {% if app.user and app.user.isLdapUser() %}
     <div class="user-info">
         {# <h2> {{ app.user.codecivilite }} {{ app.user.cn }} {{ app.user.prenom }}</h2> #}
          <h2 class="fn">{{app.user.codecivilite}} {{app.user.cn}}</h2>
@@ -77,7 +78,18 @@
                 <h5> née le : {{app.user.datenaissance}}</h5>
             {% endif %}
             <span class="email"> <span class="type"><b>Courriel</b></span>: <span class="value">{{app.user.mail}}</span> </span></br>
-       
+
+ {% elseif app.user and not app.user.isLdapUser() %}  
+  <div class="user-info">
+        {# <h2> {{ app.user.codecivilite }} {{ app.user.cn }} {{ app.user.prenom }}</h2> #}
+         <h2 class="fn">{{user.nom}} {{user.prenom}}</h2>
+        
+                <h5> né(e) le : {{user.dateNaissance}}</h5>
+         
+            <span class="email"> <span class="type"><b>Courriel</b></span>: <span class="value">{{user.email}}</span> </span></br>     
+
+
+             {% endif %}
 
        
         {# <p><strong>Courriel:</strong> <span class="email">{{ app.user.mail }}</span></p> #}

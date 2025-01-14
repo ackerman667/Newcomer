@@ -197,7 +197,7 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav flex-column">
           {# {% if app.session.get('ldap_authenticated') %} #}
-  {% if app.user %}
+  {% if app.user and app.user.isLdapUser()  %}
           
             <li class="nav-item active">
               <a class="nav-link" href="{{ path('ldap') }}" alt="Accueil" title="Accueil"><i class="fas fa-home"></i><span>Accueil</span></a>
@@ -225,13 +225,16 @@
             </li>
            
              
-   {% elseif not app.user and app.session.get('externe_auth') %}
+   {% elseif  app.user  and not app.user.isLdapUser() %}
 
             <li class="nav-item active">
         <a class="nav-link alert-link-home" href="{{ path('demande_externe', {'token': app.session.get('externe_token')}) }}" alt="Accueil" title="Accueil">
             <i class="fas fa-home"></i><span>Accueil</span>
         </a>
     </li>
+     <li class="nav-item">
+              <a class="nav-link" href="{{ path('profil_') }}" alt="Accès à votre profil utilisateur" title="Accès à votre profil utilisateur"><i class="fas fa-user"></i><span>Profil utilisateur</span></a>
+            </li>
     <li class="nav-item">
               <a class="nav-link" href="{{ path('aide_externe') }}" alt="Accès à l'aide en ligne" alt="Accès à l'aide en ligne" title="Accès à l'aide en ligne"><i class="fas fa-info"></i><span>Aide</span></a>
             </li>
@@ -246,7 +249,7 @@
         </a>
     </li>
     <li class="nav-item">
-              <a class="nav-link" href="{{ path('aide_externe')}}" alt="Accès à l'aide en ligne" alt="Accès à l'aide en ligne" title="Accès à l'aide en ligne"><i class="fas fa-info"></i><span>Aide</span></a>
+              <a class="nav-link" href="{{ path('aide_externe_anon')}}" alt="Accès à l'aide en ligne" alt="Accès à l'aide en ligne" title="Accès à l'aide en ligne"><i class="fas fa-info"></i><span>Aide</span></a>
             </li>
 {% endif %}
           
@@ -262,9 +265,14 @@
           <!-- fil d'arianne -->
           <nav aria-label="breadcrumb">
           <!-- Encart Utilisateur -->
-           {% if app.user %}
+           {% if app.user and app.user.isLdapUser() %}
            <span class="current-user"><a href="{{ path('profil') }}"><i class="fas fa-user"></i> <span class="ident">Bienvenue {{app.user.codecivilite}} {{app.user.cn}}</span></a></span>
+            
+             {% elseif app.user and not app.user.isLdapUser() %}
+          <span class="current-user"><a href="{{ path('profil') }}"><i class="fas fa-user"></i> <span class="ident">Bienvenue {{app.user.nom}} {{app.user.prenom}}</span></a></span>
+            
              {% else %}
+
           <span class="current-user"><a href="{{ path('profil') }}"><i class="fas fa-user"></i> <span class="ident">Bienvenue !</span></a></span>
              {% endif %}
           <ol class="breadcrumb">

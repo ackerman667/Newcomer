@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\LoginLink\LoginLinkHandlerInterface;
 use Symfony\Component\Mailer\MailerInterface;
@@ -19,7 +20,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 class UserCreationController extends AbstractController
 {
     #[Route('/create-user', name: 'user_creation')]
-    public function createUser(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
+    public function createUser(UserPasswordHasherInterface $userPasswordHasher, MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
         $email = $request->query->get('email', '');
         
@@ -49,6 +50,9 @@ class UserCreationController extends AbstractController
             $fonction = $form->get('fonction')->getData();
             $email_user = $form->get('email')->getData();
             $date_de_naissance = $form->get('date_de_naissance')->getData();
+            $password = $form->get('password')->getData();
+$confirmPassword = $form->get('confirm_password')->getData();
+
             
             $user->setNom($nom);
             $user->setPrenom($prenom);
@@ -56,6 +60,22 @@ class UserCreationController extends AbstractController
             $user->setDateDeNaissance($date_de_naissance);
             $user->setFonction($fonction);
             $user->setEmail($email_user);
+            if ($password !== $confirmPassword) {
+                $this->addFlash('error', 'Les mots de passe ne correspondent pas.');
+        
+                return $this->render('user_creation/index.html.twig', [
+                    'form' => $form->createView(),
+                    'monApplication' => $monApplication,
+                ]);
+            }
+            $user->setPassword( $userPasswordHasher->hashPassword(  $user, $form->get('password')->getData()
+            )
+);
+
+    //         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+    // $user->setPassword($hashedPassword);
+            $user->setRoles(['ROLE_DB_USER']);
+
             $token = bin2hex(random_bytes(32));
             $expiration = new \DateTimeImmutable('+24 hours');
             $user->setToken($token);

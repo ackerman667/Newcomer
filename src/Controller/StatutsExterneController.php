@@ -38,14 +38,14 @@ class StatutsExterneController extends AbstractController
         
         $this->timezone = new \DateTimeZone('America/Guadeloupe'); 
     }
-    #[Route('/statuts/{token}', name: 'demande_externe')]
-    public function index( Request $request , SessionInterface $session, MonApplication $monApplication, EntityManagerInterface $entityManager, $token): Response
+    #[Route('formulaireext/statuts', name: 'demande_externe')]
+    public function index( Request $request , SessionInterface $session, MonApplication $monApplication, EntityManagerInterface $entityManager): Response
     {
-        $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+         $user = $this->getUser();
 
-        if (!$user) {
-            throw $this->createNotFoundException('Utilisateur introuvable.');
-        }
+        // if (!$user) {
+        //     throw $this->createNotFoundException('Utilisateur introuvable.');
+        // }
         // $now = new \DateTime();
         // $expiration = $user->getTokenExpiration();
     
@@ -85,20 +85,20 @@ class StatutsExterneController extends AbstractController
         // $session->remove('nom_valideur');
 
      
-        if (!$session->has('externe_auth')) {
-            $session->set('externe_auth', true);
-        }
+        // if (!$session->has('externe_auth')) {
+        //     $session->set('externe_auth', true);
+        // }
 
-        if (!$session->has('externe_token')) {
-            $session->set('externe_token', $token);
-        }
+        // if (!$session->has('externe_token')) {
+        //     $session->set('externe_token', $token);
+        // }
         
         // $session = $this->requestStack->getSession();
         // $session->set('externe_auth', true);
         // $session->set('externe_token', $token);
 
        
-        $sessionData = $session->all();
+        // $sessionData = $session->all();
 
         
         // dump($sessionData);
@@ -120,10 +120,10 @@ class StatutsExterneController extends AbstractController
         ]);
     }
 
-    #[Route('/demande/consult/{token}', name: 'demande_consult')]
-    public function consult(MonApplication $monApplication, $token, EntityManagerInterface $entityManager): Response
+    #[Route('formulaireext/demande/consult/{id}', name: 'demande_consult')]
+    public function consult(MonApplication $monApplication, $id, EntityManagerInterface $entityManager): Response
     {
-        $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+        $demande = $entityManager->getRepository(Demandes::class)->find($id);
         $valideur = $demande->getUidValideur();
 
 
@@ -146,12 +146,12 @@ class StatutsExterneController extends AbstractController
     }
   
 
-    #[Route('/demande/pdf/{token}', name: 'demande_pdf')]
-    public function generatePdf(/*Demandes $demande , */MonApplication $monApplication, $token, EntityManagerInterface $entityManager): Response
+    #[Route('formulaireext/demande/pdf/{id}', name: 'demande_pdf')]
+    public function generatePdf(/*Demandes $demande , */MonApplication $monApplication, $id, EntityManagerInterface $entityManager): Response
     {
         
         // $token = $demande->getToken();
-        $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
+        $demande = $entityManager->getRepository(Demandes::class)->find($id);
     
         $user = $demande->getIDutilisateur();
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
@@ -200,14 +200,17 @@ class StatutsExterneController extends AbstractController
     
 
 
-    #[Route('/formulaireexterne/nouvelle_demande/{token}', name: 'nouvelle_demande')]
-    public function nouvelleDemande(EntityManagerInterface $entityManager, $token, ): Response
+    #[Route('formulaireext/nouvelle_demande', name: 'nouvelle_demande')]
+    public function nouvelleDemande(EntityManagerInterface $entityManager ): Response
     {
+
     
 
-        $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+         $user = $this->getUser();
+        
         $temporaryData = new TemporaryData();
         $temporaryData->setUser($user);
+        // $temporaryData->setData($data);
         $temporaryData->setAction('create'); 
         $temporaryData->setData([]); 
         $temporaryData->setExpiration((new \DateTime())->modify('+1 minutes'));
@@ -219,14 +222,13 @@ class StatutsExterneController extends AbstractController
     
         
         return $this->redirectToRoute('formulaireexterne_etape1', [
-            'token' => $token,
             'uuid' => $temporaryData->getToken(),
         ]);
         
     }
     
 
-    #[Route('/formulaireexterne/supprimer/{id}', name: 'formulaireexterne_supprimer')]
+    #[Route('formulaireext/supprimer/{id}', name: 'formulaireexterne_supprimer')]
     public function supprimerDemande(Request $request, EntityManagerInterface $entityManager, $id): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
@@ -254,10 +256,10 @@ class StatutsExterneController extends AbstractController
         $entityManager->flush();
         $this->addFlash('success', 'Votre demande a été supprimée.');
 
-        return $this->redirectToRoute('demande_externe' , ['token' => $token]); 
+        return $this->redirectToRoute('demande_externe'); 
     }
 
-    #[Route('/formulaireexterne/modifier/{id}', name: 'modifier_demandes')]
+    #[Route('formulaireext/modifier/{id}', name: 'modifier_demandes')]
     public function modifierDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id, MailerInterface $mailer): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
@@ -270,6 +272,7 @@ class StatutsExterneController extends AbstractController
         $token = $demande->getToken();
 
         $data = [
+            'demande_id' => $id,
             'nom' => $user->getNom(),
             'prenom' => $user->getPrenom(),
             'email' => $user->getEmail(),
@@ -288,7 +291,7 @@ class StatutsExterneController extends AbstractController
             
         ];
 
-        // $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+        //  $user = $this->getUser();
         $temporaryData = new TemporaryData();
         $temporaryData->setUser($user);
         $temporaryData->setAction('modifier'); 
@@ -298,13 +301,12 @@ class StatutsExterneController extends AbstractController
         $entityManager->flush();
 
         return $this->redirectToRoute('formulaireexterne_etape1', [
-            'token' => $token,
             'uuid' => $temporaryData->getToken(),
         ]);
         
     }
 
-    #[Route('/formulaireexterne/valider/{id}', name: 'valider_demandes')]
+    #[Route('formulaireext/valider/{id}', name: 'valider_demandes')]
     public function validerDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id,MailerInterface $mailer): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
@@ -345,55 +347,55 @@ class StatutsExterneController extends AbstractController
     
        
 
-        return $this->redirectToRoute('demande_externe', ['token' => $token]);
+        return $this->redirectToRoute('demande_externe');
     }
 
 
-    #[Route('/logout', name: 'app_logout')]
-    public function logout(EntityManagerInterface $entityManager, MailerInterface $mailer, RequestStack $requestStack, UrlGeneratorInterface $urlGenerator): Response
-    {
-        $session = $requestStack->getSession();
+    // #[Route('/logout', name: 'app_logout')]
+    // public function logout(EntityManagerInterface $entityManager, MailerInterface $mailer, RequestStack $requestStack, UrlGeneratorInterface $urlGenerator): Response
+    // {
+    //     $session = $requestStack->getSession();
     
-        // Vérifiez si un token est présent
-        $token = $session->get('externe_token');
-        if ($token) {
-            // Trouver l'utilisateur correspondant au token
-            $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+    //     // Vérifiez si un token est présent
+    //     $token = $session->get('externe_token');
+    //     if ($token) {
+    //         // Trouver l'utilisateur correspondant au token
+    //          $user = $this->getUser();
     
-            if ($user) {
+    //         if ($user) {
 
-                $temporaryDataEntries = $entityManager->getRepository(\App\Entity\TemporaryData::class)
-                ->findBy(['user' => $user]);
+    //             $temporaryDataEntries = $entityManager->getRepository(\App\Entity\TemporaryData::class)
+    //             ->findBy(['user' => $user]);
 
-            foreach ($temporaryDataEntries as $entry) {
-                $entityManager->remove($entry);
-            }
-            $entityManager->flush();
+    //         foreach ($temporaryDataEntries as $entry) {
+    //             $entityManager->remove($entry);
+    //         }
+    //         $entityManager->flush();
 
-                // Générer un nouveau token
-                $newToken = bin2hex(random_bytes(32));
-                $user->setToken($newToken);
-                $entityManager->flush();
+    //             // Générer un nouveau token
+    //             $newToken = bin2hex(random_bytes(32));
+    //             $user->setToken($newToken);
+    //             $entityManager->flush();
     
-                // Envoyer un email avec le nouveau token
-                $url = $urlGenerator->generate('demande_externe', ['token' => $newToken], UrlGeneratorInterface::ABSOLUTE_URL);
+    //             // Envoyer un email avec le nouveau token
+    //             $url = $urlGenerator->generate('demande_externe', ['token' => $newToken], UrlGeneratorInterface::ABSOLUTE_URL);
     
-                $email = (new Email())
-                    ->from('noreply@ac-guadeloupe.fr')
-                    ->to($user->getEmail())
-                    ->subject('Votre session a expiré - Nouveau lien de connexion')
-                    ->html('<p>Bonjour,</p><p>Votre session a expiré. Cliquez sur le lien suivant pour vous reconnecter : <a href="' . $url . '">' . $url . '</a></p>');
+    //             $email = (new Email())
+    //                 ->from('noreply@ac-guadeloupe.fr')
+    //                 ->to($user->getEmail())
+    //                 ->subject('Votre session a expiré - Nouveau lien de connexion')
+    //                 ->html('<p>Bonjour,</p><p>Votre session a expiré. Cliquez sur le lien suivant pour vous reconnecter : <a href="' . $url . '">' . $url . '</a></p>');
     
-                $mailer->send($email);
-            }
-        }
+    //             $mailer->send($email);
+    //         }
+    //     }
     
-        // Supprimer les données de session
-        $session->clear();
+    //     // Supprimer les données de session
+    //     $session->clear();
     
-        // Rediriger vers la page d'accueil ou une autre page
-        return $this->redirectToRoute('session_expired');
-    }
+    //     // Rediriger vers la page d'accueil ou une autre page
+    //     return $this->redirectToRoute('session_expired');
+    // }
     
 
 

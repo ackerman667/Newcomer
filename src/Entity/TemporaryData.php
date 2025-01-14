@@ -30,9 +30,6 @@ class TemporaryData
     #[ORM\Column(type: 'datetime')]
     private \DateTime $createdAt;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $test = null;
-
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -98,17 +95,9 @@ class TemporaryData
         return $this->createdAt;
     }
 
-    public function getTest(): ?string
-    {
-        return $this->test;
-    }
+   
 
-    public function setTest(?string $test): static
-    {
-        $this->test = $test;
-
-        return $this;
-    }
+  
 
     public function getUser(): ?User
     {
