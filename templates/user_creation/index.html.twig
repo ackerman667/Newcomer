@@ -20,6 +20,12 @@
                 </div>
             {% endfor %}
 
+             {% for message in app.flashes('warning') %}
+                <div class="alert alert-warning">
+                    {{ message }}
+                </div>
+            {% endfor %}
+
             {{ form_start(form) }}
             <div class="form-section">
                 <div class="form-section-title">Informations Personnelles</div>
@@ -61,6 +67,7 @@
     </div>
 </div>
 <style>
+    
     .form-section {
         border: 1px solid #000;
         padding: 15px;

@@ -14,7 +14,7 @@ class PasswordResetToken
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, unique: true)]
     private ?string $token = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -54,7 +54,7 @@ class PasswordResetToken
     }
     public function isValid(): bool
     {
-        return $this->expiresAt > new \DateTime();
+        return $this->expiresAt !== null && $this->expiresAt > new \DateTime();
     }
 
     public function getUser(): ?User

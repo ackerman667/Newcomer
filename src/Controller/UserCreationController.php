@@ -43,6 +43,15 @@ class UserCreationController extends AbstractController
                 'monApplication' => $monApplication,
             ]);
         }
+        if (str_ends_with($email_user, '@ac-guadeloupe.fr')) {
+            // Ajoutez un message flash de type warning
+            $this->addFlash('error', 'Vous avez entré une adresse académique. Si vous disposez d\'un compte académique, rendez-vous sur le portail .');
+            return $this->render('user_creation/index.html.twig', [
+                'form' => $form->createView(),
+                'monApplication' => $monApplication,
+            ]);
+        }
+    
             $user = new User();
             $user->setCompteActif(false);
             $nom = $form->get('nom')->getData();

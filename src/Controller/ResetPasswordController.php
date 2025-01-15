@@ -102,7 +102,14 @@ public function resetPassword(
     $resetToken = $tokenRepository->findOneBy(['token' => $token]);
 
 
-    if (!$resetToken || !$resetToken->isValid()) {
+    if (!$resetToken ) {
+        $em->remove($resetToken);
+        $em->flush();
+        $this->addFlash('error', 'Le lien de réinitialisation est invalide ou expiré.');
+        return $this->redirectToRoute('forgot_password');
+    }
+    if (!$resetToken->isValid()) {
+
         $this->addFlash('error', 'Le lien de réinitialisation est invalide ou expiré.');
         return $this->redirectToRoute('forgot_password');
     }
