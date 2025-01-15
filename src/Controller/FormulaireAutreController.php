@@ -198,6 +198,7 @@ class FormulaireAutreController extends AbstractController
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
         }
         $dossiersPartages = $data['dossiers_partages'] ?? [];
+        $dossiersSelectionnes = []; 
         $nomServiceSelectionne = $data['nom_service_selectionne'] ?? '';
         $nomValideur = $data['nom_valideur'] ?? '';
         
@@ -205,6 +206,7 @@ class FormulaireAutreController extends AbstractController
         $form = $this->createForm(DemandeEtape3FormType::class, $data, [
             'dossiers_partages' => $dossiersPartages,
             'data_class' => null,
+            'dossiers_selectionnes' => $dossiersSelectionnes,
         ]);
         $form->handleRequest($request);
     

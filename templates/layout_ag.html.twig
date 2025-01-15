@@ -219,7 +219,7 @@
             <li class="nav-item">
               {# <a class="nav-link" href="{{ path('app_logout') }}" alt="Deconnexion" title="Deconnexion"><i class="fas fas fa-power-off"></i><span>Deconnexion</span></a> #}
               {# <a class="nav-link valid-choice" id="id_choice_2" href="#" onClick="return false;" alt="Déconnexion" title="Déconnexion" data-options='{"question":"Voulez-vous vous déconnecter ?","choix1":"Oui","choix2":"Non","action1":"{{ app.session.get('user_urllogout') }}","action2":"close"}'><i class="fas fas fa-power-off"></i><span>Deconnexion</span></a> #}
-             <a class="nav-link valid-choice" id="id_choice_2"href="{{ path('ldap_logout') }}"alt="Déconnexion" title="Déconnexion"data-options='{"question":"Voulez-vous vous déconnecter ?","choix1":"Oui","choix2":"Non"}'> <i class="fas fas fa-power-off"></i><span>Déconnexion</span>
+              <a class="nav-link valid-choice" id="id_choice_2" href="#" onClick="return false;" alt="Déconnexion" title="Déconnexion" data-options='{"question":"Voulez-vous vous déconnecter ?","choix1":"Oui","choix2":"Non","action1":"{{ app.user.urllogout }}","action2":"close"}'><i class="fas fas fa-power-off"></i><span>Deconnexion</span></a>
 </a>
 
             </li>

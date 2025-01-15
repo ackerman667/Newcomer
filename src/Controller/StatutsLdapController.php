@@ -188,6 +188,7 @@ public function nouvelleDemande(SessionInterface $session, EntityManagerInterfac
 #[Route('/formulaireldap/modifier/{id}', name: 'modifier_demandesldap')]
 public function modifierDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
 {
+    $this->checkUserPermissionForDemande($id, $entityManager);
     $demande = $entityManager->getRepository(Demandes::class)->find($id);
 
     if (!$demande) {
@@ -268,6 +269,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
 #[Route('/formulaireldap/a/modifier/{id}', name: 'modifier_demandespourautre')]
     public function modifierDemandePourAutre(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
     {
+        $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
 
         if (!$demande) {
@@ -326,6 +328,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
 #[Route('/formulaireldap/supprimer/{id}', name: 'formulaireldap_supprimer')]
     public function supprimerDemande($id, EntityManagerInterface $entityManager): RedirectResponse
     {
+        $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
     
         if (!$demande) {
@@ -362,6 +365,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     #[Route('/formulaireldap/valider/{id}', name: 'valider_demandesldap')]
     public function changerStatut(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
     {
+        $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
 
         if (!$demande) {
@@ -391,6 +395,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     #[Route('formulaireldap/demande/consult/{id}', name: 'demande_consult_ldap')]
     public function consult(MonApplication $monApplication, $id, EntityManagerInterface $entityManager): Response
     {
+        $this->checkUserPermissionForDemande($id, $entityManager);
        $demande = $entityManager->getRepository(Demandes::class)->find($id);
     
         if (!$demande) {
@@ -423,6 +428,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
         #[Route('formulaireldap/demande/pdf/{id}', name: 'demande_pdf_ldap')]
     public function generatePdfldap($id, EntityManagerInterface $entityManager): Response
     {
+        $this->checkUserPermissionForDemande($id, $entityManager);
        $demande = $entityManager->getRepository(Demandes::class)->find($id);
     
        
@@ -502,6 +508,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     #[Route('/formulaireldap/a/supprimer/{id}', name: 'supprimer_demandespourautre')]
     public function supprimerDemandePourAutre($id, EntityManagerInterface $entityManager): RedirectResponse
     {
+        $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
@@ -528,6 +535,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     #[Route('/formulaireldap/a/valider/{id}', name: 'valider_demandespourautre')]
     public function validerDemandePourAutre(MonApplication $monApplication, EntityManagerInterface $entityManager, $id): Response
     {
+        $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
@@ -618,6 +626,37 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
 
         return $user;
     }
+
+
+    private function checkUserPermissionForDemande(int $demandeId, EntityManagerInterface $entityManager): void
+{
+    // Récupérer la demande
+    $demande = $entityManager->getRepository(Demandes::class)->find($demandeId);
+
+    if (!$demande) {
+        throw $this->createNotFoundException('Demande non trouvée.');
+    }
+
+    // Récupérer l'utilisateur lié à la demande
+    $userFromDemande = $demande->getIDutilisateur();
+
+    if (!$userFromDemande) {
+        throw $this->createAccessDeniedException('Cette demande n\'est pas associée à un utilisateur valide.');
+    }
+
+    // Récupérer l'utilisateur actuellement connecté
+    $currentUser = $this->security->getUser();
+
+    if (!$currentUser) {
+        throw $this->createAccessDeniedException('Vous devez être connecté pour accéder à cette demande.');
+    }
+
+    // Comparer les emails
+    if ($userFromDemande->getEmail() !== $currentUser->getMail()) {
+        throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à cette demande.');
+    }
+}
+
 }
 
 

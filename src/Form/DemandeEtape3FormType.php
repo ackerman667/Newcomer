@@ -24,27 +24,28 @@ class DemandeEtape3FormType extends AbstractType
     {
         $choices = ['Besoin Numéro téléphone Bureau?' => 'Num Tel'];
 
-foreach ($options['dossiers_partages'] as $dossier) {
-    $choices[$dossier] = $dossier; 
-}
+      
+        foreach ($options['dossiers_partages'] as $dossier) {
+            $choices[$dossier] = $dossier;
+        }
 
-$builder
-    ->add('dossiers_partages', ChoiceType::class, [
-        'choices' => $choices,
-        'multiple' => true,
-        'expanded' => true,
-        'label' => false,
-    ])
-           
-            ;
-       
-    }
     
+        $builder
+            ->add('dossiers_partages', ChoiceType::class, [
+                'choices' => $choices,
+                'multiple' => true,
+                'expanded' => true,
+                'label' => false,
+                'data' => $options['dossiers_selectionnes'], 
+            ]);
+    }
+
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => Demandes::class,
-            'dossiers_partages' => [],
+            'data_class' => null, 
+            'dossiers_partages' => [], 
+            'dossiers_selectionnes' => [], 
         ]);
     }
 }

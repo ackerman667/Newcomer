@@ -245,6 +245,7 @@ class FormulaireLdapController extends AbstractController
         $date = \DateTimeImmutable::createFromFormat('d/m/Y', $dateString);
         $datedenaissance_utilisateur = $date;
         $dossiersPartages = $data['dossiers_partages'] ?? [];
+        $dossiersSelectionnes = []; 
         $nomServiceSelectionne = $data['nom_service_selectionne'] ?? '';
         $nomValideur = $data['nom_valideur'] ?? '';
        
@@ -269,6 +270,7 @@ class FormulaireLdapController extends AbstractController
         $form = $this->createForm(DemandeEtape3FormType::class, $data, [
             'dossiers_partages' => $dossiersPartages,
             'data_class' => null, 
+            'dossiers_selectionnes' => $dossiersSelectionnes,
         ]);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {

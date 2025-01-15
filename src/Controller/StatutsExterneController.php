@@ -123,6 +123,7 @@ class StatutsExterneController extends AbstractController
     #[Route('formulaireext/demande/consult/{id}', name: 'demande_consult')]
     public function consult(MonApplication $monApplication, $id, EntityManagerInterface $entityManager): Response
     {
+        $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
         $valideur = $demande->getUidValideur();
 
@@ -149,6 +150,7 @@ class StatutsExterneController extends AbstractController
     #[Route('formulaireext/demande/pdf/{id}', name: 'demande_pdf')]
     public function generatePdf(/*Demandes $demande , */MonApplication $monApplication, $id, EntityManagerInterface $entityManager): Response
     {
+        $this->checkUserPermissionForDemande($id, $entityManager);
         
         // $token = $demande->getToken();
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
@@ -231,6 +233,7 @@ class StatutsExterneController extends AbstractController
     #[Route('formulaireext/supprimer/{id}', name: 'formulaireexterne_supprimer')]
     public function supprimerDemande(Request $request, EntityManagerInterface $entityManager, $id): Response
     {
+        $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
     
         $id_user = $demande->getIDutilisateur();
@@ -262,6 +265,7 @@ class StatutsExterneController extends AbstractController
     #[Route('formulaireext/modifier/{id}', name: 'modifier_demandes')]
     public function modifierDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id, MailerInterface $mailer): Response
     {
+        $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
 
         if (!$demande) {
@@ -309,6 +313,7 @@ class StatutsExterneController extends AbstractController
     #[Route('formulaireext/valider/{id}', name: 'valider_demandes')]
     public function validerDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id,MailerInterface $mailer): Response
     {
+        $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
         $token = $demande->getToken();
         $id_user = $demande->getIDutilisateur();
@@ -349,6 +354,27 @@ class StatutsExterneController extends AbstractController
 
         return $this->redirectToRoute('demande_externe');
     }
+
+    private function checkUserPermissionForDemande(int $demandeId, EntityManagerInterface $entityManager): void
+{
+    // Récupérer l'utilisateur connecté
+    $currentUser = $this->getUser();
+
+    if (!$currentUser) {
+        throw $this->createAccessDeniedException('Vous devez être connecté pour accéder à cette demande.');
+    }
+    $demande = $entityManager->getRepository(Demandes::class)->find($demandeId);
+
+    if (!$demande) {
+        throw $this->createNotFoundException('Demande non trouvée.');
+    }
+
+    // Vérifier si l'utilisateur connecté correspond à l'utilisateur lié à la demande
+    if ($demande->getIDutilisateur() !== $currentUser) {
+        throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à cette demande.');
+    }
+}
+
 
 
     // #[Route('/logout', name: 'app_logout')]

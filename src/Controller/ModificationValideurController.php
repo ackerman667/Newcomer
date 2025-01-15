@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Classe\MonApplication;
 use App\Entity\TemporaryData;
+use App\Service\UserRoleChecker;
 use App\Entity\Demandes;
 use App\Entity\Ressources;
 use Doctrine\ORM\EntityManagerInterface;
@@ -30,11 +31,13 @@ class ModificationValideurController extends AbstractController
 {
     private $timezone;
     private $security;
-   
-    public function __construct(Security $security)
+    private $roleChecker;
+    public function __construct(Security $security, UserRoleChecker $roleChecker)
     {
         $this->timezone = new \DateTimeZone('America/Guadeloupe'); 
         $this->security = $security;
+        $this->roleChecker = $roleChecker;
+        $this->isValideur = $this->roleChecker->isUserValideur();
        
     }
 
@@ -45,6 +48,13 @@ class ModificationValideurController extends AbstractController
 #[Route('formulaireldap/modifierdemandes/etape1/{id}/{token}', name: 'modifier_demandesvalideur_etape1')]
 public function editDemandeEtape1(int $id, string $token, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, MonApplication $monApplication): Response
 {
+    $isValideur = $this->roleChecker->isUserValideur();
+    if (!$this->isValideur) {
+        throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cette demande.');
+        return $this->redirectToRoute('liste_demandes'); // Remplacez 'homepage' par la route de votre choix
+    }
+
+
     $demande = $entityManager->getRepository(Demandes::class)->find($id);
     $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $token]);
     $userLdap = $this->security->getUser();
@@ -239,6 +249,7 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
     
         $data = $temporaryData->getData();
         $dossiersPartages = $data['dossiers_partages'] ?? [];
+        $dossiersSelectionnes = []; 
         $nomServiceSelectionne = $data['nom_service_selectionne'] ?? '';
         $nomValideur = $data['nom_valideur'] ?? '';
        
@@ -246,6 +257,7 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
         $form = $this->createForm(DemandeEtape3FormType::class, $data, [
             'dossiers_partages' => $dossiersPartages,
             'data_class' => null,
+            'dossiers_selectionnes' => $dossiersSelectionnes,
         ]);
         $form->handleRequest($request);
     

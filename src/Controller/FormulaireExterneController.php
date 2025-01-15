@@ -38,15 +38,16 @@ class FormulaireExterneController extends AbstractController
     #[Route('/formulaireext/etape1/{uuid}', name: 'formulaireexterne_etape1')]
     public function etape1(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager,  $uuid): Response
     {
-        if ($temporaryData->getUser() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
-        }
+       
         $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $uuid]);
         if (!$temporaryData) {
             throw $this->createNotFoundException('Données temporaires introuvables.');
             
         }
         $user = $this->getUser();
+        if ($temporaryData->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
+        }
         
 
 
@@ -96,9 +97,7 @@ class FormulaireExterneController extends AbstractController
     #[Route('/formulaireext/etape2/{uuid}', name: 'formulaireexterne_etape2')]
     public function etape2( MonApplication $monApplication,Request $request, HttpClientInterface $httpClient, EntityManagerInterface $entityManager, $uuid
     ): Response {
-        if ($temporaryData->getUser() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
-        }
+       
 
         // Récupérer les informations via getVerif
         $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $uuid]);
@@ -107,6 +106,9 @@ class FormulaireExterneController extends AbstractController
             
         }
         $user = $this->getUser();
+        if ($temporaryData->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
+        }
         // if ($temporaryData->getUser() !== $this->getUser()) {
         //     throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
         // }
@@ -272,9 +274,7 @@ public function etape3(
     MailerInterface $mailer,
     $uuid
 ): Response {
-    if ($temporaryData->getUser() !== $this->getUser()) {
-        throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
-    }
+   
     
     $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $uuid]);
         if (!$temporaryData) {
@@ -282,13 +282,18 @@ public function etape3(
             
         }
         $user = $this->getUser();
+        if ($temporaryData->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
+        }
         // if ($temporaryData->getUser() !== $this->getUser()) {
         //     throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
         // }
 
         $data = $temporaryData->getData();
 
-    $dossiersPartages = $data['dossiers_partages'] ?? [];
+        $dossiersPartages = $data['dossiers_partages'] ?? []; 
+        $dossiersSelectionnes = []; 
+        
     $nomServiceSelectionne = $data['nom_service_selectionne'] ?? '';
     $nomValideur = $data['nom_valideur'] ?? '';
 
@@ -296,6 +301,7 @@ public function etape3(
     $form = $this->createForm(DemandeEtape3FormType::class, $data, [
         'dossiers_partages' => $dossiersPartages,
         'data_class' => null, 
+        'dossiers_selectionnes' => $dossiersSelectionnes,
     ]);
     $form->handleRequest($request);
 
