@@ -1,0 +1,194 @@
+.page-title {
+    text-align: center;
+    font-weight: bold;
+    margin: 20px 0;
+}
+.table-container {
+    margin: 20px auto;
+    width: 90%;
+}
+.btn-container {
+margin-bottom: 20px;
+display: flex;
+justify-content: flex-end; 
+gap: 20px; 
+}
+.custom-link {
+display: inline-flex; 
+align-items: center; 
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+font-size: 16px; 
+font-weight: bold; 
+color: rgb(0, 123, 255); 
+text-decoration: none; 
+cursor: pointer; 
+gap: 8px;
+}
+
+.custom-link:hover {
+color: rgb(0, 86, 179) !important; 
+}
+.custom-link:hover .fa-plus-circle {
+color: rgb(0, 86, 179) !important;
+}
+
+
+.custom-link .fa-plus-circle {
+  color: rgb(0, 123, 255) !important;
+font-family: 'Font Awesome 5 Free';
+font-weight: 900; 
+font-size: 21.333px; 
+line-height: 16px; 
+text-align: left;
+vertical-align: middle; 
+
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    text-align: center;
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+
+}
+.col-service {
+width: 15%; 
+max-width: 15%;
+text-align: center; 
+}
+
+.col-demandeur {
+width: 25%; 
+max-width: 25%;
+text-align: center; 
+}
+
+.col-date {
+width: 13%; 
+max-width: 13%;
+text-align: center; 
+}
+
+.col-heure {
+width: 13%; 
+max-width: 13%;
+text-align: center; 
+}
+.col-statut {
+width: 15%;
+max-width: 15%;
+text-align: center; 
+}
+
+.col-actions {
+width: 7%; 
+max-width: 7%;
+text-align: center; 
+}
+
+.col-commentaire {
+width: 15%; 
+max-width: 15%;
+text-align: center; 
+overflow: hidden; 
+text-overflow: ellipsis; 
+white-space: nowrap; 
+}
+
+th.demandeur-column, td.demandeur-column {
+width: 150px; 
+max-width: 150px; 
+overflow: hidden; 
+text-overflow: ellipsis; 
+white-space: nowrap; 
+}
+th {
+    background-color: #f8f8f8;
+    
+}
+.status-brouillons-mesdemandes {
+    background-color: #77b5fe;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    min-width: 100px;
+    margin: 5px 0;
+}
+.service-column {
+    color: #00008B;
+    font-weight: bold;
+}
+.toolbar {
+    text-align: right;
+    color: #1E90FF;
+}
+.toolbar a {
+padding: 0; 
+margin: 0; 
+}
+
+.toolbar a i {
+    display: inline;
+    color: #1E90FF !important;
+    margin-left: 2px; 
+    margin-right: 2px; 
+}
+.menu-container {
+margin-bottom: 80px; 
+margin-top: -10px; 
+text-align: left;
+padding-left: 25px; 
+}
+.container.table-container {
+margin-top: -90px; 
+}
+
+.status-leka, .status-leka-mesdemandes{
+    background-color: #28A745;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    min-width: 100px;
+    margin: 5px 0;
+}
+.status-en-attente {
+    background-color:  #FFC107;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    min-width: 100px;
+    margin: 5px 0;
+}
+.status-en-attente-mesdemandes {
+    background-color: #D3D3D3;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    min-width: 100px;
+    margin: 5px 0;
+}
+
+.status-refuse, .status-refuse-mesdemandes{
+    background-color: #FF0000;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    min-width: 100px;
+    margin: 5px 0;
+}
+.status-brouillons-mesdemandes {
+    background-color: #77b5fe ; 
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    min-width: 100px;
+    margin: 5px 0;
+}

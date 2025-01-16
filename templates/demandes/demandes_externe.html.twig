@@ -115,11 +115,43 @@
             min-width: 100px;
             margin: 5px 0;
         }
-        .new-request-btn {
-           display: flex;
-            justify-content: flex-end; 
-            margin-bottom: 20px; 
-        }
+        
+        .btn-container {
+margin-bottom: 20px;
+display: flex;
+justify-content: flex-end; 
+gap: 20px; 
+}
+        .custom-link {
+display: inline-flex; 
+align-items: center; 
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+font-size: 16px; 
+font-weight: bold; 
+color: rgb(0, 123, 255); 
+text-decoration: none; 
+cursor: pointer; 
+gap: 8px;
+}
+
+.custom-link:hover {
+color: rgb(0, 86, 179) !important; 
+}
+.custom-link:hover .fa-plus-circle {
+color: rgb(0, 86, 179) !important;
+}
+
+
+.custom-link .fa-plus-circle {
+  color: rgb(0, 123, 255) !important;
+font-family: 'Font Awesome 5 Free';
+font-weight: 900; 
+font-size: 21.333px; 
+line-height: 16px; 
+text-align: left;
+vertical-align: middle; 
+
+}
     </style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
@@ -127,7 +159,7 @@
     <h3 class="page-title">Historique de vos demandes</h3>
 {% endblock %}
 {% block main %}
-    <div class="container-fluid">
+   <div class="container table-container">
     <div class="row justify-content-center">
         <div class="col-12">
             {% for message in app.flashes('success') %}
@@ -135,13 +167,15 @@
                     {{ message }}
                 </div>
             {% endfor %}
+    <div class="btn-container">
+            <a href="{{ path('nouvelle_demande') }}" class="custom-link">
+        <i class="fas fa-plus-circle fa-lg"></i>
+        <b>Nouvelle demande personnelle</b>
+    </a>
+    </div>
 
-            <div class="new-request-btn">
-                <a href="{{ path('nouvelle_demande') }}" class="btn btn-primary">Nouvelle Demande</a>
-            </div>
-
-            <div class="table-responsive">
-                <table class="table">
+            <table class="table table-striped">
+                
                     <thead>
                         <tr>
                             <th>Service</th>
@@ -156,7 +190,7 @@
                     <tbody>
                         {% if demandes is empty %}
                             <tr>
-                                <td colspan="6" class="text-center">Vous n'avez aucune demande pour l'instant</td>
+                                <td colspan="7" class="text-center">Vous n'avez aucune demande pour l'instant</td>
                             </tr>
                         {% else %}
                             {% for demande in demandes %}

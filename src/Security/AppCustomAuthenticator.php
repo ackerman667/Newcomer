@@ -46,6 +46,9 @@ class AppCustomAuthenticator extends AbstractLoginFormAuthenticator
         if (!password_verify($password, $user->getPassword())) {
             throw new BadCredentialsException('Mot de passe incorrect.');
         }
+        // if (!$user) {
+        //     throw new BadCredentialsException('Cet email n’existe pas.');
+        // }
 
         return new Passport(
             new UserBadge($email),

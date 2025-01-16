@@ -1,0 +1,177 @@
+{% extends 'layout_ag.html.twig' %}
+
+{% block title %}<title>Mes Demandes - {{ monApplication.Appli }}</title>{% endblock %}
+
+{% block head_gene %}
+ <link rel="stylesheet" href="{{ asset('css/mesdemandes.css') }}">
+{% endblock %}
+{% block body %}<body  class="page not-home">{% endblock %}
+{% block header %}
+ 
+   
+
+    <div class="menu-container">
+    {{ include('./demandes/menu.html.twig') }}
+</div>
+{% endblock %}
+
+{% block main %}
+<div class="container table-container">
+<div class="row justify-content-center">
+        <div class="col-md-12">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                    {{ message }}
+                </div>
+            {% endfor %}
+
+
+
+
+ <div class="btn-container">
+    <a href="{{ path('nouvelle-demande-ldap') }}" class="custom-link">
+        <i class="fas fa-plus-circle fa-lg"></i>
+        <b>Faire une demande pour quelqu'un d'autre</b>
+    </a>
+    <a href="{{ path('nouvelle_demande_ldap') }}" class="custom-link">
+        <i class="fas fa-plus-circle fa-lg"></i>
+        <b>Nouvelle demande personnelle</b>
+    </a>
+</div>
+  </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+              
+                   <th class="col-service">Service</th>
+                
+                <th class="demandeur-column">Demandeur</th>
+                    <th class="col-date">Date soumission</th>
+            <th class="col-heure">Heure soumission</th>
+                <th class="col-statut">Statut</th>
+                <th class="col-commentaire">Commentaire</th>
+               <th class="col-actions">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if mesDemandes is empty %}
+                <tr>
+                    <td colspan="8">Vous n'avez aucune demande pour l'instant</td>
+                </tr>
+            {% else %}
+                {% for demande in mesDemandes %}
+                    <tr data-status="{{ demande.statuts }}" data-type="Mes Demandes">
+                        
+                        <td class="service-column">{{ demande.service }}</td>
+                        <td class="demandeur-column">
+                         {% if demande.isAutrePersonne %}
+                                    {% set infosPersonne = demande.infosPersonne %}
+                                    {{ infosPersonne.nom }} {{ infosPersonne.prenom }}
+                                {% else %}
+                                  {{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}
+                                {% endif %}
+                            </td>
+                        <td>{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
+                        <td>{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
+                        <td>
+                                    <span class="{% if demande.statuts == 'Brouillons' %}status-brouillons-mesdemandes{% elseif demande.statuts == 'Suivi dans LEKA' %}status-leka-mesdemandes{% elseif demande.statuts == 'En attente' %}status-en-attente-mesdemandes{% elseif demande.statuts == 'Refusée' %}status-refuse-mesdemandes{% endif %}">
+                                        {{ demande.statuts }}
+                                    </span>
+                                </td>
+                        <td>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</td>
+                        <td class="toolbar">
+                           
+                      {% if demande.isAutrePersonne %} {#       SI LA DEMANDE EST POUR UNE AUTRE PERSONNE ET EST EN BROUILLONS     #}
+                                        {% if demande.statuts == 'Brouillons' %}
+                                            <a href="{{ path('modifier_demandespourautre', {id: demande.id}) }}"><i class="fas fa-edit icon-edit"></i></a>
+                                            <a href="{{ path('demande_consult_ldap', {id: demande.id}) }}"><i class="fas fa-search icon-search"></i></a>
+                                            <a href="{{ path('supprimer_demandespourautre', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');"><i class="fas fa-trash-alt icon-trash"></i></a>
+                                                    {#       SI LA DEMANDE EST POUR UNE AUTRE PERSONNE ET EST EN BROUILLONS ET C'est le valideur du service    #}
+                                                     {% if uiduser == demande.uidValideur %} 
+                                                        <a href="{{ path('valider_demande', {id: demande.id}) }}" class="text-success"><i class="fas fa-thumbs-up"></i> </a>
+                                                    {% else %} {#       SI LA DEMANDE EST POUR UNE AUTRE PERSONNE ET EST EN BROUILLONS  #}
+                                                        <a href="{{ path('valider_demandespourautre', {id: demande.id}) }}"><i class="fas fa-thumbs-up icon-thumbs-up"></i></a>
+                                                        
+                                                    {% endif %}
+
+
+                                            
+                                            <a href="{{ path('demande_pdf_ldap', {id: demande.id}) }}"><i class="fas fa-file-pdf icon-pdf"></i></a>
+                                        {% else %}
+
+
+                                                    {% if uiduser == demande.uidValideur %}
+                                                    <a href="{{ path('visualiser_demande', {id: demande.id}) }}"><i class="fas fa-search"></i></a>
+                                                    <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}"><i class="fas fa-file-pdf"></i></a>
+                                                                
+                                                    {% else %}
+                                                     <a href="{{ path('demande_consult_ldap', {id: demande.id}) }}"><i class="fas fa-search icon-search"></i></a>
+                                                    <a href="{{ path('demande_pdf_ldap', {id: demande.id}) }}"><i class="fas fa-file-pdf icon-pdf"></i></a>
+                                                                
+                                                    {% endif %}
+
+                                        {% endif %}
+
+
+
+                            {% else %} {#       SI LA DEMANDE EST POUR SOIS MEME  ET EST EN BROUILLONS   #}
+                                        {% if demande.statuts == 'Brouillons' %}
+                                            <a href="{{ path('modifier_demandesldap', {id: demande.id}) }}"><i class="fas fa-edit icon-edit"></i></a>
+                                            <a href="{{ path('demande_consult_ldap', {id: demande.id}) }}"><i class="fas fa-search icon-search"></i></a>
+                                            <a href="{{ path('formulaireldap_supprimer', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');"><i class="fas fa-trash-alt icon-trash"></i></a>
+        
+                                                        {% if uiduser == demande.uidValideur %} {#      SI LA DEMANDE EST POUR SOIS MEME  ET C'est le valideur de son propre service    #}
+                                                            <a href="{{ path('valider_demande', {id: demande.id}) }}" class="text-success"><i class="fas fa-thumbs-up"></i> </a>
+                                                        {% else %}
+                                                        <a href="{{ path('valider_demandesldap', {id: demande.id}) }}"><i class="fas fa-thumbs-up icon-thumbs-up"></i></a>
+                                                        {% endif %} 
+                                           
+                                           
+                                            <a href="{{ path('demande_pdf_ldap', {id: demande.id}) }}"><i class="fas fa-file-pdf icon-pdf"></i></a>
+                                         {% else %}
+                                                         {% if uiduser == demande.uidValideur %}
+                                                            <a href="{{ path('visualiser_demande', {id: demande.id}) }}"><i class="fas fa-search"></i></a>
+                                                            <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}"><i class="fas fa-file-pdf"></i></a>
+                                                                        
+                                                        {% else %}
+                                                             <a href="{{ path('demande_consult_ldap', {id: demande.id}) }}"><i class="fas fa-search icon-search"></i></a>
+                                                             <a href="{{ path('demande_pdf_ldap', {id: demande.id}) }}"><i class="fas fa-file-pdf icon-pdf"></i></a>
+                                                                        
+                                                        {% endif %}
+
+
+
+
+
+                                            
+                                        {% endif %}
+                                        {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+  </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    setTimeout(function () {
+        document.querySelectorAll('.alert').forEach(function (alert) {
+            alert.style.transition = 'opacity 1s ease-out';
+            alert.style.opacity = '0';
+            alert.addEventListener('transitionend', function () {
+                alert.remove();
+            });
+        });
+    }, 5000);
+
+    window.addEventListener('pageshow', function (event) {
+        if (event.persisted || (window.performance && window.performance.getEntriesByType('navigation')[0].type === 'back_forward')) {
+            window.location.reload();
+        }
+    });
+});
+</script>
+{% endblock %}

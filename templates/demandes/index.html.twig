@@ -118,44 +118,44 @@
         padding: 0;
         margin: 0;
     }
-   /* Conteneur des liens */
+  
 .btn-container {
     display: flex;
-    flex-direction: column; /* Les liens sont affichés verticalement */
-    gap: 10px; /* Espace entre les liens */
+    flex-direction: column; 
+    gap: 10px; 
     margin-bottom: 20px;
 }
 
-/* Style des liens */
+
 .custom-link {
-    display: inline-flex; /* Icône et texte alignés horizontalement */
-    align-items: center; /* Centré verticalement */
+    display: inline-flex; 
+    align-items: center; 
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    font-size: 16px; /* Taille du texte */
-    font-weight: bold; /* Texte en gras */
-    color: rgb(0, 123, 255); /* Couleur des liens */
-    text-decoration: none; /* Pas de soulignement */
-    cursor: pointer; /* Curseur interactif */
-    gap: 8px; /* Espace entre l'icône et le texte */
+    font-size: 16px; 
+    font-weight: bold; 
+    color: rgb(0, 123, 255); 
+    text-decoration: none; 
+    cursor: pointer; 
+    gap: 8px;
 }
 
 .custom-link:hover {
-    color: rgb(0, 86, 179) !important; /* Couleur au survol */
+    color: rgb(0, 86, 179) !important; 
 }
 .custom-link:hover .fa-plus-circle {
-    color: rgb(0, 86, 179) !important; /* Force la couleur au survol */
+    color: rgb(0, 86, 179) !important;
 }
 
-/* Icône des liens */
+
 .custom-link .fa-plus-circle {
       color: rgb(0, 123, 255) !important;
     font-family: 'Font Awesome 5 Free';
-    font-weight: 900; /* Icône en gras */
-    font-size: 21.333px; /* Taille de l'icône */
-    line-height: 16px; /* Alignement vertical */
+    font-weight: 900; 
+    font-size: 21.333px; 
+    line-height: 16px; 
     text-align: left;
     vertical-align: middle; 
-    /* Alignement vertical exact */
+ 
 }
      .page-title {
         text-align: center; 
@@ -170,8 +170,19 @@
         width: 100%;             
     }
     .service-column {
-    color: #00008B; /* Bleu foncé */
+    color: #00008B; 
     font-weight: bold;
+}
+.container.table-container {
+   margin-top: -50px !important; /* Réduit l’espace au-dessus de la table */
+}
+.container {
+    margin-top: 0px; /* Supprime toute marge externe */
+    padding-top: 0px; /* Supprime tout padding interne */
+}
+.row {
+    margin-top: 0px;
+    padding-top: 0px;
 }
 
 

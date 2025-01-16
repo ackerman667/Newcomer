@@ -12,9 +12,7 @@ framework:
         handler_id: null
         cookie_secure: auto
         cookie_samesite: lax
-        # handler_id: App\Session\CustomSessionHandler
-        # gc_maxlifetime: 30
-        # cookie_lifetime: 0
+    
 
         
 

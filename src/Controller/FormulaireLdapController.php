@@ -436,7 +436,7 @@ class FormulaireLdapController extends AbstractController
             $token1 = $demande->getToken();
             $nom = $user1->getNom();
             $prenom = $user1->getPrenom();
-            $url = $this->generateUrl('liste_demandes', [], UrlGeneratorInterface::ABSOLUTE_URL);
+            $url = $this->generateUrl('mes_demandes', [], UrlGeneratorInterface::ABSOLUTE_URL);
 
             $entityManager->remove($temporaryData);
         $entityManager->flush();
@@ -458,7 +458,7 @@ class FormulaireLdapController extends AbstractController
     
             // $mailer->send($email);
     
-            return $this->redirectToRoute('liste_demandes');
+            return $this->redirectToRoute('mes_demandes');
         }
     
         return $this->render('formulaireldap/etape3ldap.html.twig', [

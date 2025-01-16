@@ -40,49 +40,99 @@ class StatutsLdapController extends AbstractController
         $this->isValideur = $this->roleChecker->isUserValideur();
     }
 
-    #[Route('formulaireldap/listedemandes', name: 'liste_demandes')]
-    public function index(SessionInterface $session, MonApplication $monApplication, EntityManagerInterface $entityManager): Response
-    {
-        // $session->remove('form_data');
-        // $session->remove('demande_id');
-        // $session->remove('nouvelle_demande');
-        // $session->remove('dossiers_partages');
-        // $session->remove('_csrf/https-demande_etape1_form');
-        // $session->remove('_csrf/https-demande_etape2_form');
-        // $session->remove('_csrf/https-demande_etape3_form');
-        // $session->remove('nom_service_selectionne');
-        // $session->remove('nom_valideur');
-        $user = $this->security->getUser();
-        $uid = $user->getUid();
+    // #[Route('formulaireldap/listedemandes', name: 'liste_demandes')]
+    // public function index(SessionInterface $session, MonApplication $monApplication, EntityManagerInterface $entityManager,  Request $request): Response
+    // {
+    //     // $session->remove('form_data');
+    //     // $session->remove('demande_id');
+    //     // $session->remove('nouvelle_demande');
+    //     // $session->remove('dossiers_partages');
+    //     // $session->remove('_csrf/https-demande_etape1_form');
+    //     // $session->remove('_csrf/https-demande_etape2_form');
+    //     // $session->remove('_csrf/https-demande_etape3_form');
+    //     // $session->remove('nom_service_selectionne');
+    //     // $session->remove('nom_valideur');
+    //     $user = $this->security->getUser();
+    //     $uid = $user->getUid();
 
-        // Vérifier si l'utilisateur est un valideur 
-        $isValideur = $this->roleChecker->isUserValideur();
+    //     // Vérifier si l'utilisateur est un valideur 
+    //     $isValideur = $this->roleChecker->isUserValideur();
 
-        // Récupérer les demandes de l'utilisateur courant (pour la section "Mes Demandes")
-        $userDemandes = $this->getDemandesPourUtilisateur($entityManager, $uid);
+    //     // Récupérer les demandes de l'utilisateur courant (pour la section "Mes Demandes")
+    //     $userDemandes = $this->getDemandesPourUtilisateur($entityManager, $uid);
 
-        // Récupérer les demandes assignées au valideur (si l'utilisateur est un valideur)
-        $demandesAValider = $isValideur ? $this->getDemandesPourValideur($entityManager, $uid) : [];
+    //     // Récupérer les demandes assignées au valideur (si l'utilisateur est un valideur)
+    //     $demandesAValider = $isValideur ? $this->getDemandesPourValideur($entityManager, $uid) : [];
 
-        $sessionData = $session->all();
+    //     $sessionData = $session->all();
 
-        // dump($sessionData);
+    //     // dump($sessionData);
 
-        return $this->render('demandes/index.html.twig', [
-            'mesDemandes' => $userDemandes,
-            'demandesAValider' => $demandesAValider,
-            'monApplication' => $monApplication,
-            'isValideur' => $isValideur,
-            'uiduser' => $uid,
-        ]);
+    //     return $this->render('demandes/index.html.twig', [
+    //         'mesDemandes' => $userDemandes,
+    //         'demandesAValider' => $demandesAValider,
+    //         'monApplication' => $monApplication,
+    //         'isValideur' => $isValideur,
+    //         'uiduser' => $uid,
+    //     ]);
+    // }
+
+
+    #[Route('formulaireldap/mes-demandes', name: 'mes_demandes')]
+public function mesDemandes(
+    SessionInterface $session,
+    MonApplication $monApplication,
+    EntityManagerInterface $entityManager
+): Response {
+    $user = $this->security->getUser();
+    $uid = $user->getUid();
+    $isValideur = $this->roleChecker->isUserValideur();
+
+    // Récupérer les demandes de l'utilisateur courant
+    $userDemandes = $this->getDemandesPourUtilisateur($entityManager, $uid);
+
+    return $this->render('demandes/mes_demandes.html.twig', [
+        'mesDemandes' => $userDemandes,
+        'monApplication' => $monApplication,
+        'uiduser' => $uid,
+        'page' => 'mesdemandes',
+        'isValideur' => $isValideur,
+
+    ]);
+}
+
+#[Route('formulaireldap/demandes-a-valider', name: 'demandes_a_valider')]
+public function demandesAValider(
+    MonApplication $monApplication,
+    EntityManagerInterface $entityManager
+): Response {
+    $user = $this->security->getUser();
+    $uid = $user->getUid();
+
+    // Vérifier si l'utilisateur est un valideur
+    $isValideur = $this->roleChecker->isUserValideur();
+
+    if (!$isValideur) {
+        throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette page.');
     }
 
-    /**
-     * Récupère les demandes pour un utilisateur classique.
-     */
+    // Récupérer les demandes assignées au valideur
+    $demandesAValider = $this->getDemandesPourValideur($entityManager, $uid);
+
+    return $this->render('demandes/demandes_a_valider.html.twig', [
+        'demandesAValider' => $demandesAValider,
+        'monApplication' => $monApplication,
+        'uiduser' => $uid,
+        'page' => 'demandeavalider',
+        'isValideur' => $isValideur,
+    ]);
+}
+
+
+
     private function getDemandesPourUtilisateur(EntityManagerInterface $entityManager, string $uid): array
     {
-        // Récupérer l'utilisateur correspondant à l'UID dans la table User
+        
         $user_bdd = $entityManager->getRepository(User::class)->findOneBy([
             'uid' => $uid,
             'provenance' => 'ldap'
@@ -125,7 +175,7 @@ class StatutsLdapController extends AbstractController
     private function getDemandesPourValideur(EntityManagerInterface $entityManager, string $uid): array
     {
         $statutExclus = 'Brouillons';
-    
+
         return $entityManager->getRepository(Demandes::class)->createQueryBuilder('d')
             ->leftJoin('d.IDutilisateur', 'u') // Jointure avec l'utilisateur
             ->where('d.uid_valideur = :uid')
@@ -133,7 +183,14 @@ class StatutsLdapController extends AbstractController
             ->andWhere('NOT (u.provenance = :provenance AND u.uid = d.uid_valideur)') // Condition supplémentaire
             ->setParameter('uid', $uid)
             ->setParameter('statutExclus', $statutExclus)
-            ->setParameter('provenance', 'ldap') // Paramètre pour la provenance
+            ->setParameter('provenance', 'ldap')
+            ->orderBy("CASE 
+                WHEN d.statuts = 'Suivi dans LEKA' THEN 2
+                WHEN d.statuts = 'Refusée' THEN 3
+                ELSE 1 
+            END", 'ASC') // Tri en fonction du statut
+            ->addOrderBy('d.date', 'DESC') // Les plus récentes en haut
+            ->addOrderBy('d.heureSoumission', 'DESC') // Si deux dates sont identiques
             ->getQuery()
             ->getResult();
     }
@@ -249,15 +306,15 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     $userBdd = $this->findOrCreateLdapUser($entityManager);
     $temporaryData = new TemporaryData();
     $temporaryData->setUser($userBdd);
-    $temporaryData->setAction('create'); // Marque comme une nouvelle demande
-    $temporaryData->setData([]); // Données initiales vides
+    $temporaryData->setAction('create'); 
+    $temporaryData->setData([]); 
     $temporaryData->setExpiration((new \DateTime())->modify('+1 minutes'));
 
-    // Sauvegarder dans la base de données
+    
     $entityManager->persist($temporaryData);
     $entityManager->flush();
 
-    // Rediriger vers l'étape 1 avec le token généré
+ 
     return $this->redirectToRoute('formulaireldap-etape1', ['token' => $temporaryData->getToken()]);
 }
 
@@ -352,7 +409,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     
         $this->addFlash('success', 'La demande a été supprimée avec succès.');
     
-        return $this->redirectToRoute('liste_demandes');
+        return $this->redirectToRoute('mes_demandes');
     }
 
 
@@ -387,7 +444,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
         $token = $demande->getToken();
     
 
-        return $this->redirectToRoute('liste_demandes');
+        return $this->redirectToRoute('mes_demandes');
 
     }
 
@@ -529,7 +586,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
 
         $this->addFlash('success', 'La demande a été supprimée avec succès.');
 
-        return $this->redirectToRoute('liste_demandes');
+        return $this->redirectToRoute('mes_demandes');
     }
 
     #[Route('/formulaireldap/a/valider/{id}', name: 'valider_demandespourautre')]
@@ -555,7 +612,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
         $entityManager->persist($historique);
         $entityManager->flush();
 
-        return $this->redirectToRoute('liste_demandes');
+        return $this->redirectToRoute('mes_demandes');
     }
 
 

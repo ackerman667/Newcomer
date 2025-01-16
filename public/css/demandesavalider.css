@@ -1,0 +1,174 @@
+.page-title {
+    text-align: center;
+    margin: 20px 0;
+}
+.table-container {
+    margin: 20px auto;
+    width: 90%;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    text-align: center;
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+th {
+    background-color: #f8f8f8;
+}
+.status-leka, .status-leka-mesdemandes{
+    background-color: #28A745;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    min-width: 100px;
+    margin: 5px 0;
+}
+.status-en-attente {
+    background-color:  #FFC107;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    min-width: 100px;
+    margin: 5px 0;
+}
+.status-en-attente-mesdemandes {
+    background-color: #D3D3D3;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    min-width: 100px;
+    margin: 5px 0;
+}
+
+.status-refuse, .status-refuse-mesdemandes{
+    background-color: #FF0000;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    min-width: 100px;
+    margin: 5px 0;
+}
+.status-brouillons-mesdemandes {
+    background-color: #77b5fe ; 
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    min-width: 100px;
+    margin: 5px 0;
+}
+
+.comment-form textarea {
+    width: 100%;
+    margin-bottom: 5px;
+}
+.comment-form textarea[disabled],
+.comment-form button[disabled] {
+    background-color: #f1f1f1;
+    cursor: not-allowed;
+}
+.toolbar {
+    text-align: right;
+    color: #1E90FF;
+}
+.toolbar a {
+padding: 0; 
+margin: 0; 
+}
+.menu-container {
+margin-bottom: 80px; 
+margin-top: -10px; 
+text-align: left;
+padding-left: 25px; 
+}
+.container.table-container {
+margin-top: -90px; 
+}
+
+.toolbar a i {
+    display: inline;
+    color: #1E90FF !important;
+    margin-left: 2px; 
+    margin-right: 2px; 
+}
+
+.col-demandeur {
+    width: 15%;
+}
+.filter-container {
+    margin-bottom: 20px;
+}
+.service-column {
+    color: #00008B;
+    font-weight: bold;
+}
+.alert {
+    transition: height 0.5s ease, opacity 0.5s ease;
+    overflow: hidden;
+    height: auto;
+    opacity: 1;
+}
+.alert.fade {
+    height: 0;
+    opacity: 0;
+    padding: 0;
+    margin: 0;
+}
+ th.demandeur-column, td.demandeur-column {
+width: 150px; 
+max-width: 150px; 
+overflow: hidden; 
+text-overflow: ellipsis; 
+white-space: nowrap; 
+}
+.col-service {
+    width: 13%; 
+    max-width: 13%;
+    text-align: center; 
+    }
+    
+    .col-demandeur {
+    width: 20%; 
+    max-width: 20%;
+    text-align: center; 
+    }
+    
+    .col-date {
+    width: 13%; 
+    max-width: 13%;
+    text-align: center; 
+    }
+    
+    .col-heure {
+    width: 13%; 
+    max-width: 13%;
+    text-align: center; 
+    }
+    .col-statut {
+    width: 15%; 
+    max-width: 15%;
+    text-align: center; 
+    }
+    
+    .col-actions {
+    width: 7%; 
+    max-width: 7%;
+    text-align: center; 
+    }
+    
+    .col-commentaire {
+    width: 15%; 
+    max-width: 15%;
+    text-align: center; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    white-space: nowrap; 
+    }

@@ -1,0 +1,234 @@
+{% extends 'layout_ag.html.twig' %}
+
+{% block title %}<title>Demandes à Valider - {{ monApplication.Appli }}</title>{% endblock %}
+
+{% block head_gene %}
+<link rel="stylesheet" href="{{ asset('css/demandesavalider.css') }}">
+{% endblock %}
+{% block body %}<body  class="page not-home">{% endblock %}
+{% block header %}
+    <div class="title_app" id="title">
+        <h1 class="title">{{monApplication.Appli}}</h1>
+        <h2 class="desc">{{monApplication.LibAppli}}</h2>
+    </div>
+   
+   
+    <div class="menu-container">
+    {{ include('./demandes/menu.html.twig') }}
+</div>
+{% endblock %}
+
+{% block main %}
+<div class="container table-container">
+<div class="row justify-content-center">
+        <div class="col-md-12">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                    {{ message }}
+                </div>
+            {% endfor %}
+
+
+              </div>
+
+
+
+
+     <div class="filter-container">
+                    <label for="filter-select">Filtrer par statut :</label>
+                    <select id="filter-select" class="form-select">
+                    <option value="all">Tout</option>
+                        <option value="Suivi dans LEKA">Suivi dans LEKA</option>
+                        <option value="En attente">En attente</option>
+                        <option value="Refusée">Refusée</option>
+                      
+
+                    </select>
+                </div>
+
+
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+             <th class="col-service">Service</th>
+             
+                
+                <th class="demandeur-column">Demandeur</th>
+                    <th class="col-date">Date soumission</th>
+            <th class="col-heure">Heure soumission</th>
+                <th class="col-statut">Statut</th>
+                <th class="col-commentaire">Commentaire</th>
+               <th class="col-actions">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if demandesAValider is empty %}
+                <tr>
+                    <td colspan="8">Aucune demande à valider pour l'instant</td>
+                </tr>
+            {% else %}
+                {% for demande in demandesAValider %}
+                    <tr data-status="{{ demande.statuts }}">
+                        <td class="service-column">{{ demande.service }}</td>
+                        <td class="demandeur-column">
+                         {% if demande.isAutrePersonne %}
+                                    {% set infosPersonne = demande.infosPersonne %}
+                                    {{ infosPersonne.nom }} {{ infosPersonne.prenom }}
+                                {% else %}
+                                    {{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}
+                                {% endif %}
+                                </td>
+                        <td>{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
+                        <td>{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
+                       <td>
+                                    <span class="{% if demande.statuts == 'Suivi dans LEKA' %}status-leka{% elseif demande.statuts == 'En attente' %}status-en-attente{% elseif demande.statuts == 'Refusée' %}status-refuse{% endif %}">
+                                        {{ demande.statuts }}
+                                    </span>
+                                </td>
+
+                     <td>
+                                    <form class="comment-form" method="post" action="{{ path('commenter_demande', {id: demande.id}) }}">
+                                        <textarea id="commentaire-{{ demande.id }}" name="commentaire" rows="2" maxlength="250" placeholder="Ajouter un commentaire en cas de refus !" {% if demande.statuts == 'Suivi dans LEKA' or demande.statuts == 'Refusée' %}disabled{% endif %}>{{ demande.commentaire ? demande.commentaire : '' }}</textarea>
+                                        {# <button type="submit" {% if demande.statuts is not same as('En attente') %}disabled{% endif %}>Ajouter un commentaire !</button> #}
+                                    </form>
+                                </td>
+
+
+                          <td class="toolbar">
+                            {% if demande.statuts == 'En attente' %}
+                                        <a href="{{ path('preparer_modification_valideur', {id: demande.id}) }}"><i class="fas fa-edit"></i></a>
+                                        <a href="{{ path('visualiser_demande', {id: demande.id}) }}"><i class="fas fa-search"></i></a>
+                                        <a href="#" onclick="return validateRequest('{{ demande.id }}');"><i class="fas fa-thumbs-up"></i></a>
+                                        <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}"><i class="fas fa-file-pdf"></i></a>
+                                        <a href="{{ path('refuser_demande', {id: demande.id}) }}" onclick="return checkComment('{{ demande.id }}')"><i class="fas fa-thumbs-down"></i></a>
+                                    {% else %}
+                                        <a href="{{ path('visualiser_demande', {id: demande.id}) }}"><i class="fas fa-search"></i></a>
+                                        <a href="{{ path('demande_pdf_valideur', {id: demande.id}) }}"><i class="fas fa-file-pdf"></i></a>
+                                    {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+  </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterSelect = document.getElementById('filter-select');
+    const rows = document.querySelectorAll('tbody tr');
+    
+    
+    
+
+    // Si filterSelect existe, ajoute l'événement de changement
+    if (filterSelect) {
+        filterSelect.addEventListener('change', function() {
+            const filterValue = filterSelect.value;
+            rows.forEach(row => {
+                const status = row.getAttribute('data-status');
+                const type = row.getAttribute('data-type');
+                if (filterValue === 'all' || (filterValue === 'Suivi dans LEKA' && status === 'Suivi dans LEKA') || 
+                    (filterValue === 'En attente' && status === 'En attente') || (filterValue === 'Refusée' && status === 'Refusée') || 
+                    (filterValue === 'Mes Demandes' && type === 'Mes Demandes') || (filterValue === 'À Valider' && type === 'À Valider')) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    } else {
+        console.log('Aucun filtre trouvé, l\'utilisateur n\'est pas un valideur.');
+    }
+
+    // Gestion de la disparition des alertes
+    setTimeout(function() {
+        let alerts = document.querySelectorAll('.alert');
+        console.log('Alerts found:', alerts);
+        alerts.forEach(function(alert) {
+            alert.style.transition = 'opacity 1s ease-out';
+            alert.style.opacity = '0';
+            alert.addEventListener('transitionend', function() {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            });
+        });
+    }, 5000); 
+});
+
+
+function checkComment(demandeId) {
+    const commentaireElement = document.getElementById('commentaire-' + demandeId);
+    const commentaireForm = commentaireElement.closest('form');
+    const commentaire = commentaireElement.value.trim();
+
+    // Vérifiez si le champ commentaire est vide
+    if (commentaire === '') {
+        alert('Veuillez ajouter un commentaire avant de refuser la demande.');
+        commentaireElement.focus();
+        return false; // Empêche l'exécution si le commentaire est vide
+    }
+
+    // Utilisez `fetch()` pour envoyer le commentaire
+    const formData = new FormData(commentaireForm);
+
+    fetch(commentaireForm.action, {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => {
+            if (response.ok) {
+                // Une fois la soumission terminée, redirigez vers la route de refus
+                window.location.href = "{{ path('refuser_demande', {id: 'ID_DEMANDE'}) }}".replace('ID_DEMANDE', demandeId);
+            } else {
+                alert('Une erreur est survenue lors de la soumission du commentaire.');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de la soumission :', error);
+            alert('Impossible de soumettre le commentaire. Veuillez réessayer.');
+        });
+
+    return false; // Empêche la soumission normale du formulaire
+}
+
+function validateRequest(demandeId) {
+    const commentaireElement = document.getElementById('commentaire-' + demandeId);
+    const commentaire = commentaireElement.value.trim();
+
+    if (commentaire !== '') {
+        // Soumettre le commentaire s'il est présent
+        const commentaireForm = commentaireElement.closest('form');
+        const formData = new FormData(commentaireForm);
+
+        fetch(commentaireForm.action, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                // Une fois le commentaire soumis, valider la demande
+                window.location.href = "{{ path('valider_demande', {id: 'ID_DEMANDE'}) }}".replace('ID_DEMANDE', demandeId);
+            } else {
+                alert('Une erreur est survenue lors de la soumission du commentaire.');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de la soumission :', error);
+            alert('Impossible de soumettre le commentaire. Veuillez réessayer.');
+        });
+    } else {
+        // Si aucun commentaire, validez directement
+        window.location.href = "{{ path('valider_demande', {id: 'ID_DEMANDE'}) }}".replace('ID_DEMANDE', demandeId);
+    }
+
+    return false;
+}
+
+
+
+</script>
+{% endblock %}

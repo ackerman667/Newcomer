@@ -38,7 +38,7 @@ class LdapController extends AbstractController
         $session->set('user_urlportail', $user->getUrlPortail()); 
         $session->set('user_urllogout', $user->getUrllogout()); 
         $session->set('user_urlproxy', $user->getUrlproxy()); 
-        return $this->redirectToRoute('liste_demandes');
+        return $this->redirectToRoute('mes_demandes');
        
 
 

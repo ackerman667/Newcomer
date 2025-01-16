@@ -31,7 +31,7 @@ security:
 
         database:
             lazy: true
-            pattern: ^/(login|formulaireext)
+            pattern: ^/(create-user|login|formulaireext)
             provider: provider_database
             logout:
                 path: app_logout 
@@ -61,6 +61,7 @@ security:
     access_control:
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/create-user, roles: PUBLIC_ACCESS }
         - { path: ^/formulaireext, roles: IS_AUTHENTICATED_FULLY}
         # - { path: ^/aide, roles: IS_AUTHENTICATED_FULLY}
     # access_control:

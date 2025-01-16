@@ -368,7 +368,7 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
     
             $this->addFlash('success', 'La demande a été modifiée avec succès.');
     
-            return $this->redirectToRoute('liste_demandes');
+            return $this->redirectToRoute('demandes_a_valider');
         }
     
         return $this->render('valideur/modifier_etape3.html.twig', [

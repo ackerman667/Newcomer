@@ -13,11 +13,6 @@ services:
     #     public: true
 
 
-    App\EventSubscriber\SessionTimeoutSubscriber:
-        autowire: true
-        autoconfigure: true
-
-
     App\Security\UserProvider:
         arguments:
             $cache: '@cache.app'

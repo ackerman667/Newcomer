@@ -46,9 +46,10 @@
             <div class="card shadow-sm">
                 <div class="card-body">
                     <h1 class="h3 mb-3 font-weight-normal text-center">Se connecter</h1>
-                    {% for message in app.flashes('error') %}
+                           {% for message in app.flashes('error') %}
     <div class="alert alert-danger">{{ message }}</div>
 {% endfor %}
+
 
                     <form method="post" action="{{ path('app_login') }}">
                         {% if error %}
@@ -83,7 +84,7 @@
 
                     <div class="mt-4 text-center">
                         <p>Vous n'avez pas de compte ? <a href="{{ path('user_creation') }}">Inscrivez-vous ici</a>.</p>
-                        <p>Si vous disposez d'un compte académique, <a href="{{ path('liste_demandes') }}">cliquez ici</a>.</p>
+                        <p>Si vous disposez d'un compte académique, <a href="{{ path('mes_demandes') }}">cliquez ici</a>.</p>
                         <p>MDP oublié <a href="{{ path('forgot_password') }}">cliquez ici</a>.</p>
                     </div>
                 </div>

@@ -13,12 +13,22 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\LoginLink\LoginLinkHandlerInterface;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
+use App\Repository\UserRepository;
 use Symfony\Component\Mime\Email;
 
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class UserCreationController extends AbstractController
 {
+    public function __construct(private UrlGeneratorInterface $urlGenerator, private UserRepository $userRepository, private Security $security
+    ) {
+        $this->security = $security;   
+        $this->timezone = new \DateTimeZone('America/Guadeloupe');
+        
+
+
+    }
     #[Route('/create-user', name: 'user_creation')]
     public function createUser(UserPasswordHasherInterface $userPasswordHasher, MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
@@ -93,19 +103,11 @@ $confirmPassword = $form->get('confirm_password')->getData();
             $entityManager->persist($user);
             $entityManager->flush();
 
-            $activationLink = $this->generateUrl('activate_account', [ 'token' => $user->getToken() ], UrlGeneratorInterface::ABSOLUTE_URL);
-
-            $email = (new Email())
-                ->from('noreply@ac-guadeloupe.fr')
-                ->to($user->getEmail())
-                ->subject('Activation de votre compte')
-                ->html('<p>Bonjour ' . $user->getPrenom() . ',</p><p>Veuillez activer votre compte en cliquant sur le lien suivant : <a href="' . $activationLink . '">Activer mon compte</a></p>');
-
-            $mailer->send($email);
+            $this->security->login($user);
 
             // $this->addFlash('success', 'Votre compte a bien été créé. Veuillez l\'activer par mail.');
 
-            return $this->redirectToRoute('user_creation_confirmation');
+            return $this->redirectToRoute('demande_externe');
         }
 
         return $this->render('user_creation/index.html.twig', [
