@@ -46,6 +46,9 @@
             <div class="card shadow-sm">
                 <div class="card-body">
                     <h1 class="h3 mb-3 font-weight-normal text-center">Se connecter</h1>
+                    {% for message in app.flashes('error') %}
+    <div class="alert alert-danger">{{ message }}</div>
+{% endfor %}
 
                     <form method="post" action="{{ path('app_login') }}">
                         {% if error %}

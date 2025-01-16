@@ -127,75 +127,60 @@
     <h3 class="page-title">Historique de vos demandes</h3>
 {% endblock %}
 {% block main %}
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-10">
-                {% for message in app.flashes('success') %}
-                    <div class="alert alert-success">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-
-             
-                <div class="new-request-btn">
-                    <a href="{{ path('nouvelle_demande') }}"  class="btn btn-primary">Nouvelle Demande</a>
+    <div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                    {{ message }}
                 </div>
+            {% endfor %}
 
-                <table style="width:100%; border-collapse: collapse;">
+            <div class="new-request-btn">
+                <a href="{{ path('nouvelle_demande') }}" class="btn btn-primary">Nouvelle Demande</a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table">
                     <thead>
-                        <tr style="border-bottom: 1px solid #ddd;">
-                            <th style="text-align: center; padding: 8px;">Service</th>
-                            <th style="text-align: center; padding: 8px;">Titre</th>
-                            <th style="text-align: center; padding: 8px;">Date de soumission</th>
-                            <th style="text-align: center; padding: 8px;">Heure de soumission</th>
-                            <th style="text-align: center; padding: 8px;">Statut</th>
-                            <th style="text-align: center; padding: 8px;">Commentaire</th>
-                            <th style="text-align: center; padding: 8px;">Actions</th>
+                        <tr>
+                            <th>Service</th>
+                            <th>Titre</th>
+                            <th>Date de soumission</th>
+                            <th>Heure de soumission</th>
+                            <th>Statut</th>
+                            <th>Commentaire</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% if demandes is empty %}
                             <tr>
-                                <td colspan="6" style="text-align: center; padding: 8px;">Vous n'avez aucune demande pour l'instant</td>
+                                <td colspan="6" class="text-center">Vous n'avez aucune demande pour l'instant</td>
                             </tr>
                         {% else %}
                             {% for demande in demandes %}
-                                <tr style="border-bottom: 1px solid #ddd;">
+                                <tr>
                                     <td style="text-align: center; padding: 8px; color: #00008B; font-weight: bold;">{{ demande.service }}</td>
-                                    <td style="text-align: center; padding: 8px;">{{ demande.titre }}</td>
-                                    <td style="text-align: center; padding: 8px;">{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
-                                    <td style="text-align: center; padding: 8px;">{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
-                                    <td class="status-cell" style="text-align: center; padding: 8px;">
+                                    <td class="text-center">{{ demande.titre }}</td>
+                                    <td class="text-center">{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
+                                    <td class="text-center">{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
+                                    <td class="text-center">
                                         <span class="{% if demande.statuts == 'Brouillons' %}status-brouillons{% elseif demande.statuts == 'Suivi dans LEKA' %}status-leka{% elseif demande.statuts == 'En attente' %}status-en-attente{% elseif demande.statuts == 'Refusée' %}status-refuse{% endif %}">{{ demande.statuts }}</span>
                                     </td>
-                                    <td style="text-align: center; padding: 8px;">
-                                        <span>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</span>
-                                    <td style="text-align: center; padding: 8px;">
-                                    {% if demande.statuts == 'Brouillons' %}
-                                        <a href="{{ path('modifier_demandes', {id: demande.id}) }}">
-                                            <i class="fas fa-edit icon-edit"></i>
-                                        </a>
-                                        <a href="{{ path('demande_consult', {id: demande.id}) }}">
-                                            <i class="fas fa-search icon-search"></i>
-                                        </a>
-                                        <a href="{{ path('formulaireexterne_supprimer', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">
-                                            <i class="fas fa-trash-alt icon-trash"></i>
-                                        </a>
-                                        <a href="{{ path('valider_demandes', {id: demande.id}) }}">
-                                            <i class="fas fa-thumbs-up icon-thumbs-up"></i>
-                                        </a>
-                                        <a href="{{ path('demande_pdf', {id: demande.id}) }}">
-                                            <i class="fas fa-file-pdf icon-pdf"></i>
-                                        </a>
-                                    {% else %}
-                                        <a href="{{ path('demande_consult', {id: demande.id}) }}">
-                                            <i class="fas fa-search icon-search"></i>
-                                        </a>
-                                        <a href="{{ path('demande_pdf', {id: demande.id}) }}">
-                                            <i class="fas fa-file-pdf icon-pdf"></i>
-                                        </a>
-                                    {% endif %}
-                                </td>
+                                    <td class="text-center">{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</td>
+                                    <td class="text-center">
+                                        {% if demande.statuts == 'Brouillons' %}
+                                            <a href="{{ path('modifier_demandes', {id: demande.id}) }}" title="Modifier"><i class="fas fa-edit icon-edit"></i></a>
+                                            <a href="{{ path('demande_consult', {id: demande.id}) }}" title="Consulter"><i class="fas fa-search icon-search"></i></a>
+                                            <a href="{{ path('formulaireexterne_supprimer', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');" title="Supprimer"><i class="fas fa-trash-alt icon-trash"></i></a>
+                                            <a href="{{ path('valider_demandes', {id: demande.id}) }}" title="Valider"><i class="fas fa-thumbs-up icon-thumbs-up"></i></a>
+                                            <a href="{{ path('demande_pdf', {id: demande.id}) }}" title="Télécharger PDF"><i class="fas fa-file-pdf icon-pdf"></i></a>
+                                        {% else %}
+                                            <a href="{{ path('demande_consult', {id: demande.id}) }}" title="Consulter"><i class="fas fa-search icon-search"></i></a>
+                                            <a href="{{ path('demande_pdf', {id: demande.id}) }}" title="Télécharger PDF"><i class="fas fa-file-pdf icon-pdf"></i></a>
+                                        {% endif %}
+                                    </td>
                                 </tr>
                             {% endfor %}
                         {% endif %}
@@ -204,6 +189,7 @@
             </div>
         </div>
     </div>
+</div>
 
     <script>
     document.addEventListener('DOMContentLoaded', function () {
