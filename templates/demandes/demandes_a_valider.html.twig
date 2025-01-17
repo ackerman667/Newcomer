@@ -5,13 +5,13 @@
 {% block head_gene %}
 <link rel="stylesheet" href="{{ asset('css/demandesavalider.css') }}">
 {% endblock %}
-{% block body %}<body  class="page not-home">{% endblock %}
+{% block body %}   <body  class="page not-home">       {% endblock %}
 {% block header %}
-    <div class="title_app" id="title">
+    {# <div class="title_app" id="title">
         <h1 class="title">{{monApplication.Appli}}</h1>
         <h2 class="desc">{{monApplication.LibAppli}}</h2>
     </div>
-   
+    #}
    
     <div class="menu-container">
     {{ include('./demandes/menu.html.twig') }}
@@ -88,7 +88,8 @@
 
                      <td>
                                     <form class="comment-form" method="post" action="{{ path('commenter_demande', {id: demande.id}) }}">
-                                        <textarea id="commentaire-{{ demande.id }}" name="commentaire" rows="2" maxlength="250" placeholder="Ajouter un commentaire en cas de refus !" {% if demande.statuts == 'Suivi dans LEKA' or demande.statuts == 'Refusée' %}disabled{% endif %}>{{ demande.commentaire ? demande.commentaire : '' }}</textarea>
+                                        <textarea id="commentaire-{{ demande.id }}"  name="commentaire" rows="2"  maxlength="250"  placeholder="Ajouter un commentaire en cas de refus !"  {% if demande.statuts == 'Suivi dans LEKA' or demande.statuts == 'Refusée' %}disabled{% endif %}>{{ demande.commentaire ? demande.commentaire : '' }}</textarea>
+
                                         {# <button type="submit" {% if demande.statuts is not same as('En attente') %}disabled{% endif %}>Ajouter un commentaire !</button> #}
                                     </form>
                                 </td>
@@ -118,6 +119,16 @@
 document.addEventListener('DOMContentLoaded', function() {
     const filterSelect = document.getElementById('filter-select');
     const rows = document.querySelectorAll('tbody tr');
+     const textareas = document.querySelectorAll('textarea');
+     textareas.forEach(textarea => {
+      
+        autoResizeTextarea(textarea);
+
+        
+        textarea.addEventListener('input', function() {
+            autoResizeTextarea(this);
+        });
+    });
     
     
     
@@ -226,6 +237,11 @@ function validateRequest(demandeId) {
 
     return false;
 }
+
+ function autoResizeTextarea(textarea) {
+        textarea.style.height = 'auto'; // Réinitialise la hauteur pour recalculer
+        textarea.style.height = textarea.scrollHeight + 'px'; // Ajuste la hauteur au contenu
+    }
 
 
 

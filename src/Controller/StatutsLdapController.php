@@ -142,20 +142,20 @@ private function getDemandesPourUtilisateur(EntityManagerInterface $entityManage
     if (!$user_bdd) {
         $queryBuilder = $entityManager->createQueryBuilder();
         $queryBuilder
-            ->select('d')
-            ->from(Demandes::class, 'd')
-            ->leftJoin('d.IDutilisateur', 'u')
-            ->where('u.uid = :uid')
-            ->andWhere('d.statuts = :statut')
-            ->setParameter('uid', $uid)
-            ->setParameter('statut', 'Suivi dans LEKA')
-            ->orderBy("CASE 
-                WHEN d.statuts = 'Suivi dans LEKA' THEN 2
-                WHEN d.statuts = 'Refusée' THEN 3
-                ELSE 1 
-            END", 'ASC') 
-            ->addOrderBy('d.date', 'DESC') 
-            ->addOrderBy('d.heureSoumission', 'DESC'); 
+        ->select('d')
+        ->from(Demandes::class, 'd')
+        ->leftJoin('d.IDutilisateur', 'u')
+        ->where('u.uid = :uid')
+        ->andWhere('d.statuts = :statut')
+        ->setParameter('uid', $uid)
+        ->setParameter('statut', 'Suivi dans LEKA')
+        ->orderBy("CASE 
+            WHEN d.statuts = 'En attente' THEN 1
+            ELSE 2 
+        END", 'ASC') 
+        ->addOrderBy('d.date', 'DESC') 
+        ->addOrderBy('d.heureSoumission', 'DESC'); 
+        
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -163,21 +163,21 @@ private function getDemandesPourUtilisateur(EntityManagerInterface $entityManage
 
     $queryBuilder = $entityManager->createQueryBuilder();
     $queryBuilder
-        ->select('d')
-        ->from(Demandes::class, 'd')
-        ->leftJoin('d.IDutilisateur', 'u')
-        ->where('d.IDutilisateur = :user')
-        ->orWhere('(u.uid = :uid AND d.statuts = :statut)')
-        ->setParameter('user', $user_bdd)
-        ->setParameter('uid', $uid)
-        ->setParameter('statut', 'Suivi dans LEKA')
-        ->orderBy("CASE 
-            WHEN d.statuts = 'Suivi dans LEKA' THEN 2
-            WHEN d.statuts = 'Refusée' THEN 3
-            ELSE 1 
-        END", 'ASC') 
-        ->addOrderBy('d.date', 'DESC') 
-        ->addOrderBy('d.heureSoumission', 'DESC'); 
+    ->select('d')
+    ->from(Demandes::class, 'd')
+    ->leftJoin('d.IDutilisateur', 'u')
+    ->where('d.IDutilisateur = :user')
+    ->orWhere('(u.uid = :uid AND d.statuts = :statut)')
+    ->setParameter('user', $user_bdd)
+    ->setParameter('uid', $uid)
+    ->setParameter('statut', 'Suivi dans LEKA')
+    ->orderBy("CASE 
+        WHEN d.statuts = 'En attente' THEN 1
+        ELSE 2 
+    END", 'ASC') 
+    ->addOrderBy('d.date', 'DESC') 
+    ->addOrderBy('d.heureSoumission', 'DESC'); 
+    
 
     return $queryBuilder->getQuery()->getResult();
 }
@@ -189,22 +189,22 @@ private function getDemandesPourUtilisateur(EntityManagerInterface $entityManage
         $statutExclus = 'Brouillons';
 
         return $entityManager->getRepository(Demandes::class)->createQueryBuilder('d')
-            ->leftJoin('d.IDutilisateur', 'u') // Jointure avec l'utilisateur
-            ->where('d.uid_valideur = :uid')
-            ->andWhere('d.statuts <> :statutExclus')
-            ->andWhere('NOT (u.provenance = :provenance AND u.uid = d.uid_valideur)') // Condition supplémentaire
-            ->setParameter('uid', $uid)
-            ->setParameter('statutExclus', $statutExclus)
-            ->setParameter('provenance', 'ldap')
-            ->orderBy("CASE 
-                WHEN d.statuts = 'Suivi dans LEKA' THEN 2
-                WHEN d.statuts = 'Refusée' THEN 3
-                ELSE 1 
-            END", 'ASC') // Tri en fonction du statut
-            ->addOrderBy('d.date', 'DESC') // Les plus récentes en haut
-            ->addOrderBy('d.heureSoumission', 'DESC') // Si deux dates sont identiques
-            ->getQuery()
-            ->getResult();
+        ->leftJoin('d.IDutilisateur', 'u') 
+        ->where('d.uid_valideur = :uid')
+        ->andWhere('d.statuts <> :statutExclus')
+        ->andWhere('NOT (u.provenance = :provenance AND u.uid = d.uid_valideur)') 
+        ->setParameter('uid', $uid)
+        ->setParameter('statutExclus', $statutExclus)
+        ->setParameter('provenance', 'ldap')
+        ->orderBy("CASE 
+            WHEN d.statuts = 'En attente' THEN 1
+            ELSE 2 
+        END", 'ASC') 
+        ->addOrderBy('d.date', 'DESC') 
+        ->addOrderBy('d.heureSoumission', 'DESC') 
+        ->getQuery()
+        ->getResult();
+    
     }
     
 
