@@ -145,7 +145,7 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
 
 
 
-    #[Route('formulaireldap/validerdemande/{id}', name: 'valider_monservice')]
+    #[Route('formulaireldap/valider-demande/{id}', name: 'valider_monservice')]
     public function validerDemandeOwnService(int $id, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
         

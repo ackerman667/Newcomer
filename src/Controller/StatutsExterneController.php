@@ -153,11 +153,11 @@ class StatutsExterneController extends AbstractController
     ->createQueryBuilder('d')
     ->where('d.IDutilisateur = :user')
     ->setParameter('user', $user)
-    ->orderBy("
-        CASE 
-            WHEN d.statuts = 'En attente' THEN 1
-            ELSE 2
-        END", 'ASC') 
+    ->orderBy("CASE 
+        WHEN d.statuts = 'Brouillons' THEN 1
+         WHEN d.statuts = 'En attente' THEN 2
+        ELSE 3 
+    END", 'ASC') 
     ->addOrderBy('d.date', 'DESC') 
     ->addOrderBy('d.heureSoumission', 'DESC') 
     ->getQuery()

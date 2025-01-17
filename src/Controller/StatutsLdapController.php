@@ -150,9 +150,10 @@ private function getDemandesPourUtilisateur(EntityManagerInterface $entityManage
         ->setParameter('uid', $uid)
         ->setParameter('statut', 'Suivi dans LEKA')
         ->orderBy("CASE 
-            WHEN d.statuts = 'En attente' THEN 1
-            ELSE 2 
-        END", 'ASC') 
+        WHEN d.statuts = 'Brouillons' THEN 1
+         WHEN d.statuts = 'En attente' THEN 2
+        ELSE 3 
+    END", 'ASC') 
         ->addOrderBy('d.date', 'DESC') 
         ->addOrderBy('d.heureSoumission', 'DESC'); 
         
@@ -172,8 +173,9 @@ private function getDemandesPourUtilisateur(EntityManagerInterface $entityManage
     ->setParameter('uid', $uid)
     ->setParameter('statut', 'Suivi dans LEKA')
     ->orderBy("CASE 
-        WHEN d.statuts = 'En attente' THEN 1
-        ELSE 2 
+        WHEN d.statuts = 'Brouillons' THEN 1
+         WHEN d.statuts = 'En attente' THEN 2
+        ELSE 3 
     END", 'ASC') 
     ->addOrderBy('d.date', 'DESC') 
     ->addOrderBy('d.heureSoumission', 'DESC'); 
