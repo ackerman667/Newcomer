@@ -16,6 +16,16 @@ class PasswordResetTokenRepository extends ServiceEntityRepository
         parent::__construct($registry, PasswordResetToken::class);
     }
 
+
+    public function deleteExpiredData(): int
+    {
+        $qb = $this->createQueryBuilder('prt')
+            ->delete()
+            ->where('prt.expiresAt <= :now')
+            ->setParameter('now', new \DateTime());
+
+        return $qb->getQuery()->execute(); // Retourne le nombre de lignes supprimées
+    }
     //    /**
     //     * @return PasswordResetToken[] Returns an array of PasswordResetToken objects
     //     */

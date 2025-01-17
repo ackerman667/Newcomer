@@ -12,6 +12,7 @@
         "doctrine/doctrine-migrations-bundle": "^3.3",
         "doctrine/orm": "^2.17",
         "dompdf/dompdf": "^3.0",
+        "dragonmantank/cron-expression": "^3.4",
         "firebase/php-jwt": "^6.10",
         "knplabs/knp-snappy-bundle": "^1.10",
         "phpdocumentor/reflection-docblock": "^5.3",

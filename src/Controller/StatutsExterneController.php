@@ -237,7 +237,7 @@ class StatutsExterneController extends AbstractController
         // $temporaryData->setData($data);
         $temporaryData->setAction('create'); 
         $temporaryData->setData([]); 
-        $temporaryData->setExpiration((new \DateTime())->modify('+1 minutes'));
+        $temporaryData->setExpiration((new \DateTime())->modify('+24 hours'));
         $entityManager->persist($temporaryData);
         $entityManager->flush();
 
@@ -322,7 +322,7 @@ class StatutsExterneController extends AbstractController
         $temporaryData->setUser($user);
         $temporaryData->setAction('modifier'); 
         $temporaryData->setData($data);
-        $temporaryData->setExpiration((new \DateTime())->modify('+30 minutes'));
+        $temporaryData->setExpiration((new \DateTime())->modify('+24 hours'));
         $entityManager->persist($temporaryData);
         $entityManager->flush();
 

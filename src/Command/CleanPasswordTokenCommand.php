@@ -1,22 +1,26 @@
-<?php 
+<?php
+
 namespace App\Command;
 
-use App\Repository\TemporaryDataRepository;
+use App\Repository\PasswordResetTokenRepository;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
-    name: 'cleanertd',
-    description: 'Supprimer les entrées (éxpiré) de la table temporary_data ',
+    name: 'cleanerpassword',
+    description: 'Supprimer les entrées (éxpiré) de la table PasswordResetToken ',
 )]
-class CleanertdCommand extends Command
+class CleanPasswordTokenCommand extends Command
 {
-    private TemporaryDataRepository $repository;
+    
+    private PasswordResetTokenRepository $repository;
 
-    public function __construct(TemporaryDataRepository $repository)
+    public function __construct(PasswordResetTokenRepository $repository)
     {
         parent::__construct();
         $this->repository = $repository;
@@ -25,15 +29,15 @@ class CleanertdCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setDescription('Supprimer les entrées (éxpiré) de la table temporary_data.')
-            ->setHelp('Supprimer les entrées (éxpiré) de la table temporary_data');
+        ->setDescription('Supprimer les entrées (éxpiré) de la table PasswordResetToken.')
+        ->setHelp('Supprimer les entrées (éxpiré) de la table PasswordResetToken');
+        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
-        // Supprimer les données expirées
         $deletedCount = $this->repository->deleteExpiredData();
         $io->success("$deletedCount supprimée(s).");
 

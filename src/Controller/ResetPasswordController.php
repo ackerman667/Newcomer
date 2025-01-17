@@ -53,10 +53,10 @@ public function forgotPassword(MonApplication $monApplication,
                 $this->addFlash('error', 'Un lien de réinitialisation est déjà actif. Veuillez vérifier votre e-mail.');
                 return $this->redirectToRoute('forgot_password');
             }
-            // Créez un jeton de réinitialisation
+          
             $token = new PasswordResetToken();
             $token->setToken(Uuid::v4());
-            $token->setExpiresAt(new \DateTime('+5 minutes')); 
+            $token->setExpiresAt(new \DateTime('24 hours'));
             $token->setUser($user);
 
             $em->persist($token);
@@ -64,7 +64,7 @@ public function forgotPassword(MonApplication $monApplication,
 
            
             $url = $this->generateUrl('reset_password', ['token' => $token->getToken()], UrlGeneratorInterface::ABSOLUTE_URL);
-            $resetUrl = $this->generateUrl('reset_password', ['token' => $token->getToken()], true);
+        
 
             $emailMessage = (new Email())
                 ->from('noreply@ac-guadeloupe.fr')
@@ -108,8 +108,8 @@ public function resetPassword(
         return $this->redirectToRoute('forgot_password');
     }
     if (!$resetToken->isValid()) {
-        $em->remove($resetToken);
-        $em->flush();
+        // $em->remove($resetToken);
+        // $em->flush();
 
         $this->addFlash('error', 'Le lien de réinitialisation est invalide ou expiré.');
         return $this->redirectToRoute('forgot_password');
