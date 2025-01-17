@@ -1,157 +1,13 @@
 {% extends 'layout_ag.html.twig' %}
 {% block title %}<title>Historique de vos demandes - {{ monApplication.Appli }}</title>{% endblock %}
 {% block head_gene %}
+ <link rel="stylesheet" href="{{ asset('css/externe.css') }}">
 <script>
     const logoutUrl = '{{ path('app_logout') }}'; // Générer l'URL dynamique
 </script>
 <script type="text/javascript" src="{{ asset('js/inactivity.js') }}" defer></script>
     <style>
-        .table-container {
-            margin: 20px auto;
-            width: 90%;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            text-align: center;
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #f8f8f8;
-        }
-        .details-section {
-            border: 1px solid #000;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-        .details-section-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        .details-group {
-            margin-bottom: 15px;
-        }
-        .details-group label {
-            font-weight: bold;
-        }
-        .details-group span {
-            display: block;
-            margin-top: 5px;
-        }
-        .btn-primary {
-            margin-top: 20px;
-        }
-        .page-title {
-            text-align: center;
-            font-style: italic;
-            color: #04A0DB;
-            margin-bottom: 30px;
-        }
-        .alert {
-            transition: height 0.5s ease, opacity 0.5s ease;
-            overflow: hidden;
-            height: auto;
-            opacity: 1;
-        }
-
-        .alert.fade {
-            height: 0;
-            opacity: 0;
-            padding: 0; 
-            margin: 0;
-        }
-        .status-brouillons {
-            background-color: #FFC107;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            display: inline-block;
-            min-width: 100px; 
-            margin: 5px 0;
-        }
-        .status-leka {
-            background-color: #28A745;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            display: inline-block;
-            min-width: 100px; 
-            margin: 5px 0;
-        }
-        .status-en-attente {
-            background-color: #D3D3D3;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            display: inline-block;
-            min-width: 100px; 
-            margin: 5px 0;
-        }
-        .icon-edit {
-            color: #1E90FF !important;
-        }
-        .icon-search {
-            color: #1E90FF !important;
-        }
-        .icon-trash {
-            color: #1E90FF !important;
-        }
-        .icon-thumbs-up {
-            color: #1E90FF !important;
-        }
-        .icon-pdf {
-            color: #1E90FF !important;
-        }
-        .status-refuse {
-            background-color: #FF0000;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            display: inline-block;
-            min-width: 100px;
-            margin: 5px 0;
-        }
-        
-        .btn-container {
-margin-bottom: 20px;
-display: flex;
-justify-content: flex-end; 
-gap: 20px; 
-}
-        .custom-link {
-display: inline-flex; 
-align-items: center; 
-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-font-size: 16px; 
-font-weight: bold; 
-color: rgb(0, 123, 255); 
-text-decoration: none; 
-cursor: pointer; 
-gap: 8px;
-}
-
-.custom-link:hover {
-color: rgb(0, 86, 179) !important; 
-}
-.custom-link:hover .fa-plus-circle {
-color: rgb(0, 86, 179) !important;
-}
-
-
-.custom-link .fa-plus-circle {
-  color: rgb(0, 123, 255) !important;
-font-family: 'Font Awesome 5 Free';
-font-weight: 900; 
-font-size: 21.333px; 
-line-height: 16px; 
-text-align: left;
-vertical-align: middle; 
-
-}
+       
     </style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
@@ -178,32 +34,52 @@ vertical-align: middle;
                 
                     <thead>
                         <tr>
-                            <th>Service</th>
-                            <th>Titre</th>
-                            <th>Date de soumission</th>
-                            <th>Heure de soumission</th>
-                            <th>Statut</th>
-                            <th>Commentaire</th>
-                            <th>Actions</th>
+                
+    
+                            <th class="col-service">Service</th>
+                           
+                              <th class="col-date">Date soumission</th>
+            <th class="col-heure">Heure soumission</th>
+                            <th class="col-statut">Statut</th>
+                            <th class="col-commentaire">Commentaire</th>
+                             <th class="col-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% if demandes is empty %}
                             <tr>
-                                <td colspan="7" class="text-center">Vous n'avez aucune demande pour l'instant</td>
+                                <td colspan="6" class="text-center">Vous n'avez aucune demande pour l'instant</td>
                             </tr>
                         {% else %}
                             {% for demande in demandes %}
                                 <tr>
                                     <td style="text-align: center; padding: 8px; color: #00008B; font-weight: bold;">{{ demande.service }}</td>
-                                    <td class="text-center">{{ demande.titre }}</td>
+                                 
                                     <td class="text-center">{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
                                     <td class="text-center">{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
                                     <td class="text-center">
                                         <span class="{% if demande.statuts == 'Brouillons' %}status-brouillons{% elseif demande.statuts == 'Suivi dans LEKA' %}status-leka{% elseif demande.statuts == 'En attente' %}status-en-attente{% elseif demande.statuts == 'Refusée' %}status-refuse{% endif %}">{{ demande.statuts }}</span>
                                     </td>
-                                    <td class="text-center">{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</td>
-                                    <td class="text-center">
+                                                    <td class="col-commentaire">
+    <div class="comment-container">
+        {% if demande.commentaire and demande.commentaire|length > 77 %}
+          
+            <div class="short-comment">
+                {{ demande.commentaire|slice(0, 77) ~ '...' }}
+                <span class="toggle-link" onclick="toggleComment(this)">[Voir plus]</span>
+            </div>
+
+            <div class="full-comment" style="display: none;">
+                {{ demande.commentaire }}
+                <span class="toggle-link" onclick="toggleComment(this)">[Réduire]</span>
+            </div>
+        {% else %}
+          
+            <span>{{ demande.commentaire ?: 'Aucun commentaire' }}</span>
+        {% endif %}
+    </div>
+</td>
+                                    <td class="toolbar">
                                         {% if demande.statuts == 'Brouillons' %}
                                             <a href="{{ path('modifier_demandes', {id: demande.id}) }}" title="Modifier"><i class="fas fa-edit icon-edit"></i></a>
                                             <a href="{{ path('demande_consult', {id: demande.id}) }}" title="Consulter"><i class="fas fa-search icon-search"></i></a>
@@ -241,6 +117,18 @@ window.addEventListener('pageshow', function(event) {
         window.location.reload();
     }
 });
+function toggleComment(toggleLink) {
+    const shortComment = toggleLink.closest('.comment-container').querySelector('.short-comment');
+    const fullComment = toggleLink.closest('.comment-container').querySelector('.full-comment');
+
+    if (shortComment.style.display === 'none') {
+        shortComment.style.display = 'block';
+        fullComment.style.display = 'none';
+    } else {
+        shortComment.style.display = 'none';
+        fullComment.style.display = 'block';
+    }
+}
 
     </script>
 {% endblock %}

@@ -5,114 +5,8 @@
 {% endblock %}
 
 {% block head_gene %}
-    <style>
-        .page-title {
-            text-align: center;
-            margin: 20px 0;
-        }
-        .table-container {
-            margin: 20px auto;
-            width: 90%;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            text-align: center;
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #f8f8f8;
-        }
-        .status-leka {
-            background-color: #28A745;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            display: inline-block;
-            min-width: 100px;
-            margin: 5px 0;
-        }
-        .status-en-attente {
-            background-color: #FFC107;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            display: inline-block;
-            min-width: 100px;
-            margin: 5px 0;
-        }
-        .status-refuse {
-            background-color: #FF0000;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            display: inline-block;
-            min-width: 100px;
-            margin: 5px 0;
-        }
-        .comment-form textarea {
-            width: 100%;
-            margin-bottom: 5px;
-        }
-        .comment-form textarea[disabled],
-        .comment-form button[disabled] {
-            background-color: #f1f1f1;
-            cursor: not-allowed;
-        }
-        .toolbar {
-            text-align: right;
-            color: #1E90FF;
-        }
-        .toolbar a {
-            margin-left: 10px;
-            color: #1E90FF !important;
-        }
-        .toolbar a i {
-            color: #1E90FF !important;
-        }
-        .col-demandeur {
-            width: 15%;
-        }
-        .filter-container {
-            margin-bottom: 20px;
-        }
-        .service-column {
-            color: blue;
-            font-weight: bold;
-        }
-        .input-uid {
-            width: 80px;
-        }
-        .text-danger {
-            color: red;
-        }
-        .text-info {
-            color: #17a2b8;
-        }
-       
-        .alert-icon {
-            color: red; 
-            margin-left: 5px;
-            cursor: pointer;
-        }
-      
-        .alert-icon:hover::after {
-            content: attr(title); 
-            background-color: #333; 
-            color: #fff;
-            padding: 5px;
-            border-radius: 5px;
-            position: absolute;
-            top: -30px;
-            left: 0;
-            white-space: nowrap;
-            z-index: 10; 
-            font-size: 12px;
-        }
-    </style>
+ <link rel="stylesheet" href="{{ asset('css/detan.css') }}">
+ 
 {% endblock %}
 
 {% block body %}
@@ -146,28 +40,45 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>ID Demande</th>
-                            <th class="col-demandeur">Demandeur</th>
-                            <th>Mail Utilisateur</th>
-                            <th>Date de Validation</th>
-                            <th>Commentaire</th>
+                            {# <th class="col-id">ID Demande</th> #}
+                            {# <th class="col-service">Service</th> #}
+                            <th class="demandeur-column">Demandeur</th>
+                            <th class="col-mail">Mail Utilisateur</th>
+                             <th class="col-date">Date Validation</th>
+                           <th class="col-commentaire">Commentaire</th>
                             <th>UID</th>
-                            <th>Entrer UID</th>
-                            <th>Historique</th> 
+                            <th class="col-entreruid">Entrer UID</th>
+                            <th class="col-historique">Historique</th> 
+
                         </tr>
                     </thead>
                     <tbody>
                         {% if demandesWithProvenance is empty %}
                             <tr>
-                                <td colspan="7">Vous n'avez aucune demande pour l'instant</td>
+                                <td colspan="9">Vous n'avez aucune demande pour l'instant</td>
                             </tr>
                         {% else %}
                             {% for demandeInfo in demandesWithProvenance %}
                                 {% set demande = demandeInfo.demande %}
                                 {% set provenance = demandeInfo.provenance %}
                                 <tr data-status="{{ demande.statuts }}" data-uid="{{ demande.IDutilisateur.uid }}"data-provenance="{{ demande.IDutilisateur.provenance }}">
-                                    <td>{{ demande.id }}</td>
-                                    {% if demande.isAutrePersonne %}
+                                    {# <td>{{ demande.id }}</td> #}
+                                    {# <td>{{ demande.service }}</td> #}
+
+
+                                    <td class="demandeur-column">
+                         {% if demande.isAutrePersonne %}
+                                    {{ demande.AutreUtilisateur.nom }} {{ demande.AutreUtilisateur.prenom }}
+                                   
+                                {% else %}
+                                  {{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}
+                                   {% if demande.IDutilisateur.id in alertUsers %}
+                                                <span class="alert-icon" title="Cette personne a plus d'une demande en cours.">&#9888;</span>
+                                            {% endif %}
+                                {% endif %}
+                            </td>
+
+                                    {# {% if demande.isAutrePersonne %}
                                         <td>{{ demande.autreUtilisateur.nom }} {{ demande.autreUtilisateur.prenom }}</td>
                                     {% else %}
                                         <td>
@@ -175,11 +86,30 @@
                                             {% if demande.IDutilisateur.id in alertUsers %}
                                                 <span class="alert-icon" title="Cette personne a plus d'une demande en cours.">&#9888;</span>
                                             {% endif %}
-                                        </td>
-                                    {% endif %}
+                                        </td> #}
+                                    {# {% endif %} #}
                                     <td>{{ demande.IDutilisateur.email }}</td>
                                     <td>{{ demande.datevalidation ? demande.datevalidation|date('d/m/Y') : '' }}</td>
-                                    <td>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</td>
+                                    <td class="col-commentaire">
+    <div class="comment-container">
+        {% if demande.commentaire and demande.commentaire|length > 77 %}
+            <!-- Affichage court avec "Voir plus" -->
+            <div class="short-comment">
+                {{ demande.commentaire|slice(0, 77) ~ '...' }}
+                <span class="toggle-link" onclick="toggleComment(this)">[Voir plus]</span>
+            </div>
+
+            <!-- Affichage complet avec "Réduire" -->
+            <div class="full-comment" style="display: none;">
+                {{ demande.commentaire }}
+                <span class="toggle-link" onclick="toggleComment(this)">[Réduire]</span>
+            </div>
+        {% else %}
+            <!-- Si le commentaire est court -->
+            <span>{{ demande.commentaire ?: 'Aucun commentaire' }}</span>
+        {% endif %}
+    </div>
+</td>
                                     <td>
                                         {% if not demande.IDutilisateur.uid %}
                                             <span class="text-danger">Pas d'UID</span>
@@ -212,8 +142,11 @@
 {% endif %}
 </td>
 
-<td>
-    <a href="{{ path('historique', {id: demande.id}) }}" class="btn btn-info btn-sm">Voir l'historique</a>
+  <td class="toolbar">
+<a href="{{ path('historique', {id: demande.id}) }}" title="Voir l'historique">
+    <i class="fa-solid fa-clock-rotate-left"></i>
+</a>
+
 </td>
 
                                 </tr>
@@ -259,5 +192,20 @@
                 });
             }, 5000); 
         });
+
+
+        function toggleComment(toggleLink) {
+    const shortComment = toggleLink.closest('.comment-container').querySelector('.short-comment');
+    const fullComment = toggleLink.closest('.comment-container').querySelector('.full-comment');
+
+    if (shortComment.style.display === 'none') {
+        shortComment.style.display = 'block';
+        fullComment.style.display = 'none';
+    } else {
+        shortComment.style.display = 'none';
+        fullComment.style.display = 'block';
+    }
+}
+
     </script>
 {% endblock %}

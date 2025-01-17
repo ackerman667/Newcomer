@@ -45,6 +45,8 @@ vertical-align: middle;
 }
 table {
     width: 100%;
+    table-layout: fixed;
+
     border-collapse: collapse;
 }
 th, td {
@@ -59,11 +61,7 @@ max-width: 15%;
 text-align: center; 
 }
 
-.col-demandeur {
-width: 25%; 
-max-width: 25%;
-text-align: center; 
-}
+
 
 .col-date {
 width: 13%; 
@@ -87,27 +85,50 @@ width: 7%;
 max-width: 7%;
 text-align: center; 
 }
-
 .col-commentaire {
-width: 15%; 
-max-width: 15%;
-text-align: center; 
-overflow: hidden; 
-text-overflow: ellipsis; 
-white-space: nowrap; 
+    width: 15%;
+    max-width: 15%;
+    text-align: center;
+    white-space: normal; 
+    word-wrap: break-word; 
+    overflow-wrap: anywhere; 
 }
+
+.comment-container {
+    width: 100%; 
+    display: block;
+    word-wrap: break-word; 
+    white-space: normal; 
+}
+
+.short-comment {
+    display: block; 
+}
+
+.full-comment {
+    display: none; 
+}
+
+.toggle-link {
+    color: rgb(0, 123, 255);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
 
 th.demandeur-column, td.demandeur-column {
 width: 150px; 
 max-width: 150px; 
 overflow: hidden; 
-text-overflow: ellipsis; 
-white-space: nowrap; 
+/* text-overflow: ellipsis;  */
+/* white-space: nowrap;  */
 }
 th {
     background-color: #f8f8f8;
     
 }
+
+
 .status-brouillons-mesdemandes {
     background-color: #77b5fe;
     color: white;
@@ -121,21 +142,33 @@ th {
     color: #00008B;
     font-weight: bold;
 }
-.toolbar {
-    text-align: right;
+/* .toolbar {
+    text-align: center;
     color: #1E90FF;
 }
 .toolbar a {
 padding: 0; 
 margin: 0; 
-}
+} */
 
 .toolbar a i {
     display: inline;
     color: #1E90FF !important;
-    margin-left: 2px; 
-    margin-right: 2px; 
+    outline: none !important;
+    background-color: transparent !important;
+    text-decoration: none;
+    margin-left: 2px;
+    margin-right: 2px;
+    transition: transform 0.2s ease; 
 }
+.toolbar a i:hover,
+.toolbar a i:focus {
+    background-color: transparent !important; 
+    outline: none !important;
+    box-shadow: none !important;
+    transform: scale(1.2); 
+}
+
 .menu-container {
 margin-bottom: 80px; 
 margin-top: -10px; 

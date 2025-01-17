@@ -108,7 +108,8 @@ class StatutsExterneController extends AbstractController
 
 
        
-        $demandes = $entityManager->getRepository(Demandes::class)->findBy(['IDutilisateur' => $user]);
+        $demandes = $this->getDemandesPourUtilisateur($entityManager, $user);
+
 
         // dump($demandes);
         
@@ -145,6 +146,27 @@ class StatutsExterneController extends AbstractController
 
         ]);
     }
+
+    public function getDemandesPourUtilisateur(EntityManagerInterface $entityManager, User $user)
+{
+    $demandes = $entityManager->getRepository(Demandes::class)
+        ->createQueryBuilder('d')
+        ->where('d.IDutilisateur = :user')
+        ->setParameter('user', $user)
+        ->orderBy("
+            CASE 
+                WHEN d.statuts = 'Suivi dans LEKA' THEN 2
+                WHEN d.statuts = 'Refusée' THEN 3
+                ELSE 1 
+            END", 'ASC')
+        ->addOrderBy('d.date', 'DESC')
+        ->addOrderBy('d.heureSoumission', 'DESC')
+        ->getQuery()
+        ->getResult();
+
+    return $demandes;
+}
+
   
 
     #[Route('formulaireext/demande/pdf/{id}', name: 'demande_pdf')]

@@ -75,14 +75,7 @@ th {
     background-color: #f1f1f1;
     cursor: not-allowed;
 }
-.toolbar {
-    text-align: right;
-    color: #1E90FF;
-}
-.toolbar a {
-padding: 0; 
-margin: 0; 
-}
+
 .menu-container {
 margin-bottom: 80px; 
 margin-top: -10px; 
@@ -93,11 +86,42 @@ padding-left: 25px;
 margin-top: -90px; 
 }
 
+
+/* .toolbar {
+    text-align: center;
+    color: #1E90FF;
+}
+.toolbar a {
+padding: 0; 
+margin: 0; 
+}
 .toolbar a i {
     display: inline;
     color: #1E90FF !important;
     margin-left: 2px; 
     margin-right: 2px; 
+} */
+
+
+
+
+
+.toolbar a i {
+    display: inline;
+    color: #1E90FF !important;
+    outline: none !important;
+    background-color: transparent !important;
+    text-decoration: none;
+    margin-left: 2px;
+    margin-right: 2px;
+    transition: transform 0.2s ease; 
+}
+.toolbar a i:hover,
+.toolbar a i:focus {
+    background-color: transparent !important; 
+    outline: none !important;
+    box-shadow: none !important;
+    transform: scale(1.2); 
 }
 
 .col-demandeur {
@@ -123,11 +147,9 @@ margin-top: -90px;
     margin: 0;
 }
  th.demandeur-column, td.demandeur-column {
-width: 150px; 
-max-width: 150px; 
-overflow: hidden; 
-text-overflow: ellipsis; 
-white-space: nowrap; 
+    width: 150px; 
+    max-width: 150px; 
+    overflow: hidden; 
 }
 .col-service {
     width: 13%; 
@@ -135,11 +157,7 @@ white-space: nowrap;
     text-align: center; 
     }
     
-    .col-demandeur {
-    width: 20%; 
-    max-width: 20%;
-    text-align: center; 
-    }
+    
     
     .col-date {
     width: 13%; 

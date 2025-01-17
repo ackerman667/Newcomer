@@ -138,6 +138,75 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     }
 
 
+
+
+
+
+    #[Route('formulaireldap/validerdemande/{id}', name: 'valider_monservice')]
+    public function validerDemandeOwnService(int $id, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
+    {
+        $this->denyAccessUnlessValideur();
+        $demande = $entityManager->getRepository(Demandes::class)->find($id);
+    
+        if (!$demande) {
+            throw $this->createNotFoundException('Demande non trouvée.');
+        }
+    
+        $id_demande = $demande->getId();
+
+        
+    
+        $now = new \DateTime('now', $this->timezone);
+        $demande->setStatuts('Suivi dans LEKA');
+        $demande->setDateValidation($now);
+    
+       
+        $historique = new HistoriqueDemande();
+        $historique->setDemande($demande);
+        $historique->setStatut('Suivi dans LEKA');
+        $historique->setStatutOperation('Envoi de la demande dans LEKA');
+        $historique->setDate(new \DateTime());
+        $entityManager->persist($historique);
+        $entityManager->flush();
+    
+       
+       $pdfResponse = $this->generatePdf($id, $entityManager);
+       $pdfOutput = $pdfResponse->getContent();
+    
+    // Récupérez l'email en fonction du type de demande
+    $email = $demande->isAutrePersonne() ? $demande->getAutreUtilisateur()->getEmail() : $demande->getIDutilisateur()->getEmail();
+    
+        // $emailMessage = (new Email())
+        //     ->from('noreply@ac-guadeloupe.fr')
+        //     ->to($email)
+        //     ->subject('Votre demande a été envoyée dans LEKA')
+        //     ->html('<p>Votre demande a été envoyée dans LEKA.</p>');
+    
+        // $mailer->send($emailMessage);
+    
+    
+        // $valideurEmail = $this->getValideurMail($demande);
+    
+        // $subject = "La demande numéro $id pour le service {$demande->getService()} a été validée";
+    
+    
+    
+    
+    
+        // $leka = (new Email())
+        //     ->from($valideurEmail)
+        //     ->to('lekadempp@ac-guadeloupe.fr') 
+        //     ->subject($subject) 
+        //     ->html('<p>Votre demande a été envoyée dans LEKA.</p>')
+        //     ->attach($pdfOutput, 'demande.pdf', 'application/pdf');
+    
+        // $mailer->send($leka);
+
+    
+        return $this->redirectToRoute('mes_demandes');
+    }
+
+
     
     
     #[Route('formulaireldap/refuserdemande/{id}', name: 'refuser_demande')]

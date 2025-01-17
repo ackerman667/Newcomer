@@ -1,0 +1,181 @@
+.page-title {
+    text-align: center;
+    margin: 20px 0;
+}
+.table-container {
+    margin: 20px auto;
+    width: 90%;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+th, td {
+    text-align: center;
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+th {
+    background-color: #f8f8f8;
+}
+.status-leka {
+    background-color: #28A745;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    min-width: 100px;
+    margin: 5px 0;
+}
+.status-en-attente {
+    background-color: #FFC107;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    min-width: 100px;
+    margin: 5px 0;
+}
+.status-refuse {
+    background-color: #FF0000;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    min-width: 100px;
+    margin: 5px 0;
+}
+.comment-form textarea {
+    width: 100%;
+    margin-bottom: 5px;
+}
+.comment-form textarea[disabled],
+.comment-form button[disabled] {
+    background-color: #f1f1f1;
+    cursor: not-allowed;
+}
+.toolbar {
+text-align: center;
+color: #1E90FF;
+}
+.toolbar a {
+padding: 0; 
+margin: 0; 
+}
+
+.toolbar a i {
+display: inline;
+color: #1E90FF !important;
+margin-left: 2px; 
+margin-right: 2px; 
+}
+
+.col-commentaire {
+width: 15%;
+max-width: 15%;
+text-align: center;
+white-space: normal; 
+word-wrap: break-word; 
+overflow-wrap: anywhere; 
+}
+
+.comment-container {
+width: 100%; 
+display: block;
+word-wrap: break-word; 
+white-space: normal;
+}
+
+.short-comment {
+display: block; 
+}
+
+.full-comment {
+display: none; 
+}
+
+.toggle-link {
+color: rgb(0, 123, 255);
+cursor: pointer;
+text-decoration: underline;
+}
+
+th.demandeur-column, td.demandeur-column {
+width: 20%; 
+max-width: 20%; 
+overflow: hidden; 
+
+}
+.filter-container {
+    margin-bottom: 20px;
+}
+.service-column {
+    color: blue;
+    font-weight: bold;
+}
+.input-uid {
+    width: 80px;
+}
+.text-danger {
+    color: red;
+}
+.text-info {
+    color: #17a2b8;
+}
+
+.alert-icon {
+    color: red; 
+    margin-left: 5px;
+    cursor: pointer;
+}
+.col-service {
+width: 15%; 
+max-width: 15%;
+text-align: center; 
+}
+.col-id {
+width: 7%; 
+max-width: 7%;
+text-align: center; 
+}
+
+
+
+.col-date {
+width: 13%; 
+max-width: 13%;
+text-align: center; 
+}
+
+.col-historique {
+width: 7%; 
+max-width: 7%;
+text-align: center; 
+}
+.col-entreruid {
+width: 18%; 
+max-width: 18%;
+text-align: center; 
+}
+.col-mail {
+width: 17%;
+max-width: 17%;
+text-align: center; 
+}
+
+
+
+.alert-icon:hover::after {
+    content: attr(title); 
+    background-color: #333; 
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    position: absolute;
+    top: -30px;
+    left: 0;
+    white-space: nowrap;
+    z-index: 10; 
+    font-size: 12px;
+}

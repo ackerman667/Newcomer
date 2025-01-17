@@ -38,6 +38,9 @@ class AppCustomAuthenticator extends AbstractLoginFormAuthenticator
         $password = $request->request->get('password', '');
         $csrfToken = $request->request->get('_csrf_token');
         $user = $this->userRepository->findOneBy(['email' => $email]);
+        if (str_ends_with($email, '@ac-guadeloupe.fr')) {
+            throw new BadCredentialsException('Si vous avez une adresse se académique (se terminant par ac-guadeloupe.fr) rendez vous sur le portail pour acceder a l\'applciation.');
+        }
         if (!$user) {
             throw new BadCredentialsException('Cet email n’existe pas.');
         }
@@ -46,9 +49,7 @@ class AppCustomAuthenticator extends AbstractLoginFormAuthenticator
         if (!password_verify($password, $user->getPassword())) {
             throw new BadCredentialsException('Mot de passe incorrect.');
         }
-        // if (!$user) {
-        //     throw new BadCredentialsException('Cet email n’existe pas.');
-        // }
+        
 
         return new Passport(
             new UserBadge($email),

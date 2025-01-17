@@ -66,8 +66,8 @@
                         <td class="service-column">{{ demande.service }}</td>
                         <td class="demandeur-column">
                          {% if demande.isAutrePersonne %}
-                                    {% set infosPersonne = demande.infosPersonne %}
-                                    {{ infosPersonne.nom }} {{ infosPersonne.prenom }}
+                                    {{ demande.AutreUtilisateur.nom }} {{ demande.AutreUtilisateur.prenom }}
+                                   
                                 {% else %}
                                   {{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}
                                 {% endif %}
@@ -79,7 +79,26 @@
                                         {{ demande.statuts }}
                                     </span>
                                 </td>
-                        <td>{{ demande.commentaire ? demande.commentaire : 'Aucun commentaire' }}</td>
+                   <td class="col-commentaire">
+    <div class="comment-container">
+        {% if demande.commentaire and demande.commentaire|length > 77 %}
+            <!-- Affichage court avec "Voir plus" -->
+            <div class="short-comment">
+                {{ demande.commentaire|slice(0, 77) ~ '...' }}
+                <span class="toggle-link" onclick="toggleComment(this)">[Voir plus]</span>
+            </div>
+
+            <!-- Affichage complet avec "Réduire" -->
+            <div class="full-comment" style="display: none;">
+                {{ demande.commentaire }}
+                <span class="toggle-link" onclick="toggleComment(this)">[Réduire]</span>
+            </div>
+        {% else %}
+            <!-- Si le commentaire est court -->
+            <span>{{ demande.commentaire ?: 'Aucun commentaire' }}</span>
+        {% endif %}
+    </div>
+</td>
                         <td class="toolbar">
                            
                       {% if demande.isAutrePersonne %} {#       SI LA DEMANDE EST POUR UNE AUTRE PERSONNE ET EST EN BROUILLONS     #}
@@ -122,7 +141,7 @@
                                             <a href="{{ path('formulaireldap_supprimer', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');"><i class="fas fa-trash-alt icon-trash"></i></a>
         
                                                         {% if uiduser == demande.uidValideur %} {#      SI LA DEMANDE EST POUR SOIS MEME  ET C'est le valideur de son propre service    #}
-                                                            <a href="{{ path('valider_demande', {id: demande.id}) }}" class="text-success"><i class="fas fa-thumbs-up"></i> </a>
+                                                            <a href="{{ path('valider_monservice', {id: demande.id}) }}" class="text-success"><i class="fas fa-thumbs-up"></i> </a>
                                                         {% else %}
                                                         <a href="{{ path('valider_demandesldap', {id: demande.id}) }}"><i class="fas fa-thumbs-up icon-thumbs-up"></i></a>
                                                         {% endif %} 
@@ -157,6 +176,7 @@
   </div>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+  
     setTimeout(function () {
         document.querySelectorAll('.alert').forEach(function (alert) {
             alert.style.transition = 'opacity 1s ease-out';
@@ -173,5 +193,19 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
+function toggleComment(toggleLink) {
+    const shortComment = toggleLink.closest('.comment-container').querySelector('.short-comment');
+    const fullComment = toggleLink.closest('.comment-container').querySelector('.full-comment');
+
+    if (shortComment.style.display === 'none') {
+        shortComment.style.display = 'block';
+        fullComment.style.display = 'none';
+    } else {
+        shortComment.style.display = 'none';
+        fullComment.style.display = 'block';
+    }
+}
+
+ 
 </script>
 {% endblock %}

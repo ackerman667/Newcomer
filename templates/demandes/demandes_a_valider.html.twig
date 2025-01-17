@@ -73,8 +73,7 @@
                         <td class="service-column">{{ demande.service }}</td>
                         <td class="demandeur-column">
                          {% if demande.isAutrePersonne %}
-                                    {% set infosPersonne = demande.infosPersonne %}
-                                    {{ infosPersonne.nom }} {{ infosPersonne.prenom }}
+                                    {{ demande.AutreUtilisateur.nom }} {{ demande.AutreUtilisateur.prenom }}
                                 {% else %}
                                     {{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}
                                 {% endif %}

@@ -130,45 +130,57 @@ public function demandesAValider(
 
 
 
-    private function getDemandesPourUtilisateur(EntityManagerInterface $entityManager, string $uid): array
-    {
-        
-        $user_bdd = $entityManager->getRepository(User::class)->findOneBy([
-            'uid' => $uid,
-            'provenance' => 'ldap'
-        ]);
-        
-        
-        // Si l'utilisateur n'est pas trouvé, retourner un tableau vide
-        if (!$user_bdd) {
-            $queryBuilder = $entityManager->createQueryBuilder();
-            $queryBuilder
-            ->select('d')
-            ->from(Demandes::class, 'd')
-            ->leftJoin('d.IDutilisateur', 'u') 
-            ->where('u.uid = :uid') 
-            ->andWhere('d.statuts = :statut')         
-            ->setParameter('uid', $uid)
-            ->setParameter('statut', 'Suivi dans LEKA');
-            return $queryBuilder->getQuery()->getResult();
+private function getDemandesPourUtilisateur(EntityManagerInterface $entityManager, string $uid): array
+{
+    // Récupérer l'utilisateur dans la base de données
+    $user_bdd = $entityManager->getRepository(User::class)->findOneBy([
+        'uid' => $uid,
+        'provenance' => 'ldap'
+    ]);
 
-        }
-    
-        // Construire la requête pour récupérer les demandes selon les deux critères
+    // Si l'utilisateur n'est pas trouvé, récupérer uniquement les demandes liées au `uid` et ayant le statut 'Suivi dans LEKA'
+    if (!$user_bdd) {
         $queryBuilder = $entityManager->createQueryBuilder();
         $queryBuilder
             ->select('d')
             ->from(Demandes::class, 'd')
-            ->leftJoin('d.IDutilisateur', 'u') 
-            ->where('d.IDutilisateur = :user') 
-            ->orWhere('(u.uid = :uid AND d.statuts = :statut)')          
-            ->setParameter('user', $user_bdd)
+            ->leftJoin('d.IDutilisateur', 'u')
+            ->where('u.uid = :uid')
+            ->andWhere('d.statuts = :statut')
             ->setParameter('uid', $uid)
-            ->setParameter('statut', 'Suivi dans LEKA');
-    
-     
+            ->setParameter('statut', 'Suivi dans LEKA')
+            ->orderBy("CASE 
+                WHEN d.statuts = 'Suivi dans LEKA' THEN 2
+                WHEN d.statuts = 'Refusée' THEN 3
+                ELSE 1 
+            END", 'ASC') 
+            ->addOrderBy('d.date', 'DESC') 
+            ->addOrderBy('d.heureSoumission', 'DESC'); 
+
         return $queryBuilder->getQuery()->getResult();
     }
+
+
+    $queryBuilder = $entityManager->createQueryBuilder();
+    $queryBuilder
+        ->select('d')
+        ->from(Demandes::class, 'd')
+        ->leftJoin('d.IDutilisateur', 'u')
+        ->where('d.IDutilisateur = :user')
+        ->orWhere('(u.uid = :uid AND d.statuts = :statut)')
+        ->setParameter('user', $user_bdd)
+        ->setParameter('uid', $uid)
+        ->setParameter('statut', 'Suivi dans LEKA')
+        ->orderBy("CASE 
+            WHEN d.statuts = 'Suivi dans LEKA' THEN 2
+            WHEN d.statuts = 'Refusée' THEN 3
+            ELSE 1 
+        END", 'ASC') 
+        ->addOrderBy('d.date', 'DESC') 
+        ->addOrderBy('d.heureSoumission', 'DESC'); 
+
+    return $queryBuilder->getQuery()->getResult();
+}
     /**
      * Récupère les demandes assignées à un valideur spécifique.
      */
