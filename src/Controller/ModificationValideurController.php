@@ -51,8 +51,9 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
     $isValideur = $this->roleChecker->isUserValideur();
     if (!$this->isValideur) {
         throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cette demande.');
-        return $this->redirectToRoute('liste_demandes'); // Remplacez 'homepage' par la route de votre choix
+        return $this->redirectToRoute('mes_demandes'); // Remplacez 'homepage' par la route de votre choix
     }
+    $this->checkUserPermissionForDemande($id, $entityManager);
 
 
     $demande = $entityManager->getRepository(Demandes::class)->find($id);
@@ -133,6 +134,12 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
     #[Route('formulaireldap/modifierdemandes/etape2/{id}/{token}', name: 'modifier_demandesvalideur_etape2')]
     public function editDemandeEtape2(int $id, string $token, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, HttpClientInterface $httpClient, MonApplication $monApplication): Response
     {
+        $isValideur = $this->roleChecker->isUserValideur();
+        if (!$this->isValideur) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cette demande.');
+            return $this->redirectToRoute('mes_demandes'); // Remplacez 'homepage' par la route de votre choix
+        }
+        $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
 
         if (!$demande) {
@@ -234,6 +241,12 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
     #[Route('formulaireldap/modifierdemandes/etape3/{id}/{token}', name: 'modifier_demandesvalideur_etape3')]
     public function editDemandeEtape3(int $id, string $token, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, MailerInterface $mailer, MonApplication $monApplication): Response
     {
+        $isValideur = $this->roleChecker->isUserValideur();
+        if (!$this->isValideur) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cette demande.');
+            return $this->redirectToRoute('mes_demandes'); // Remplacez 'homepage' par la route de votre choix
+        }
+        $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande->getId()]);
         $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $token]);
@@ -380,6 +393,31 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
             'demande' => $demande,
             'token' => $token,
         ]);
+    }
+
+    private function checkUserPermissionForDemande(int $demandeId, EntityManagerInterface $entityManager): void
+    {
+        // Récupérer la demande
+        $demande = $entityManager->getRepository(Demandes::class)->find($demandeId);
+    
+        if (!$demande) {
+            throw $this->createNotFoundException('Demande non trouvée.');
+        }
+        $uid_valideur = $demande->getUidValideur();
+    
+        
+        // Récupérer l'utilisateur actuellement connecté
+        $currentUser = $this->security->getUser();
+        $uid_current = $currentUser->getUid();
+    
+        if (!$currentUser) {
+            throw $this->createAccessDeniedException('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA.');
+        }
+    
+        // Comparer les emails
+        if ($uid_current !== $uid_valideur) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à cette demande.');
+        }
     }
 
    

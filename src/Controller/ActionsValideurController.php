@@ -44,7 +44,9 @@ class ActionsValideurController extends AbstractController
     #[Route('/formulaireldap/modifierdemandes/{id}', name: 'preparer_modification_valideur')]
 public function preparerModificationValideur(int $id, EntityManagerInterface $entityManager): Response
 {
+    $this->checkUserPermissionForDemande($id, $entityManager);
     $this->denyAccessUnlessValideur();
+   
 
     $demande = $entityManager->getRepository(Demandes::class)->find($id);
 
@@ -77,6 +79,7 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     public function validerDemande(int $id, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
         $this->denyAccessUnlessValideur();
+        $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
     
         if (!$demande) {
@@ -145,7 +148,9 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     #[Route('formulaireldap/validerdemande/{id}', name: 'valider_monservice')]
     public function validerDemandeOwnService(int $id, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
+        
         $this->denyAccessUnlessValideur();
+        $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
     
         if (!$demande) {
@@ -212,7 +217,9 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     #[Route('formulaireldap/refuserdemande/{id}', name: 'refuser_demande')]
     public function refuserDemande(int $id, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
+        
         $this->denyAccessUnlessValideur();
+        $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
     
         if (!$demande) {
@@ -247,6 +254,7 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     public function commenterDemande(int $id, Request $request, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
         $this->denyAccessUnlessValideur();
+        $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
     
         if (!$demande) {
@@ -286,7 +294,9 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     #[Route('formulaireldap/demande/visualiser/{id}', name: 'visualiser_demande')]
     public function visualiserDemande(MonApplication $monApplication, int $id, EntityManagerInterface $entityManager): Response
     {
+        
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
+        $this->checkUserPermissionForDemande($id, $entityManager);
     
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
@@ -316,6 +326,7 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     public function generatePdf($id, EntityManagerInterface $entityManager): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
+        $this->checkUserPermissionForDemande($id, $entityManager);
     
     
         if (!$demande) {
@@ -443,7 +454,7 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
 
         // Si l'utilisateur n'existe pas, le créer
         if (!$user) {
-            $userInformation = new UserInformation();
+            $tion = new UserInformation();
             $infos_user = $userInformation->getUserInformation($currentUser);
 
             $nom_utilisateur = $infos_user['sn'];
@@ -467,8 +478,34 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
         return $user;
     }
 
+    
 
 
 
 
+
+    private function checkUserPermissionForDemande(int $demandeId, EntityManagerInterface $entityManager): void
+    {
+        // Récupérer la demande
+        $demande = $entityManager->getRepository(Demandes::class)->find($demandeId);
+    
+        if (!$demande) {
+            throw $this->createNotFoundException('Demande non trouvée.');
+        }
+        $uid_valideur = $demande->getUidValideur();
+    
+        
+        // Récupérer l'utilisateur actuellement connecté
+        $currentUser = $this->security->getUser();
+        $uid_current = $currentUser->getUid();
+    
+        if (!$currentUser) {
+            throw $this->createAccessDeniedException('vous devez être connecté.');
+        }
+    
+        // Comparer les emails
+        if ($uid_current !== $uid_valideur) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à cette demande.');
+        }
+    }
 }
