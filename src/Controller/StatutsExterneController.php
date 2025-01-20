@@ -256,6 +256,7 @@ class StatutsExterneController extends AbstractController
     public function supprimerDemande(Request $request, EntityManagerInterface $entityManager, $id): Response
     {
         $this->checkUserPermissionForDemande($id, $entityManager);
+        $this->checkStatuts($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
     
         $id_user = $demande->getIDutilisateur();
@@ -288,6 +289,7 @@ class StatutsExterneController extends AbstractController
     public function modifierDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id, MailerInterface $mailer): Response
     {
         $this->checkUserPermissionForDemande($id, $entityManager);
+        $this->checkStatuts($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
 
         if (!$demande) {
@@ -336,6 +338,7 @@ class StatutsExterneController extends AbstractController
     public function validerDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id,MailerInterface $mailer): Response
     {
         $this->checkUserPermissionForDemande($id, $entityManager);
+        $this->checkStatuts($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
         $token = $demande->getToken();
         $id_user = $demande->getIDutilisateur();
@@ -394,6 +397,18 @@ class StatutsExterneController extends AbstractController
     // Vérifier si l'utilisateur connecté correspond à l'utilisateur lié à la demande
     if ($demande->getIDutilisateur() !== $currentUser) {
         throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à cette demande.');
+    }
+}
+
+
+private function checkStatuts(int $demandeId, EntityManagerInterface $entityManager): void 
+{
+    $demande = $entityManager->getRepository(Demandes::class)->find($demandeId);
+    if (!$demande) {
+        throw $this->createNotFoundException('Demande non trouvée.');
+    }
+    if ($demande->getStatuts() !== 'Brouillons') {
+        throw $this->createAccessDeniedException('Vous ne pouvez pas agir sur cette demande car elle est deja validée".');
     }
 }
 

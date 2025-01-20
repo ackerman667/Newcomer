@@ -45,6 +45,7 @@ class ActionsValideurController extends AbstractController
 public function preparerModificationValideur(int $id, EntityManagerInterface $entityManager): Response
 {
     $this->checkUserPermissionForDemande($id, $entityManager);
+    $this->checkStatuts($id, $entityManager);
     $this->denyAccessUnlessValideur();
    
 
@@ -79,6 +80,7 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     public function validerDemande(int $id, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
         $this->denyAccessUnlessValideur();
+        $this->checkStatuts($id, $entityManager);
         $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
     
@@ -156,6 +158,12 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
         }
+        
+
+    if ($demande->getStatuts() !== 'Brouillons') {
+        throw $this->createAccessDeniedException('Vous ne pouvez pas agir sur cette demande car elle est deja validée".');
+    }
+
     
         $id_demande = $demande->getId();
 
@@ -219,6 +227,7 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     {
         
         $this->denyAccessUnlessValideur();
+        $this->checkStatuts($id, $entityManager);
         $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
     
@@ -254,6 +263,7 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     public function commenterDemande(int $id, Request $request, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
         $this->denyAccessUnlessValideur();
+        $this->checkStatuts($id, $entityManager);
         $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
     
@@ -508,4 +518,28 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à cette demande.');
         }
     }
+
+
+    
+private function checkStatuts(int $demandeId, EntityManagerInterface $entityManager): void 
+{
+    $demande = $entityManager->getRepository(Demandes::class)->find($demandeId);
+    if (!$demande) {
+        throw $this->createNotFoundException('Demande non trouvée.');
+    }
+    if ($demande->getStatuts() !== 'En attente') {
+        throw $this->createAccessDeniedException('Vous ne pouvez pas agir sur cette demande');
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
 }

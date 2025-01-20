@@ -108,8 +108,8 @@ public function resetPassword(
         return $this->redirectToRoute('forgot_password');
     }
     if (!$resetToken->isValid()) {
-        // $em->remove($resetToken);
-        // $em->flush();
+        $em->remove($resetToken);
+        $em->flush();
 
         $this->addFlash('error', 'Le lien de réinitialisation est invalide ou expiré.');
         return $this->redirectToRoute('forgot_password');

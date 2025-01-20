@@ -7,10 +7,6 @@ parameters:
     disabled_services: '%env(DISABLED_SERVICES)%'
 
 services:
-    # Déclaration du gestionnaire de session natif
-    # App\Session\CustomSessionHandler:
-    #     arguments: []
-    #     public: true
 
 
     App\Security\UserProvider:

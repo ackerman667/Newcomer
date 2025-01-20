@@ -64,9 +64,7 @@ security:
         - { path: ^/create-user, roles: PUBLIC_ACCESS }
         - { path: ^/mention, roles: PUBLIC_ACCESS }
         - { path: ^/formulaireext, roles: IS_AUTHENTICATED_FULLY}
-        # - { path: ^/aide, roles: IS_AUTHENTICATED_FULLY}
-    # access_control:
-    #     - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
+        
 
         
         

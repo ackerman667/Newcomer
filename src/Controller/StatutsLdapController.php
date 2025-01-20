@@ -260,6 +260,7 @@ public function nouvelleDemande(SessionInterface $session, EntityManagerInterfac
 public function modifierDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
 {
     $this->checkUserPermissionForDemande($id, $entityManager);
+    $this->checkStatuts($id, $entityManager);
     $demande = $entityManager->getRepository(Demandes::class)->find($id);
 
     if (!$demande) {
@@ -341,6 +342,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     public function modifierDemandePourAutre(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
     {
         $this->checkUserPermissionForDemande($id, $entityManager);
+        $this->checkStatuts($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
 
         if (!$demande) {
@@ -400,6 +402,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     public function supprimerDemande($id, EntityManagerInterface $entityManager): RedirectResponse
     {
         $this->checkUserPermissionForDemande($id, $entityManager);
+        $this->checkStatuts($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
     
         if (!$demande) {
@@ -437,6 +440,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     public function changerStatut(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
     {
         $this->checkUserPermissionForDemande($id, $entityManager);
+        $this->checkStatuts($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
 
         if (!$demande) {
@@ -580,6 +584,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     public function supprimerDemandePourAutre($id, EntityManagerInterface $entityManager): RedirectResponse
     {
         $this->checkUserPermissionForDemande($id, $entityManager);
+        $this->checkStatuts($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
@@ -607,6 +612,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     public function validerDemandePourAutre(MonApplication $monApplication, EntityManagerInterface $entityManager, $id): Response
     {
         $this->checkUserPermissionForDemande($id, $entityManager);
+        $this->checkStatuts($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
@@ -701,30 +707,42 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
 
     private function checkUserPermissionForDemande(int $demandeId, EntityManagerInterface $entityManager): void
 {
-    // Récupérer la demande
+   
     $demande = $entityManager->getRepository(Demandes::class)->find($demandeId);
 
     if (!$demande) {
         throw $this->createNotFoundException('Demande non trouvée.');
     }
 
-    // Récupérer l'utilisateur lié à la demande
+   
     $userFromDemande = $demande->getIDutilisateur();
 
     if (!$userFromDemande) {
         throw $this->createAccessDeniedException('Cette demande n\'est pas associée à un utilisateur valide.');
     }
 
-    // Récupérer l'utilisateur actuellement connecté
+    
     $currentUser = $this->security->getUser();
 
     if (!$currentUser) {
         throw $this->createAccessDeniedException('Vous devez être connecté pour accéder à cette demande.');
     }
 
-    // Comparer les emails
-    if ($userFromDemande->getEmail() !== $currentUser->getMail()) {
+    
+    if ($userFromDemande->getEmail() !== $currentUser->getMail() &&  $userFromDemande->getUid() !== $currentUser->getUid()) {
         throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à cette demande.');
+    }
+}
+
+
+private function checkStatuts(int $demandeId, EntityManagerInterface $entityManager): void 
+{
+    $demande = $entityManager->getRepository(Demandes::class)->find($demandeId);
+    if (!$demande) {
+        throw $this->createNotFoundException('Demande non trouvée.');
+    }
+    if ($demande->getStatuts() !== 'Brouillons') {
+        throw $this->createAccessDeniedException('Vous ne pouvez pas agir sur cette demande car elle est deja validée".');
     }
 }
 

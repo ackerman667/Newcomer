@@ -51,7 +51,7 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
     $isValideur = $this->roleChecker->isUserValideur();
     if (!$this->isValideur) {
         throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cette demande.');
-        return $this->redirectToRoute('mes_demandes'); // Remplacez 'homepage' par la route de votre choix
+        return $this->redirectToRoute('mes_demandes'); 
     }
     $this->checkUserPermissionForDemande($id, $entityManager);
 
