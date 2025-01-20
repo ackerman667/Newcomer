@@ -40,6 +40,26 @@ class ActionsValideurController extends AbstractController
     }
 
 
+/**
+ * @brief Prépare la modification d'une demande pour un valideur.
+ *
+ * Cette méthode initialise crée une entrée dans la table temporaire pour un valideur afin de modifier une demande.
+ * Les données de la table sont valables pendant 24 heures .
+ *
+ * @Route('/formulaireldap/modifierdemandes/{id}', name='preparer_modification_valideur')
+ *
+ * @param int $id Identifiant de la demande à modifier.
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine.
+ *
+ * @return Response Redirige vers la première étape de modification.
+ *
+ * @details
+ * - Vérifie les permissions de l'utilisateur et le statut de la demande.
+ * - Crée une entrée dans la table  temporaire pour stocker les informations liées à la demande.
+ *
+ * @throws AccessDeniedException Si l'utilisateur n'est pas un valideur ou n'a pas les droits.
+ * @throws NotFoundHttpException Si la demande n'existe pas.
+ */
 
     #[Route('/formulaireldap/modifierdemandes/{id}', name: 'preparer_modification_valideur')]
 public function preparerModificationValideur(int $id, EntityManagerInterface $entityManager): Response
@@ -61,7 +81,7 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     $temporaryData->setUser($userBdd);
     $temporaryData->setAction('modifier'); 
     $temporaryData->setData([]); 
-    $temporaryData->setExpiration((new \DateTime())->modify('+30 minutes'));
+    $temporaryData->setExpiration((new \DateTime())->modify('+24 hours'));
 
     $entityManager->persist($temporaryData);
     $entityManager->flush();
@@ -75,6 +95,28 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
 
 
 
+/**
+ * @brief Valide une demande et la marque comme "Suivi dans LEKA".
+ *
+ * Cette méthode met à jour le statut d'une demande et enregistre l'action dans l'historique.
+ * Elle génère également un PDF et prépare l'envoi d'une notification par e-mail.
+ *
+ * @Route('formulaireldap/validerdemande/{id}', name='valider_demande')
+ *
+ * @param int $id Identifiant de la demande à valider.
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine.
+ * @param MailerInterface $mailer Service d'envoi d'e-mails.
+ *
+ * @return Response Redirige vers la liste des demandes à valider.
+ *
+ * @details
+ * - Change le statut de la demande à "Suivi dans LEKA".
+ * - Enregistre l'historique de l'opération avec des métadonnées.
+ * - Prépare un PDF associé à la demande.
+ *
+ * @throws AccessDeniedException Si l'utilisateur n'est pas un valideur ou n'a pas les droits.
+ * @throws NotFoundHttpException Si la demande n'existe pas.
+ */
 
     #[Route('formulaireldap/validerdemande/{id}', name: 'valider_demande')]
     public function validerDemande(int $id, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
@@ -221,6 +263,26 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
 
 
     
+
+
+    /**
+ * @brief Refuse une demande et enregistre l'action dans l'historique.
+ *
+ * Cette méthode permet de refuser une demande  en changeant le statut de la demande en le mettant à Refusée et de notifier l'utilisateur concerné.
+ *
+ * @Route('formulaireldap/refuserdemande/{id}', name='refuser_demande')
+ *
+ * @param int $id Identifiant de la demande à refuser.
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine.
+ * @param MailerInterface $mailer Service d'envoi d'e-mails.
+ *
+ * @return Response Redirige vers la liste des demandes à valider.
+ *
+ * @details
+ * - Met à jour le statut de la demande à "Refusée".
+ * - Enregistre l'opération dans l'historique.
+ */
+
     
     #[Route('formulaireldap/refuserdemande/{id}', name: 'refuser_demande')]
     public function refuserDemande(int $id, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
@@ -258,6 +320,27 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
         return $this->redirectToRoute('demandes_a_valider');
     }
     
+
+
+    /**
+ * @brief Ajoute un commentaire à une demande.
+ *
+ * Cette méthode permet à un valideur de commenter une demande et d'en informer l'utilisateur concerné.
+ *
+ * @Route('formulaireldap/commenterdemande/{id}', name='commenter_demande', methods=['POST'])
+ *
+ * @param int $id Identifiant de la demande.
+ * @param Request $request La requête HTTP contenant le commentaire.
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine.
+ * @param MailerInterface $mailer Service d'envoi d'e-mails.
+ *
+ * @return Response Redirige vers la liste des demandes à valider.
+ *
+ * @details
+ * - Ajoute un commentaire à la demande et met à jour l'historique.
+ * - Prépare un e-mail de notification contenant le commentaire.
+ */
+
     
     #[Route('formulaireldap/commenterdemande/{id}', name: 'commenter_demande', methods: ['POST'])]
     public function commenterDemande(int $id, Request $request, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
@@ -301,6 +384,24 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     }
     
     
+    /**
+ * @brief Affiche les détails d'une demande.
+ *
+ * Cette méthode permet de visualiser toutes les informations relatives à une demande donnée,
+ * y compris les ressources associées et les informations utilisateur.
+ *
+ * @Route('formulaireldap/demande/visualiser/{id}', name='visualiser_demande')
+ *
+ * @param MonApplication $monApplication Informations sur l'application.
+ * @param int $id Identifiant de la demande.
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine.
+ *
+ * @return Response La page contenant les détails de la demande.
+ *
+ * @throws AccessDeniedException Si l'utilisateur n'a pas les droits d'accès à cette demande.
+ * @throws NotFoundHttpException Si la demande est introuvable.
+ */
+
     #[Route('formulaireldap/demande/visualiser/{id}', name: 'visualiser_demande')]
     public function visualiserDemande(MonApplication $monApplication, int $id, EntityManagerInterface $entityManager): Response
     {
@@ -331,6 +432,23 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
             'valideur' => $valideur
         ]);
     }
+
+
+    /**
+ * @brief Génère un PDF contenant les informations d'une demande.
+ *
+ * Cette méthode compile les informations d'une demande et les rend dans un format PDF.
+ *
+ * @Route('formulaireldap/demandepdf/{id}', name='demande_pdf_valideur')
+ *
+ * @param int $id Identifiant de la demande.
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine.
+ *
+ * @return Response Le fichier PDF généré.
+ *
+ * @throws AccessDeniedException Si l'utilisateur n'a pas les droits d'accès à cette demande.
+ * @throws NotFoundHttpException Si la demande est introuvable.
+ */
 
     #[Route('formulaireldap/demandepdf/{id}', name: 'demande_pdf_valideur')]
     public function generatePdf($id, EntityManagerInterface $entityManager): Response
@@ -422,6 +540,17 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     }
 
 
+/**
+ * @brief Récupère l'adresse e-mail d'un valideur associé à une demande.
+ *
+ * @param Demandes $demande La demande pour laquelle récupérer l'e-mail.
+ *
+ * @return string L'adresse e-mail du valideur.
+ *
+ * @details
+ * - Si l'UID du valideur est présent, l'adresse e-mail est construite dynamiquement.
+ * - Retourne une adresse par défaut si aucune information n'est disponible.
+ */
 
     public function getValideurMail(Demandes $demande): string
     {
@@ -437,6 +566,23 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     
     
 
+    /**
+ * @brief Refuse l'accès aux utilisateurs qui ne sont pas valideurs.
+ *
+ * Cette méthode vérifie si l'utilisateur connecté dispose des droits de valideur.
+ * Si ce n'est pas le cas, elle lève une exception pour refuser l'accès à la ressource.
+ *
+ * @details
+ * - Utilise la propriété `$this->isValideur`, définie dans le constructeur, pour déterminer
+ *   si l'utilisateur a le rôle de valideur.
+ * - Si l'utilisateur n'est pas un valideur, une exception d'accès refusé est levée.
+ *
+ * @throws AccessDeniedException Si l'utilisateur n'est pas un valideur.
+ *
+
+ */
+
+
 
     private function denyAccessUnlessValideur()
     {
@@ -444,6 +590,32 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
             throw $this->createAccessDeniedException('Vous devez être un valideur pour accéder à cette section.');
         }
     }
+
+
+
+    /**
+ * @brief Recherche ou crée un utilisateur LDAP dans la base de données.
+ *
+ * Cette méthode permet de vérifier si l'utilisateur actuellement connecté existe
+ * dans la base de données. Si ce n'est pas le cas, elle crée un nouvel utilisateur
+ * avec les informations fournies par LDAP.
+ *
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine.
+ *
+ * @return User L'utilisateur trouvé ou nouvellement créé.
+ *
+ * @details
+ * - Si aucun utilisateur n'est connecté, une exception logique est levée.
+ * - Si l'utilisateur connecté n'existe pas en base, un nouvel enregistrement est créé , on cree l'utilisateur LDAP dans la base de données.
+ * - Les informations LDAP utilisées incluent : nom, prénom, email, date de naissance, etc.
+ * - Les données sont persistées et sauvegardées dans la base de données.
+ *
+ * @throws LogicException Si aucun utilisateur n'est connecté.
+ *
+ 
+ */
+
+
 
     public function findOrCreateLdapUser(EntityManagerInterface $entityManager): User
     {
@@ -492,6 +664,15 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
 
 
 
+/**
+ * @brief Vérifie les permissions d'accès à une demande pour le valideur connecté.
+ *
+ * @param int $demandeId Identifiant de la demande.
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine.
+ *
+ * @throws AccessDeniedException Si l'utilisateur n'a pas les droits d'accès.
+ * @throws NotFoundHttpException Si la demande est introuvable.
+ */
 
 
     private function checkUserPermissionForDemande(int $demandeId, EntityManagerInterface $entityManager): void
@@ -521,6 +702,18 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
 
 
     
+
+    /**
+ * @brief Vérifie le statut d'une demande avant d'autoriser une action si le statut est différente de En attente côté Valideur ca veut
+ * dire que soit elle est brouillons et donc l'utilisateur ne l'a pas encore validée , soit elle est deja validée ou refusée.
+ *
+ * @param int $demandeId Identifiant de la demande.
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine.
+ *
+ * @throws AccessDeniedException Si la demande n'est pas en attente.
+ * @throws NotFoundHttpException Si la demande est introuvable.
+ */
+
 private function checkStatuts(int $demandeId, EntityManagerInterface $entityManager): void 
 {
     $demande = $entityManager->getRepository(Demandes::class)->find($demandeId);

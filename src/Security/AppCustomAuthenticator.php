@@ -31,6 +31,28 @@ class AppCustomAuthenticator extends AbstractLoginFormAuthenticator
 
     }
 
+
+    /**
+ * @brief Authentifie un utilisateur à partir des données de la requête.
+ *
+ * Cette méthode extrait l'email, le mot de passe et le jeton CSRF de la requête,
+ * vérifie les informations fournies, et construit un objet `Passport` pour l'authentification.
+ *
+ * @param Request $request La requête HTTP contenant les informations de connexion.
+ *
+ * @return Passport Un objet Passport contenant les informations d'authentification.
+ *
+ * @throws BadCredentialsException Si l'email n'existe pas, le mot de passe est incorrect,
+ * ou si l'utilisateur tente de se connecter avec une adresse académique.
+ *
+ * @details
+ * - L'email doit être valide et ne pas appartenir au domaine académique.
+ * - Le mot de passe est vérifié par rapport au hachage stocké.
+ * - Un badge CSRF est ajouté pour protéger l'authentification.
+ *
+ */
+
+
     public function authenticate(Request $request): Passport
     {
         // dd($request->request->all());
@@ -60,6 +82,24 @@ class AppCustomAuthenticator extends AbstractLoginFormAuthenticator
         );
     }
 
+
+
+    /**
+ * @brief Gère la redirection après une authentification réussie.
+ *
+ * Cette méthode redirige l'utilisateur vers une page spécifique après une connexion réussie.
+ *
+ * @param Request $request La requête HTTP.
+ * @param TokenInterface $token Le jeton d'authentification généré.
+ * @param string $firewallName Le nom du firewall utilisé pour l'authentification.
+ *
+ * @return Response Une réponse de redirection vers la route `demande_externe`.
+ *
+ * @details
+ * 
+ * - il est redirigé par défaut vers `demande_externe`.
+ */
+
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
         // if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
@@ -73,6 +113,23 @@ class AppCustomAuthenticator extends AbstractLoginFormAuthenticator
     {
         return $this->urlGenerator->generate(self::LOGIN_ROUTE);
     }
+
+
+    /**
+ * @brief Gère les échecs d'authentification.
+ *
+ * Cette méthode capture les exceptions d'authentification, affiche un message d'erreur
+ * à l'utilisateur, et redirige vers la page de connexion.
+ *
+ * @param Request $request La requête HTTP contenant les informations de connexion.
+ * @param AuthenticationException $exception L'exception générée lors de l'échec.
+ *
+ * @return Response Une réponse de redirection vers le formulaire de connexion.
+ *
+ * @details
+ * - L'exception est analysée pour extraire un message d'erreur.
+ * - Un message flash est ajouté à la session pour informer l'utilisateur.
+ */
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response
     {

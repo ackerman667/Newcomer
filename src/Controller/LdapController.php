@@ -9,6 +9,7 @@ use App\Classe\MonApplication;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RequestStack;
 use App\Entity\User;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use App\Entity\Demandes;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\TemporaryData;
@@ -43,6 +44,7 @@ class LdapController extends AbstractController
 
 
     }
+  
 
     
 

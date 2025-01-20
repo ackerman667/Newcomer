@@ -15,6 +15,21 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'cleanerpassword',
     description: 'Supprimer les entrées (éxpiré) de la table PasswordResetToken ',
 )]
+
+/**
+ * @brief Commande Symfony pour nettoyer les entrées expirées de la table `PasswordResetToken`.
+ *
+ * Cette commande supprime toutes les entrées expirées de la table `PasswordResetToken`
+ * en utilisant le dépôt `PasswordResetTokenRepository`.
+ *
+ * @command cleanerpassword
+ *
+ * @details
+ * - Supprime les tokens de réinitialisation de mot de passe expirés.
+ * - Fournit un retour d'information via la console avec le nombre d'entrées supprimées.
+ * - Peut être planifiée pour une exécution régulière à l'aide d'un gestionnaire de tâches.
+ */
+
 class CleanPasswordTokenCommand extends Command
 {
     

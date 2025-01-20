@@ -38,81 +38,31 @@ class StatutsExterneController extends AbstractController
         
         $this->timezone = new \DateTimeZone('America/Guadeloupe'); 
     }
+
+
+
+    /**
+ * @brief Affiche la liste des demandes pour l'utilisateur connecté.
+ *
+ * Cette méthode récupère et affiche toutes les demandes liées à l'utilisateur
+ * connecté dans une interface dédiée.
+ *
+ * @Route('formulaireext/statuts', name='demande_externe')
+ *
+ * @param Request $request La requête HTTP courante.
+ * @param SessionInterface $session Gestion de session utilisateur.
+ * @param MonApplication $monApplication Informations sur l'application.
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine.
+ *
+ * @return Response La page affichant les demandes externes.
+ */
+
     #[Route('formulaireext/statuts', name: 'demande_externe')]
     public function index( Request $request , SessionInterface $session, MonApplication $monApplication, EntityManagerInterface $entityManager): Response
     {
          $user = $this->getUser();
-
-        // if (!$user) {
-        //     throw $this->createNotFoundException('Utilisateur introuvable.');
-        // }
-        // $now = new \DateTime();
-        // $expiration = $user->getTokenExpiration();
-    
-        // if (!$expiration || $expiration <= $now || $expiration->getTimestamp() - $now->getTimestamp() <= 1200) {
-        //     // Générer un nouveau token
-        //     $newToken = bin2hex(random_bytes(32));
-        //     $user->setToken($newToken);
-        //     $user->setTokenExpiration((new \DateTime())->modify('+24 hours'));
-        //     $entityManager->flush();
-    
-        //     // Envoyer un e-mail avec le nouveau lien
-        //     $url = $request->getSchemeAndHttpHost() . $this->generateUrl('demande_externe', ['token' => $newToken]);
-    
-        //     $email = (new Email())
-        //         ->from('noreply@ac-guadeloupe.fr')
-        //         ->to($user->getEmail())
-        //         ->subject('Votre session a expiré - Nouveau lien de connexion')
-        //         ->html('<p>Bonjour,</p><p>Votre session a expiré. Cliquez sur le lien suivant pour vous reconnecter : <a href="' . $url . '">' . $url . '</a></p>');
-    
-        //     $mailer->send($email);
-    
-        //     // Rediriger vers la route session_expired
-        //     return $this->redirectToRoute('session_expired');
-        // }
-
-        
-
-        // $session->clear();
-        // $session->remove('form_data');
-        // $session->remove('demande_id');
-        // $session->remove('nouvelle_demande');
-        // $session->remove('dossiers_partages');
-        // $session->remove('_csrf/https-demande_etape1_form');
-        // $session->remove('_csrf/https-demande_etape2_form');
-        // $session->remove('_csrf/https-demande_etape3_form');
-        // $session->remove('nom_service_selectionne');
-        // $session->remove('nom_valideur');
-
-     
-        // if (!$session->has('externe_auth')) {
-        //     $session->set('externe_auth', true);
-        // }
-
-        // if (!$session->has('externe_token')) {
-        //     $session->set('externe_token', $token);
-        // }
-        
-        // $session = $this->requestStack->getSession();
-        // $session->set('externe_auth', true);
-        // $session->set('externe_token', $token);
-
-       
-        // $sessionData = $session->all();
-
-        
-        // dump($sessionData);
-        
-
-
-
-
-       
         $demandes = $this->getDemandesPourUtilisateur($entityManager, $user);
 
-
-        // dump($demandes);
-        
 
         return $this->render('demandes/demandes_externe.html.twig', [
             'demandes' => $demandes,
@@ -120,6 +70,26 @@ class StatutsExterneController extends AbstractController
             'user' => $user,
         ]);
     }
+
+
+    /**
+ * @brief Affiche les détails d'une demande spécifique.
+ *
+ * Cette méthode permet de visualiser toutes les informations relatives à une demande donnée,
+ * y compris les ressources associées et le valideur.
+ *
+ * @Route('formulaireext/demande/consult/{id}', name='demande_consult')
+ *
+ * @param MonApplication $monApplication Informations sur l'application.
+ * @param int $id Identifiant de la demande.
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine.
+ *
+ * @return Response La page contenant les détails de la demande.
+ *
+ * @throws AccessDeniedException Si l'utilisateur n'a pas les droits d'accès à cette demande.
+ * @throws NotFoundHttpException Si la demande est introuvable.
+ */
+
 
     #[Route('formulaireext/demande/consult/{id}', name: 'demande_consult')]
     public function consult(MonApplication $monApplication, $id, EntityManagerInterface $entityManager): Response
@@ -147,6 +117,32 @@ class StatutsExterneController extends AbstractController
         ]);
     }
 
+
+/**
+ * @brief Récupère les demandes associées à un utilisateur spécifique.
+ *
+ * Cette méthode permet de récupérer toutes les demandes associées à l'utilisateur
+ * connecté, triées par statut et date.
+ *
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine.
+ * @param User $user L'utilisateur pour lequel les demandes doivent être récupérées.
+ *
+ * @return array Retourne un tableau des demandes trouvées, triées comme suit :
+ * - En premier, les demandes ayant le statut "Brouillons".
+ * - Ensuite, celles avec le statut "En attente".
+ * - Enfin, les autres statuts, le tout classé par date de soumission descendante.
+ *
+ * @details
+ * - Utilise un `QueryBuilder` pour construire la requête de manière flexible.
+ * - Trie les demandes selon plusieurs critères pour garantir que les brouillons
+ *   et les demandes en attente soient affichées en priorité.
+ * - Les demandes sont retournées sous forme d'un tableau d'objets `Demandes`.
+ *
+ * @throws Exception Si une erreur inattendue survient lors de la récupération des données.
+ 
+ */
+
+
     public function getDemandesPourUtilisateur(EntityManagerInterface $entityManager, User $user)
 {
     $demandes = $entityManager->getRepository(Demandes::class)
@@ -167,7 +163,23 @@ class StatutsExterneController extends AbstractController
     return $demandes;
 }
 
-  
+  /**
+ * @brief Génère un PDF pour une demande spécifique.
+ *
+ * Cette méthode génère et affiche un PDF contenant les informations relatives à une demande.
+ *
+ * @Route('formulaireext/demande/pdf/{id}', name='demande_pdf')
+ *
+ * @param MonApplication $monApplication Informations sur l'application.
+ * @param int $id Identifiant de la demande.
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine.
+ *
+ * @return Response Le fichier PDF généré en réponse HTTP.
+ *
+ * @throws AccessDeniedException Si l'utilisateur n'a pas les droits d'accès à cette demande.
+ * @throws NotFoundHttpException Si la demande est introuvable.
+ */
+
 
     #[Route('formulaireext/demande/pdf/{id}', name: 'demande_pdf')]
     public function generatePdf(/*Demandes $demande , */MonApplication $monApplication, $id, EntityManagerInterface $entityManager): Response
@@ -223,6 +235,18 @@ class StatutsExterneController extends AbstractController
     
     
 
+    /**
+ * @brief Crée une nouvelle demande pour l'utilisateur connecté.
+ *
+ * Cette méthode initialise une nouvelle demande et la stocke temporairement pour
+ * permettre à l'utilisateur de compléter le formulaire.
+ *
+ * @Route('formulaireext/nouvelle_demande', name='nouvelle_demande')
+ *
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine.
+ *
+ * @return Response Une redirection vers la première étape de la création de demande.
+ */
 
     #[Route('formulaireext/nouvelle_demande', name: 'nouvelle_demande')]
     public function nouvelleDemande(EntityManagerInterface $entityManager ): Response
@@ -251,6 +275,23 @@ class StatutsExterneController extends AbstractController
         
     }
     
+/**
+ * @brief Supprime une demande spécifique.
+ *
+ * Cette méthode supprime une demande, ses historiques, et les ressources associées,
+ * après vérification des droits d'accès de l'utilisateur.
+ *
+ * @Route('formulaireext/supprimer/{id}', name='formulaireexterne_supprimer')
+ *
+ * @param Request $request La requête HTTP courante.
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine.
+ * @param int $id Identifiant de la demande à supprimer.
+ *
+ * @return Response Une redirection vers la liste des demandes externes.
+ *
+ * @throws AccessDeniedException Si l'utilisateur n'a pas les droits d'accès à cette demande.
+ * @throws NotFoundHttpException Si la demande est introuvable.
+ */
 
     #[Route('formulaireext/supprimer/{id}', name: 'formulaireexterne_supprimer')]
     public function supprimerDemande(Request $request, EntityManagerInterface $entityManager, $id): Response
@@ -284,6 +325,25 @@ class StatutsExterneController extends AbstractController
 
         return $this->redirectToRoute('demande_externe'); 
     }
+
+
+    /**
+ * @brief Modifie une demande existante.
+ *
+ * Cette méthode permet de préremplir les informations d'une demande et d'initier
+ * le processus de modification.
+ *
+ * @Route('formulaireext/modifier/{id}', name='modifier_demandes')
+ *
+ * @param MonApplication $monApplication Informations sur l'application.
+ * @param Request $request La requête HTTP courante.
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine.
+ * @param SessionInterface $session Gestion de session utilisateur.
+ * @param int $id Identifiant de la demande à modifier.
+ * @param MailerInterface $mailer Service de messagerie pour notifier l'utilisateur.
+ *
+ * @return Response Une redirection vers la première étape de la modification.
+ */
 
     #[Route('formulaireext/modifier/{id}', name: 'modifier_demandes')]
     public function modifierDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id, MailerInterface $mailer): Response
@@ -334,6 +394,25 @@ class StatutsExterneController extends AbstractController
         
     }
 
+
+    /**
+ * @brief Valide et soumet une demande.
+ *
+ * Cette méthode change le statut d'une demande à "En attente" et enregistre
+ * un historique de l'opération. Une notification par e-mail est envoyée.
+ *
+ * @Route('formulaireext/valider/{id}', name='valider_demandes')
+ *
+ * @param MonApplication $monApplication Informations sur l'application.
+ * @param Request $request La requête HTTP courante.
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine.
+ * @param SessionInterface $session Gestion de session utilisateur.
+ * @param int $id Identifiant de la demande à valider.
+ * @param MailerInterface $mailer Service de messagerie pour notifier l'utilisateur.
+ *
+ * @return Response Une redirection vers la liste des demandes externes.
+ */
+
     #[Route('formulaireext/valider/{id}', name: 'valider_demandes')]
     public function validerDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id,MailerInterface $mailer): Response
     {
@@ -380,6 +459,19 @@ class StatutsExterneController extends AbstractController
         return $this->redirectToRoute('demande_externe');
     }
 
+
+    /**
+ * @brief Vérifie si l'utilisateur a les permissions pour accéder à une demande.
+ *
+ * Cette méthode s'assure que l'utilisateur connecté est le propriétaire de la demande.
+ *
+ * @param int $demandeId Identifiant de la demande.
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine.
+ *
+ * @throws AccessDeniedException Si l'utilisateur n'a pas les droits d'accès.
+ * @throws NotFoundHttpException Si la demande est introuvable.
+ */
+
     private function checkUserPermissionForDemande(int $demandeId, EntityManagerInterface $entityManager): void
 {
     // Récupérer l'utilisateur connecté
@@ -400,6 +492,18 @@ class StatutsExterneController extends AbstractController
     }
 }
 
+/**
+ * @brief Vérifie le statut d'une demande avant d'effectuer une action.
+ *
+ * Cette méthode s'assure qu'une demande est encore à l'état de "Brouillons"
+ * avant d'autoriser des modifications ou des suppressions.
+ *
+ * @param int $demandeId Identifiant de la demande.
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine.
+ *
+ * @throws AccessDeniedException Si la demande n'est plus à l'état de brouillon.
+ * @throws NotFoundHttpException Si la demande est introuvable.
+ */
 
 private function checkStatuts(int $demandeId, EntityManagerInterface $entityManager): void 
 {
@@ -414,51 +518,6 @@ private function checkStatuts(int $demandeId, EntityManagerInterface $entityMana
 
 
 
-    // #[Route('/logout', name: 'app_logout')]
-    // public function logout(EntityManagerInterface $entityManager, MailerInterface $mailer, RequestStack $requestStack, UrlGeneratorInterface $urlGenerator): Response
-    // {
-    //     $session = $requestStack->getSession();
-    
-    //     // Vérifiez si un token est présent
-    //     $token = $session->get('externe_token');
-    //     if ($token) {
-    //         // Trouver l'utilisateur correspondant au token
-    //          $user = $this->getUser();
-    
-    //         if ($user) {
-
-    //             $temporaryDataEntries = $entityManager->getRepository(\App\Entity\TemporaryData::class)
-    //             ->findBy(['user' => $user]);
-
-    //         foreach ($temporaryDataEntries as $entry) {
-    //             $entityManager->remove($entry);
-    //         }
-    //         $entityManager->flush();
-
-    //             // Générer un nouveau token
-    //             $newToken = bin2hex(random_bytes(32));
-    //             $user->setToken($newToken);
-    //             $entityManager->flush();
-    
-    //             // Envoyer un email avec le nouveau token
-    //             $url = $urlGenerator->generate('demande_externe', ['token' => $newToken], UrlGeneratorInterface::ABSOLUTE_URL);
-    
-    //             $email = (new Email())
-    //                 ->from('noreply@ac-guadeloupe.fr')
-    //                 ->to($user->getEmail())
-    //                 ->subject('Votre session a expiré - Nouveau lien de connexion')
-    //                 ->html('<p>Bonjour,</p><p>Votre session a expiré. Cliquez sur le lien suivant pour vous reconnecter : <a href="' . $url . '">' . $url . '</a></p>');
-    
-    //             $mailer->send($email);
-    //         }
-    //     }
-    
-    //     // Supprimer les données de session
-    //     $session->clear();
-    
-    //     // Rediriger vers la page d'accueil ou une autre page
-    //     return $this->redirectToRoute('session_expired');
-    // }
     
 
 

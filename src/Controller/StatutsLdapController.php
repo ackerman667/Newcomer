@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * @file
+ * @brief Contrôleur pour gérer les demandes LDAP.
+ *
+ * Ce fichier contient le contrôleur principal pour gérer les fonctionnalités
+ * liées aux demandes LDAP, y compris la consultation, modification, validation,
+ * suppression.
+ */
+
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -25,7 +34,13 @@ use App\Entity\HistoriqueDemande;
 
 use Symfony\Bundle\SecurityBundle\Security;
 
-
+/**
+ * @class StatutsLdapController
+ * @brief Contrôleur pour la gestion des demandes LDAP.
+ *
+ * Ce contrôleur offre diverses fonctionnalités pour gérer les demandes des utilisateurs
+ * LDAP, telles que la création, la consultation, la modification, et la validation.
+ */
 class StatutsLdapController extends AbstractController
 {
     private $security;
@@ -40,56 +55,32 @@ class StatutsLdapController extends AbstractController
         $this->isValideur = $this->roleChecker->isUserValideur();
     }
 
-    // #[Route('formulaireldap/listedemandes', name: 'liste_demandes')]
-    // public function index(SessionInterface $session, MonApplication $monApplication, EntityManagerInterface $entityManager,  Request $request): Response
-    // {
-    //     // $session->remove('form_data');
-    //     // $session->remove('demande_id');
-    //     // $session->remove('nouvelle_demande');
-    //     // $session->remove('dossiers_partages');
-    //     // $session->remove('_csrf/https-demande_etape1_form');
-    //     // $session->remove('_csrf/https-demande_etape2_form');
-    //     // $session->remove('_csrf/https-demande_etape3_form');
-    //     // $session->remove('nom_service_selectionne');
-    //     // $session->remove('nom_valideur');
-    //     $user = $this->security->getUser();
-    //     $uid = $user->getUid();
+   
 
-    //     // Vérifier si l'utilisateur est un valideur 
-    //     $isValideur = $this->roleChecker->isUserValideur();
 
-    //     // Récupérer les demandes de l'utilisateur courant (pour la section "Mes Demandes")
-    //     $userDemandes = $this->getDemandesPourUtilisateur($entityManager, $uid);
-
-    //     // Récupérer les demandes assignées au valideur (si l'utilisateur est un valideur)
-    //     $demandesAValider = $isValideur ? $this->getDemandesPourValideur($entityManager, $uid) : [];
-
-    //     $sessionData = $session->all();
-
-    //     // dump($sessionData);
-
-    //     return $this->render('demandes/index.html.twig', [
-    //         'mesDemandes' => $userDemandes,
-    //         'demandesAValider' => $demandesAValider,
-    //         'monApplication' => $monApplication,
-    //         'isValideur' => $isValideur,
-    //         'uiduser' => $uid,
-    //     ]);
-    // }
-
+      /**
+     * @brief  page qui Affiche les demandes de l'utilisateur courant. 
+     * Il peut les consulter et effectuer des opérations dessus en fonction du statuts
+     *
+     * @Route("/formulaireldap/mes-demandes", name="mes_demandes")
+     *
+   
+     * @param MonApplication $monApplication Informations sur l'application.
+     * @param EntityManagerInterface $entityManager Gestionnaire d'entités.
+     * @return Response
+     */
 
     #[Route('formulaireldap/mes-demandes', name: 'mes_demandes')]
 public function mesDemandes(
-    SessionInterface $session,
     MonApplication $monApplication,
     EntityManagerInterface $entityManager
 ): Response {
-    $user = $this->security->getUser();
-    $uid = $user->getUid();
-    $isValideur = $this->roleChecker->isUserValideur();
+    $user = $this->security->getUser(); //Récupérer l'utilisateur connecté 
+    $uid = $user->getUid(); // Récupération de l'UID utilisateur.
+    $isValideur = $this->roleChecker->isUserValideur();   // Vérification du rôle de valideur.
 
-    // Récupérer les demandes de l'utilisateur courant
-    $userDemandes = $this->getDemandesPourUtilisateur($entityManager, $uid);
+    
+    $userDemandes = $this->getDemandesPourUtilisateur($entityManager, $uid); // Récupération des demandes de l'utilisateur.
 
     return $this->render('demandes/mes_demandes.html.twig', [
         'mesDemandes' => $userDemandes,
@@ -101,6 +92,18 @@ public function mesDemandes(
     ]);
 }
 
+    /**
+     * @brief Affiche les demandes à valider pour un valideur.
+     *
+     * Cette fonction vérifie si l'utilisateur est un valideur et affiche les demandes
+     * qui lui sont assignées.
+     *
+     * @Route("formulaireldap/demandes-a-valider", name="demandes_a_valider")
+     *
+     * @param MonApplication $monApplication Informations sur l'application.
+     * @param EntityManagerInterface $entityManager Gestionnaire d'entités.
+     * @return Response
+     */
 #[Route('formulaireldap/demandes-a-valider', name: 'demandes_a_valider')]
 public function demandesAValider(
     MonApplication $monApplication,
@@ -112,11 +115,12 @@ public function demandesAValider(
     // Vérifier si l'utilisateur est un valideur
     $isValideur = $this->roleChecker->isUserValideur();
 
-    if (!$isValideur) {
+    if (!$isValideur) {  // Bloquer l'accès si non valideur
         throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette page.');
     }
 
-    // Récupérer les demandes assignées au valideur
+    /* Récupérer les demandes assignées au valideur en fonction de l'uid de la personne connecté et 
+    de l'uid present dans le champs valideur de la table demandes => Une demande est asocié a un uid valideur */
     $demandesAValider = $this->getDemandesPourValideur($entityManager, $uid);
 
     return $this->render('demandes/demandes_a_valider.html.twig', [
@@ -129,10 +133,16 @@ public function demandesAValider(
 }
 
 
-
+/**
+     * @brief Récupère les demandes pour un utilisateur donné.
+     *
+     * @param EntityManagerInterface $entityManager Gestionnaire d'entités.
+     * @param string $uid UID de l'utilisateur.
+     * @return array Liste des demandes de l'utilisateur.
+     */
 private function getDemandesPourUtilisateur(EntityManagerInterface $entityManager, string $uid): array
 {
-    // Récupérer l'utilisateur dans la base de données
+    // Récupérer l'utilisateur dans la base de données 
     $user_bdd = $entityManager->getRepository(User::class)->findOneBy([
         'uid' => $uid,
         'provenance' => 'ldap'
@@ -161,6 +171,8 @@ private function getDemandesPourUtilisateur(EntityManagerInterface $entityManage
         return $queryBuilder->getQuery()->getResult();
     }
 
+    /* si l'utilisateur existe on recupere toute ses demandes => une demande est lié à un utilisateur , 
+    on recupere toutes les demandes associés a l'utilisateur connecté et on les classes par statuts et ensuite ordre d'arrivé */
 
     $queryBuilder = $entityManager->createQueryBuilder();
     $queryBuilder
@@ -183,8 +195,14 @@ private function getDemandesPourUtilisateur(EntityManagerInterface $entityManage
 
     return $queryBuilder->getQuery()->getResult();
 }
+
+
     /**
-     * Récupère les demandes assignées à un valideur spécifique.
+     * @brief Récupère les demandes assignées à un valideur spécifique.
+     *
+     * @param EntityManagerInterface $entityManager Gestionnaire d'entités.
+     * @param string $uid UID du valideur.
+     * @return array Liste des demandes à valider.
      */
     private function getDemandesPourValideur(EntityManagerInterface $entityManager, string $uid): array
     {
@@ -238,6 +256,17 @@ private function getDemandesPourUtilisateur(EntityManagerInterface $entityManage
 
 
 
+    /* Faire une nouvelle demande crée une entrée dans la table temporaire et stocke les données du formulaire en JSON
+    c'est comme ca que les informations sont transmises entre les étapes */
+
+    /**
+     * @brief Crée une nouvelle demande et l'insère dans une table temporaire.
+     *
+     * @Route("/formulaireldap/nouvelle_demande", name="nouvelle_demande_ldap")
+     * @param SessionInterface $session Session utilisateur.
+     * @param EntityManagerInterface $entityManager Gestionnaire d'entités.
+     * @return Response
+     */
 #[Route('/formulaireldap/nouvelle_demande', name: 'nouvelle_demande_ldap')]
 public function nouvelleDemande(SessionInterface $session, EntityManagerInterface $entityManager): Response
 {
@@ -256,6 +285,20 @@ public function nouvelleDemande(SessionInterface $session, EntityManagerInterfac
 }
 
 
+/* On regarde si la personne qui tente de modifier la demande est la meme qui en est à l'origine et si c'est le cas alors on crée une entrée 
+dans la table temporaire , et vu que c'est une modification , il y a deja des données disponibles , on les prépares pour pré remplir le formulaire */
+
+ /**
+     * @brief Modifie une demande existante.
+     *
+     * @Route("/formulaireldap/modifier/{id}", name="modifier_demandesldap")
+     * @param Request $request Requête HTTP.
+     * @param EntityManagerInterface $entityManager Gestionnaire d'entités.
+     * @param SessionInterface $session Session utilisateur.
+     * @param int $id Identifiant de la demande.
+     * @return Response
+     */
+
 #[Route('/formulaireldap/modifier/{id}', name: 'modifier_demandesldap')]
 public function modifierDemande(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
 {
@@ -271,8 +314,7 @@ public function modifierDemande(MonApplication $monApplication, Request $request
     $infos_user = $userInformation->getUserInformation($user);
     $email_utilisateur= $infos_user['mail'];
     $user1 = $entityManager->getRepository(User::class)->findOneBy(['email' => $email_utilisateur]);
-    // $token = $demande->getToken();
-
+   
     // Pré-remplir les données pour le formulaire
     $data = [
         'demande_id' => $id,
@@ -297,7 +339,7 @@ public function modifierDemande(MonApplication $monApplication, Request $request
     
 
     
-    $userBdd = $this->findOrCreateLdapUser($entityManager);
+    $userBdd = $this->findOrCreateLdapUser($entityManager); // si il n'existe pas dans la BDD on le crée avant de passer au formulaire
 
     $temporaryData = new TemporaryData();
     $temporaryData->setUser($userBdd);
@@ -396,7 +438,14 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
 
 
 
-
+    /**
+     * @brief Supprime une demande spécifique.
+     *
+     * @Route("/formulaireldap/supprimer/{id}", name="formulaireldap_supprimer")
+     * @param int $id Identifiant de la demande.
+     * @param EntityManagerInterface $entityManager Gestionnaire d'entités.
+     * @return RedirectResponse
+     */
 
 #[Route('/formulaireldap/supprimer/{id}', name: 'formulaireldap_supprimer')]
     public function supprimerDemande($id, EntityManagerInterface $entityManager): RedirectResponse
@@ -499,7 +548,14 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     }
 
 
-
+  /**
+     * @brief Génère un PDF pour une demande spécifique.
+     *
+     * @Route("/formulaireldap/demande/pdf/{id}", name="demande_pdf_ldap")
+     * @param int $id Identifiant de la demande.
+     * @param EntityManagerInterface $entityManager Gestionnaire d'entités.
+     * @return Response
+     */
         #[Route('formulaireldap/demande/pdf/{id}', name: 'demande_pdf_ldap')]
     public function generatePdfldap($id, EntityManagerInterface $entityManager): Response
     {
@@ -652,7 +708,15 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     
     
 
-
+        // Refuser l'accès aux pages nécessitant d'etre valideur
+         /**
+     * @brief Refuse l'accès aux pages nécessitant le rôle de valideur.
+     *
+     * Cette fonction vérifie si l'utilisateur connecté est un valideur.
+     * Si ce n'est pas le cas, elle lève une exception d'accès refusé.
+     *
+     * @throws AccessDeniedException Si l'utilisateur n'est pas un valideur.
+     */
     private function denyAccessUnlessValideur()
     {
         if (!$this->isValideur) {
@@ -660,6 +724,17 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
         }
     }
 
+        // Rechercher le compte dans la base de données associées à l'utilisateur LDAP , si il n'existe pas  on le crée  
+        /**
+     * @brief Trouve ou crée un utilisateur LDAP dans la base de données.
+     *
+     * Cette fonction vérifie si l'utilisateur actuellement connecté existe dans la base.
+     * Si l'utilisateur n'existe pas, il est créé avec les informations récupérées via LDAP.
+     *
+     * @param EntityManagerInterface $entityManager Gestionnaire d'entités.
+     * @return User L'utilisateur LDAP trouvé ou créé.
+     * @throws LogicException Si aucun utilisateur n'est connecté.
+     */
 
     public function findOrCreateLdapUser(EntityManagerInterface $entityManager): User
     {
@@ -705,6 +780,19 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     }
 
 
+
+    // Fonction qui permet de vérifier avant chaque action si la personne veut effectuer une action sur sa demande 
+     /**
+     * @brief Vérifie les permissions d'accès à une demande pour l'utilisateur connecté.
+     *
+     * Cette fonction s'assure que l'utilisateur connecté est autorisé à accéder
+     * ou modifier une demande spécifique.
+     *
+     * @param int $demandeId Identifiant de la demande.
+     * @param EntityManagerInterface $entityManager Gestionnaire d'entités.
+     * @throws NotFoundHttpException Si la demande n'existe pas.
+     * @throws AccessDeniedException Si l'utilisateur n'a pas les permissions nécessaires.
+     */
     private function checkUserPermissionForDemande(int $demandeId, EntityManagerInterface $entityManager): void
 {
    
@@ -734,7 +822,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     }
 }
 
-
+// Verifier le statuts de la demande avant d'effectuer une action
 private function checkStatuts(int $demandeId, EntityManagerInterface $entityManager): void 
 {
     $demande = $entityManager->getRepository(Demandes::class)->find($demandeId);

@@ -289,8 +289,10 @@
         {% block main %}{% endblock %}
     </div>
   </div>
+   {% if app.user and app.user.isLdapUser() %}
     <footer><img src="{{ asset('css/images/logo_app_mini.png','interfaceappli') }}">Académie de la Guadeloupe - Réalisation DSI-DQDI - Tous droits réservés © Rectorat de la Guadeloupe - <a href="{{ path('mention') }}">Mentions légales et crédits</a><span class="app-version">{{monApplication.VerAppli}}</span></footer>
-	
-  
+	{% else %}
+   <footer><img src="{{ asset('css/images/logo_app_mini.png','interfaceappli') }}">Académie de la Guadeloupe - Réalisation DSI-DQDI - Tous droits réservés © Rectorat de la Guadeloupe - <a href="{{ path('-mention') }}">Mentions légales et crédits</a><span class="app-version">{{monApplication.VerAppli}}</span></footer>
+  {% endif %}
   </body>
 </html>

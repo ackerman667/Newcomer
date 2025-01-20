@@ -29,6 +29,37 @@ class UserCreationController extends AbstractController
 
 
     }
+
+
+
+    /**
+ * @brief Crée un nouvel utilisateur externe.
+ *
+ * Cette méthode permet de créer un compte utilisateur pour les utilisateurs externes
+ * en fournissant un formulaire de saisie. Les informations sont vérifiées, et un compte
+ * est créé si toutes les conditions sont respectées.
+ *
+ * @Route('/create-user', name='user_creation')
+ *
+ * @param UserPasswordHasherInterface $userPasswordHasher Service pour hacher les mots de passe.
+ * @param MonApplication $monApplication Informations sur l'application.
+ * @param Request $request La requête HTTP contenant les données du formulaire.
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine.
+ * @param MailerInterface $mailer Service d'envoi d'e-mails (non utilisé dans cette méthode, mais disponible).
+ *
+ * @return Response La page de création d'utilisateur ou une redirection.
+ *
+ * @details
+ * - Si l'utilisateur est déjà connecté, il est redirigé vers `demande_externe`.
+ * - Vérifie si l'adresse e-mail est déjà utilisée ou si elle appartient au domaine académique.
+ * - Valide la correspondance entre les mots de passe saisis.
+ * - Crée un utilisateur avec des informations personnelles et un mot de passe haché.
+ * - Enregistre l'utilisateur dans la base de données et effectue une connexion automatique.
+ *
+ * @throws Exception Si une erreur survient lors de la génération du token ou de l'enregistrement.
+ *
+ */
+
     #[Route('/create-user', name: 'user_creation')]
     public function createUser(UserPasswordHasherInterface $userPasswordHasher, MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {

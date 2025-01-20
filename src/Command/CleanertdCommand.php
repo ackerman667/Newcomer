@@ -12,6 +12,22 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'cleanertd',
     description: 'Supprimer les entrées (éxpiré) de la table temporary_data ',
 )]
+
+
+/**
+ * @brief Commande Symfony pour nettoyer les entrées expirées de la table `temporary_data`.
+ *
+ * Cette commande supprime toutes les entrées expirées de la base de données en
+ * interagissant avec le dépôt `TemporaryDataRepository`. dans le depot il y a une fonction qui permet de recuperer toute les entrées qui ont expirées
+ *
+ * @command cleanertd
+ *
+ * @details
+ * - Utilise la méthode `deleteExpiredData` du dépôt pour effectuer la suppression.
+ * - Fournit un retour d'information via la console avec le nombre d'entrées supprimées.
+ * - Peut être planifiée via un gestionnaire de tâches .
+ */
+
 class CleanertdCommand extends Command
 {
     private TemporaryDataRepository $repository;

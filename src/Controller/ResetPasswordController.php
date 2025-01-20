@@ -30,6 +30,38 @@ class ResetPasswordController extends AbstractController
     }
 
 
+
+
+    /**
+ * @brief Gère la demande de réinitialisation du mot de passe.
+ *
+ * Cette méthode permet à un utilisateur de demander la réinitialisation de son mot de passe.
+ * Si l'e-mail fourni correspond à un compte existant, un jeton de réinitialisation est généré
+ * et un lien de réinitialisation est envoyé à l'utilisateur.
+ *
+ * @Route('/forgot-password', name='forgot_password')
+ *
+ * @param MonApplication $monApplication Informations sur l'application.
+ * @param Request $request La requête HTTP contenant les données de soumission du formulaire.
+ * @param UserRepository $userRepository Le dépôt pour accéder aux entités utilisateur.
+ * @param EntityManagerInterface $em Gestionnaire d'entités Doctrine.
+ * @param MailerInterface $mailer Service d'envoi d'e-mails.
+ *
+ * @return Response La page de demande de réinitialisation ou une redirection.
+ *
+ * @details
+ * - Si l'adresse e-mail fournie ne correspond pas à un utilisateur, un message d'erreur est affiché.
+ * - Si un jeton de réinitialisation valide existe déjà pour l'utilisateur, l'utilisateur est informé.
+ * - Un nouveau jeton de réinitialisation est créé avec une durée de validité de 24 heures.
+ * - Un lien unique contenant le jeton est envoyé par e-mail à l'utilisateur.
+ *
+ * @throws Exception Si une erreur survient lors de la génération du jeton ou de l'envoi de l'e-mail.
+ *
+
+ */
+
+
+
     #[Route('/forgot-password', name: 'forgot_password')]
 public function forgotPassword(MonApplication $monApplication,
     Request $request,
@@ -88,6 +120,35 @@ public function forgotPassword(MonApplication $monApplication,
     ]);
 }
 
+
+/**
+ * @brief Réinitialise le mot de passe d'un utilisateur à l'aide d'un jeton valide.
+ *
+ * Cette méthode permet à un utilisateur de réinitialiser son mot de passe en
+ * fournissant un nouveau mot de passe via un formulaire, à condition de disposer
+ * d'un jeton de réinitialisation valide.
+ *
+ * @Route('/reset-password/{token}', name='reset_password')
+ *
+ * @param string $token Jeton de réinitialisation du mot de passe.
+ * @param UserPasswordHasherInterface $userPasswordHasher Service pour hacher les mots de passe.
+ * @param MonApplication $monApplication Informations sur l'application.
+ * @param Request $request La requête HTTP contenant les données de soumission du formulaire.
+ * @param EntityManagerInterface $em Gestionnaire d'entités Doctrine.
+ *
+ * @return Response La page de réinitialisation du mot de passe ou une redirection.
+ *
+ * @details
+ * - Vérifie si le jeton fourni est valide et non expiré.
+ * - Supprime le jeton une fois qu'il a été utilisé pour éviter les réutilisations.
+ * - Hache et met à jour le nouveau mot de passe pour l'utilisateur.
+ * - Fournit des vérifications sur la force et la confirmation du mot de passe.
+ *
+ * @throws NotFoundHttpException Si le jeton ou l'utilisateur associé est introuvable.
+ * @throws AccessDeniedException Si le jeton est expiré ou invalide.
+ *
+ 
+ */
 
 #[Route('/reset-password/{token}', name: 'reset_password')]
 public function resetPassword(

@@ -22,16 +22,18 @@ security:
         ldap:
             
             lazy: true
-            pattern: /formulaireldap/
+            pattern: ^/(mention|formulaireldap)
             remote_user:
                 user: HTTP_CT_REMOTE_USER
             provider: provider_userldap
             logout:
                 path: app_logout
+           
+              
 
         database:
             lazy: true
-            pattern: ^/(mention|create-user|login|formulaireext)
+            pattern: ^/(-mention|create-user|login|formulaireext)
             provider: provider_database
             logout:
                 path: app_logout 
@@ -64,6 +66,7 @@ security:
         - { path: ^/create-user, roles: PUBLIC_ACCESS }
         - { path: ^/mention, roles: PUBLIC_ACCESS }
         - { path: ^/formulaireext, roles: IS_AUTHENTICATED_FULLY}
+        - { path: ^/-mention, roles: PUBLIC_ACCESS }
         
 
         
