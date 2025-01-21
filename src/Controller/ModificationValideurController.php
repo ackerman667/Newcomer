@@ -44,15 +44,31 @@ class ModificationValideurController extends AbstractController
 
 
 
+  /**
+     * Modifier la première étape d'une demande.
+     *
+     * @Route('formulaireldap/modifierdemandes/etape1/{id}/{token}', name: 'modifier_demandesvalideur_etape1')
+     *
+     * @param int $id L'identifiant de la demande à modifier.
+     * @param string $token Le token de données temporaires associé à la demande.
+     * @param Request $request La requête HTTP actuelle.
+     * @param EntityManagerInterface $entityManager Gestionnaire d'entités pour les opérations en base de données.
 
+     * @param MonApplication $monApplication Classe personnalisée pour gérer l'application.
+     * @return Response Vue rendue pour la première étape de modification de la demande.
+     */
 #[Route('formulaireldap/modifierdemandes/etape1/{id}/{token}', name: 'modifier_demandesvalideur_etape1')]
-public function editDemandeEtape1(int $id, string $token, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, MonApplication $monApplication): Response
+public function editDemandeEtape1(int $id, string $token, Request $request, EntityManagerInterface $entityManager,  MonApplication $monApplication): Response
 {
+
+    // Vérifie si l'utilisateur est un valideur
     $isValideur = $this->roleChecker->isUserValideur();
     if (!$this->isValideur) {
         throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cette demande.');
         return $this->redirectToRoute('mes_demandes'); 
     }
+
+    // Vérifie si il est bien le valideur associé a la demande
     $this->checkUserPermissionForDemande($id, $entityManager);
 
 
@@ -131,6 +147,20 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
     ]);
 }
 
+
+/**
+     * Modifier la deuxième étape d'une demande.
+     *
+     * @Route('formulaireldap/modifierdemandes/etape1/{id}/{token}', name: 'modifier_demandesvalideur_etape1')
+     *
+     * @param int $id L'identifiant de la demande à modifier.
+     * @param string $token Le token de données temporaires associé à la demande.
+     * @param Request $request La requête HTTP actuelle.
+     * @param EntityManagerInterface $entityManager Gestionnaire d'entités pour les opérations en base de données.
+
+     * @param MonApplication $monApplication Classe personnalisée pour gérer l'application.
+     * @return Response Vue rendue pour la première étape de modification de la demande.
+     */
     #[Route('formulaireldap/modifierdemandes/etape2/{id}/{token}', name: 'modifier_demandesvalideur_etape2')]
     public function editDemandeEtape2(int $id, string $token, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, HttpClientInterface $httpClient, MonApplication $monApplication): Response
     {
@@ -145,32 +175,44 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
         }
-        $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $token]);
+ 
+$temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $token]);
 
-        $data = $temporaryData->getData();
-        if (!empty($data['date_de_naissance'])) {
-            if (is_array($data['date_de_naissance']) && isset($data['date_de_naissance']['date'])) {
-                $data['date_de_naissance'] = new \DateTime($data['date_de_naissance']['date']);
-            } elseif (is_string($data['date_de_naissance'])) {
-                $data['date_de_naissance'] = new \DateTime($data['date_de_naissance']);
-            }
-        }
-        
-        if (!empty($data['date_debut_contrat'])) {
-            if (is_array($data['date_debut_contrat']) && isset($data['date_debut_contrat']['date'])) {
-                $data['date_debut_contrat'] = new \DateTime($data['date_debut_contrat']['date']);
-            } elseif (is_string($data['date_debut_contrat'])) {
-                $data['date_debut_contrat'] = new \DateTime($data['date_debut_contrat']);
-            }
-        }
-        
-        if (!empty($data['date_fin_contrat'])) {
-            if (is_array($data['date_fin_contrat']) && isset($data['date_fin_contrat']['date'])) {
-                $data['date_fin_contrat'] = new \DateTime($data['date_fin_contrat']['date']);
-            } elseif (is_string($data['date_fin_contrat'])) {
-                $data['date_fin_contrat'] = new \DateTime($data['date_fin_contrat']);
-            }
-        }
+// Extraire les données stockées dans l'objet TemporaryData.
+$data = $temporaryData->getData();
+
+// Vérification et conversion de la date de naissance si elle est définie.
+// Si la date est au format tableau avec une clé 'date', on la convertit en un objet DateTime.
+// Si elle est sous forme de chaîne (format string), elle est également convertie en DateTime.
+if (!empty($data['date_de_naissance'])) {
+    if (is_array($data['date_de_naissance']) && isset($data['date_de_naissance']['date'])) {
+        $data['date_de_naissance'] = new \DateTime($data['date_de_naissance']['date']);
+    } elseif (is_string($data['date_de_naissance'])) {
+        $data['date_de_naissance'] = new \DateTime($data['date_de_naissance']);
+    }
+}
+
+// Vérification et conversion de la date de début du contrat si elle est définie.
+// Si la date est au format tableau avec une clé 'date', elle est transformée en un objet DateTime.
+// Si elle est au format string, elle est convertie directement en DateTime.
+if (!empty($data['date_debut_contrat'])) {
+    if (is_array($data['date_debut_contrat']) && isset($data['date_debut_contrat']['date'])) {
+        $data['date_debut_contrat'] = new \DateTime($data['date_debut_contrat']['date']);
+    } elseif (is_string($data['date_debut_contrat'])) {
+        $data['date_debut_contrat'] = new \DateTime($data['date_debut_contrat']);
+    }
+}
+
+// Vérification et conversion de la date de fin du contrat si elle est définie.
+// Comme pour les autres champs de date, la conversion est effectuée en fonction du format (tableau ou chaîne).
+if (!empty($data['date_fin_contrat'])) {
+    if (is_array($data['date_fin_contrat']) && isset($data['date_fin_contrat']['date'])) {
+        $data['date_fin_contrat'] = new \DateTime($data['date_fin_contrat']['date']);
+    } elseif (is_string($data['date_fin_contrat'])) {
+        $data['date_fin_contrat'] = new \DateTime($data['date_fin_contrat']);
+    }
+}
+
 
 
         $userLdap = $this->security->getUser();
@@ -199,15 +241,26 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
         if ($form->isSubmitted() && $form->isValid()) {
             $updatedData = $form->getData();
             $temporaryData->setData($updatedData);
+            // Identifie le service sélectionné
             $selectedServiceId = $form->get('selectedService')->getData();
 
-            foreach ($services as $service) {
+
+             // Parcourt la liste des services pour trouver celui sélectionné par l'utilisateur
+             foreach ($services as $service) {
+                // Vérifie si l'ID du service actuel correspond à l'ID du service sélectionné dans le formulaire
                 if ($service['id_service'] == $selectedServiceId) {
+                    
+                    // Enregistre le nom du service sélectionné dans les données mises à jour
                     $updatedData['nom_service_selectionne'] = $service['service'];
+                    
+                    // Enregistre les dossiers partagés associés au service sélectionné, s'ils existent
+                    // Si le champ 'dossiers_partages' n'existe pas dans les données du service, une liste vide est utilisée par défaut
                     $updatedData['dossiers_partages'] = $service['dossiers_partages'] ?? [];
+                    
+                    // Arrête la boucle une fois que le service correspondant est trouvé pour éviter des itérations inutiles
                     break;
                 }
-            }
+}
             $apiUrlSecond = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/valideur/' . $selectedServiceId;
             $responseSecond = $httpClient->request('GET', $apiUrlSecond, [
                 'headers' => [
@@ -238,13 +291,29 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
         ]);
     }
 
+
+
+
+/**
+     * Modifier la toisième étape d'une demande.
+     *
+     * @Route('formulaireldap/modifierdemandes/etape3/{id}/{token}', name: 'modifier_demandesvalideur_etape1')
+     *
+     * @param int $id L'identifiant de la demande à modifier.
+     * @param string $token Le token de données temporaires associé à la demande.
+     * @param Request $request La requête HTTP actuelle.
+     * @param EntityManagerInterface $entityManager Gestionnaire d'entités pour les opérations en base de données.
+
+     * @param MonApplication $monApplication Classe personnalisée pour gérer l'application.
+     * @return Response Vue rendue pour la première étape de modification de la demande.
+     */
     #[Route('formulaireldap/modifierdemandes/etape3/{id}/{token}', name: 'modifier_demandesvalideur_etape3')]
     public function editDemandeEtape3(int $id, string $token, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, MailerInterface $mailer, MonApplication $monApplication): Response
     {
         $isValideur = $this->roleChecker->isUserValideur();
         if (!$this->isValideur) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cette demande.');
-            return $this->redirectToRoute('mes_demandes'); // Remplacez 'homepage' par la route de votre choix
+            return $this->redirectToRoute('mes_demandes'); 
         }
         $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
@@ -261,6 +330,11 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
         }
     
         $data = $temporaryData->getData();
+
+          /**
+     * Récupère les dossiers partagés et les informations du service.
+     * Ces données sont utilisées pour configurer le formulaire.
+     */
         $dossiersPartages = $data['dossiers_partages'] ?? [];
         $dossiersSelectionnes = []; 
         $nomServiceSelectionne = $data['nom_service_selectionne'] ?? '';
@@ -276,12 +350,12 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
     
         if ($form->isSubmitted() && $form->isValid()) {
             $finalData = $form->getData();
-            $choix = $finalData['replace_someone'];
+            $choix = $finalData['replace_someone']; 
             $demande->setUidValideur($nomValideur);
             
            
     
-            if ($choix === 'oui') {
+            if ($choix === 'oui') { // Si il remplace quelqu'un 
                 $demande->setRemplacant(true);
                 $demande->setNomRemplacant($finalData['remplacement_nom']);
                 $demande->setPrenomRemplacant($finalData['remplacement_prenom']);
@@ -395,6 +469,17 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
         ]);
     }
 
+
+
+/**
+ * Vérifie si il est bien le valideur attendu par la demande dans le champs uid valideur de la table demande.
+ *
+ * @param int $demandeId L'identifiant de la demande à vérifier.
+ * @param EntityManagerInterface $entityManager L'EntityManager pour interagir avec la base de données.
+ *
+ * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException Si la demande n'est pas trouvée.
+ * @throws \Symfony\Component\Security\Core\Exception\AccessDeniedException Si l'utilisateur connecté n'est pas autorisé à accéder à la demande.
+ */
     private function checkUserPermissionForDemande(int $demandeId, EntityManagerInterface $entityManager): void
     {
         // Récupérer la demande
@@ -411,7 +496,7 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
         $uid_current = $currentUser->getUid();
     
         if (!$currentUser) {
-            throw $this->createAccessDeniedException('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA.');
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à cette demande..');
         }
     
         // Comparer les emails
@@ -421,7 +506,14 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
     }
 
    
-
+/**
+ * Construit une structure d'arbre à partir d'une liste de services.
+ *
+ * @param array $services La liste des services sous forme de tableau associatif.
+ * @param int $parentId L'identifiant du service parent pour lequel les enfants doivent être trouvés.
+ *
+ * @return array La structure d'arbre construite avec les services organisés par hiérarchie.
+ */
     
     private function buildTree(array &$services, $parentId = 0)
     {
@@ -439,6 +531,15 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
         return $branch;
     }
 
+
+    /**
+ * Transforme une structure d'arbre de services en une liste adaptée à un menu déroulant.
+ *
+ * @param array $services La structure d'arbre contenant les services.
+ * @param int $niveau Le niveau de profondeur dans l'arborescence, utilisé pour gérer les indentations.
+ *
+ * @return array Une liste plate des services, avec des indentations pour refléter la hiérarchie.
+ */
     private function transformServicesForDropdown(array $services, $niveau = 0): array
     {
         if ($niveau == 0) {

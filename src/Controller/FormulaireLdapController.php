@@ -28,6 +28,24 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use App\Security\UserInformation;
 
+
+
+/**
+ * @brief Contrôleur Symfony pour la gestion d'un formulaire multi-étapes.
+ *
+ * Ce contrôleur gère la création et la modification des demandes LDAP via un processus en trois étapes :
+ * - Étape 1 : Informations sur le remplacement si l'utilisateur remplace quelqu'un.
+ * - Étape 2 : Informations personnelles et sélection du service.
+ * - Étape 3 : Finalisation de la demande -> Sélection des ressources partagées .
+ * si l'utilisateur est passé par la route nouvelle demande => temporary data est vide a la 1ere etape
+ * si c'est une modification temporary data contient deja les valeurs de la demande a modifier  
+ *
+ * @details
+ * - Ce processus s'appuie sur des données temporaires (`TemporaryData`) stockées en base de données.
+ * - Chaque étape est validée et sauvegardée avant de passer à la suivante.
+ * - L'accès est sécurisé par le token de temporary data 
+ */
+
 class FormulaireLdapController extends AbstractController
 {
     private $security;
@@ -40,19 +58,50 @@ class FormulaireLdapController extends AbstractController
     }
 
 
+
+    /**
+ * @brief Étape 1 : Informations sur le remplacement.
+ *
+ * @route /formulaireldap/etape1/{token}
+ *
+ * @param string $token Le token de la demande temporaire.
+ * @param MonApplication $monApplication Instance de la classe d'application personnalisée.
+ * @param Request $request Requête HTTP.
+
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine.
+ *
+ * @return Response Vue de l'étape 1.
+ *
+ * @details
+ * - Affiche un formulaire pour collecter les informations de remplacement (nom, prénom, etc.).
+ * - Valide et sauvegarde les données dans la table `TemporaryData`.
+ * - Redirige vers l'étape 2 si le formulaire est valide.
+ *
+ * ```
+ */
+
+
     #[Route('/formulaireldap/etape1/{token}', name: 'formulaireldap_etape1')]
-    public function etape1(string $token,MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager): Response
+    public function etape1(string $token,MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager): Response
     {
-        $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $token]);
+         /**
+     * Récupère les données temporaires associées à l'utilisateur via le UUID.
+     * Si elles n'existent pas, une exception est levée.
+     */
+    $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $token]);
         if (!$temporaryData) {
             throw $this->createNotFoundException('Données temporaires introuvables.');
         }
         $data = $temporaryData->getData();
         $user = $this->security->getUser();
 
-        if ($temporaryData->getUser()->getUid() !== $user->getUid()) {
+          /**
+     * Récupère l'utilisateur actuellement connecté.
+     * Vérifie que les données temporaires appartiennent bien à cet utilisateur.
+     */ if ($temporaryData->getUser()->getUid() !== $user->getUid()) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
         }
+         
        
         $form = $this->createForm(DemandeEtape1FormType::class, $data);
         $form->handleRequest($request);
@@ -80,20 +129,60 @@ class FormulaireLdapController extends AbstractController
     }
 
 
+/**
+ * @brief Étape 2 : Collecte des informations personnelles et sélection du service.
+ *
+ * @route /formulaireldap/etape2/{token}
+ *
+ * @param string $token Token unique associé à la demande temporaire.
+ * @param MonApplication $monApplication Instance de la classe personnalisée pour gérer des fonctionnalités spécifiques à l'application.
+ * @param Request $request Objet représentant la requête HTTP.
+ * @param HttpClientInterface $httpClient Client HTTP pour récupérer dynamiquement les données externes, comme les services disponibles.
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine pour interagir avec la base de données.
+ *
+ * @return Response Retourne une vue contenant le formulaire de l'étape 2.
+ *
+ * @details
+ * - **Validation du token** : Le token est utilisé pour sécuriser l'accès aux données temporaires associées à la demande. Si le token est invalide ou expiré, une erreur est levée.
+ * - **Récupération des données utilisateur** :
+ *   - Les données sont récupérées via une API Ldap pour pré-remplir le formulaire avec des informations de l'utilsiateur ( son nom, prénom et  mail).
+ *   - Les données temporaires de la demande sont fusionnées avec les informations récupérées.
+ * - **Sélection des services** :
+ *   - Les services sont récupérés dynamiquement via une API externe.
+ *   - Les services sont hiérarchisés et transformés pour une utilisation dans un menu déroulant.
+ *   - Certains services peuvent être désactivés en fonction des configurations globales.
+ * - **Validation et sauvegarde** :
+ *   - Les données du formulaire sont validées.
+ *   - Le service sélectionné est associé à son valideur, récupéré via une autre API.
+ *   - Les données mises à jour sont sauvegardées dans `TemporaryData` pour être utilisées à l'étape suivante.
+ *
+ * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException Si les données temporaires sont introuvables.
+ * @throws \Symfony\Component\Security\Core\Exception\AccessDeniedException Si l'utilisateur connecté ne correspond pas à l'utilisateur associé à la demande.
+
+ */
+
 
     #[Route('/formulaireldap/etape2/{token}', name: 'formulaireldap_etape2')]
-    public function etape2(string $token, MonApplication $monApplication, Request $request, SessionInterface $session, HttpClientInterface $httpClient, EntityManagerInterface $entityManager): Response
+    public function etape2(string $token, MonApplication $monApplication, Request $request, HttpClientInterface $httpClient, EntityManagerInterface $entityManager): Response
     {
-        $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $token]);
+         /**
+     * Récupère les données temporaires associées à l'utilisateur via le UUID.
+     * Si elles n'existent pas, une exception est levée.
+     */
+    $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $token]);
         if (!$temporaryData) {
             throw $this->createNotFoundException('Données temporaires introuvables.');
         }
         $temp = 
 
         $user = $this->security->getUser();
-        if ($temporaryData->getUser()->getUid() !== $user->getUid()) {
+          /**
+     * Récupère l'utilisateur actuellement connecté.
+     * Vérifie que les données temporaires appartiennent bien à cet utilisateur.
+     */ if ($temporaryData->getUser()->getUid() !== $user->getUid()) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
         }
+         
         $userInformation = new UserInformation();
         $infos_user = $userInformation->getUserInformation($user);
         $uid = $infos_user['uid'];
@@ -105,45 +194,44 @@ class FormulaireLdapController extends AbstractController
             'provenance' => 'ldap'
         ]);
 
-        $data = array_merge($tmp, [
-                    'nom' => $infos_user['sn'],
-                    'prenom' => $infos_user['givenname'],
-                     'email' => $infos_user['mail'],
-                     'date_de_naissance' => $date,
-                     'fonction' => !empty($tmp['fonction']) ? $tmp['fonction'] : ($user1->getFonction() ?? ''),
-                     'statut' => !empty($tmp['statut']) ? $tmp['statut'] : ($user1->getStatutPersonne() ?? ''),
-                     'date_debut_contrat' => isset($tmp['date_debut_contrat']) && is_string($tmp['date_debut_contrat'])
-                     ? new \DateTime($tmp['date_debut_contrat'])
-                     : ($user1->getDateDebut() ?? null),
-                 'date_fin_contrat' => isset($tmp['date_fin_contrat']) && is_string($tmp['date_fin_contrat'])
-                     ? new \DateTime($tmp['date_fin_contrat'])
-                     : ($user1->getDateFin() ?? null),
-             ]);
-        // if (!$user1) {
+      // Fusion des données temporaires avec les informations utilisateur récupérées
+$data = array_merge($tmp, [
+    // Nom de l'utilisateur : récupéré depuis les informations LDAP de l'utilisateur connecté.
+    'nom' => $infos_user['sn'],
+    
+    // Prénom de l'utilisateur : récupéré depuis les informations LDAP de l'utilisateur connecté.
+    'prenom' => $infos_user['givenname'],
+    
+    // Email de l'utilisateur : récupéré depuis les informations LDAP de l'utilisateur connecté.
+    'email' => $infos_user['mail'],
+    
+    // Date de naissance : formatée et convertie en objet DateTimeImmutable depuis les données LDAP.
+    'date_de_naissance' => $date,
+    
+    // Fonction : vérifie si une fonction existe déjà dans les données temporaires 
+    // Si aucune fonction n'existe dans les données temporaires, récupère la fonction depuis l'utilisateur en base.
+    // Si aucune fonction n'est trouvée en base non plus, la valeur par défaut est une chaîne vide.
+    'fonction' => !empty($tmp['fonction']) ? $tmp['fonction'] : ($user1->getFonction() ?? ''),
+    
+    // Statut : fonctionne de manière similaire à "fonction", vérifie d'abord les données temporaires,
+    // puis cherche dans les données en base, et utilise une chaîne vide comme fallback.
+    'statut' => !empty($tmp['statut']) ? $tmp['statut'] : ($user1->getStatutPersonne() ?? ''),
+    
+    // Date de début du contrat :
+    // Si une date existe dans les données temporaires (et qu'elle est au format chaîne), elle est convertie en objet DateTime.
+    // Sinon, la date de début du contrat est récupérée depuis l'utilisateur en base (si disponible).
+    // Si aucune date n'est trouvée, la valeur par défaut est "null".
+    'date_debut_contrat' => isset($tmp['date_debut_contrat']) && is_string($tmp['date_debut_contrat'])
+        ? new \DateTime($tmp['date_debut_contrat'])
+        : ($user1->getDateDebut() ?? null),
+    
+    // Date de fin du contrat : logique similaire à la date de début.
+    'date_fin_contrat' => isset($tmp['date_fin_contrat']) && is_string($tmp['date_fin_contrat'])
+        ? new \DateTime($tmp['date_fin_contrat'])
+        : ($user1->getDateFin() ?? null),
+]);
 
-        // $data = array_merge($data, [
-        //     'nom' => $infos_user['sn'],
-        //     'prenom' => $infos_user['givenname'],
-        //      'email' => $infos_user['mail'],
-        //      'date_de_naissance' => $date,
-
-            
-        // ]); } 
-        // elseif($user1) {
-        //     $data = array_merge($data, [
-        //         'nom' => $infos_user['sn'],
-        //         'prenom' => $infos_user['givenname'],
-        //          'email' => $infos_user['mail'],
-        //          'date_de_naissance' => $date,
-        //          'fonction' => $user1->getFonction(),
-        //          'statut' => $user1->getStatutPersonne(),
-        //          'date_debut_contrat' => $user1->getDateDebut(),
-        //          'date_fin_contrat' => $user1->getDateFin(),
-        //         ]);
-                 
-
-
-        // }
+        
         
     
 
@@ -176,14 +264,23 @@ class FormulaireLdapController extends AbstractController
             // Identifier le service sélectionné
             $selectedServiceId = $form->get('selectedService')->getData();
     
-            foreach ($services as $service) {
-                if ($service['id_service'] == $selectedServiceId) {
-                    $updatedData['nom_service_selectionne'] = $service['service'];
-                    $updatedData['dossiers_partages'] = $service['dossiers_partages'] ?? [];
-                    break;
-                }
-            }
-    
+          // Parcourt la liste des services pour trouver celui sélectionné par l'utilisateur
+                        foreach ($services as $service) {
+                            // Vérifie si l'ID du service actuel correspond à l'ID du service sélectionné dans le formulaire
+                            if ($service['id_service'] == $selectedServiceId) {
+                                
+                                // Enregistre le nom du service sélectionné dans les données mises à jour
+                                $updatedData['nom_service_selectionne'] = $service['service'];
+                                
+                                // Enregistre les dossiers partagés associés au service sélectionné, s'ils existent
+                                // Si le champ 'dossiers_partages' n'existe pas dans les données du service, une liste vide est utilisée par défaut
+                                $updatedData['dossiers_partages'] = $service['dossiers_partages'] ?? [];
+                                
+                                // Arrête la boucle une fois que le service correspondant est trouvé pour éviter des itérations inutiles
+                                break;
+                            }
+}
+
         $apiUrlSecond = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/valideur/' . $selectedServiceId;
         $responseSecond = $httpClient->request('GET', $apiUrlSecond, [
             'headers' => [
@@ -219,10 +316,56 @@ class FormulaireLdapController extends AbstractController
     }
 
 
+    /**
+ * @brief Étape 3 : Finalisation de la demande et soumission.
+ *
+ * @route /formulaireldap/etape3/{token}
+ *
+ * @param string $token Token unique associé à la demande temporaire.
+ * @param MonApplication $monApplication Instance de la classe personnalisée pour gérer des fonctionnalités spécifiques à l'application.
+ * @param Request $request Objet représentant la requête HTTP.
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine pour interagir avec la base de données.
+ * @param MailerInterface $mailer Service d'envoi d'e-mails pour envoyer des notifications.
+ *
+ * @return Response Retourne une vue contenant le formulaire de l'étape 3 ou une redirection après soumission.
+ *
+ * @details
+ * - **Validation et récupération des données** :
+ *   - Les données de l'étape précédente sont récupérées et validées.
+ *   - En fonction du service sélectionné à l'étape 2 on lui affiche la liste des ressources qu'il peut sélectionner
+ * - **Traitement de l'action** :
+ *   - **Création** : Si l'action est "create", une nouvelle demande est créée avec les informations fournies.
+ *   - **Modification** : Si l'action est "modifier", une demande existante est mise à jour.
+ *   - **Fallback** : Si aucune action n'est définie, une nouvelle demande est créée par défaut.
+ * - **Ajout des ressources** :
+ *   - Les dossiers partagés ou autres ressources liées au service sélectionné sont associés à la demande.
+ *   - Si aucun dossier n'est sélectionné, un message par défaut est enregistré.
+ * - **Mise à jour des informations utilisateur** :
+ *   - Les données utilisateur (statut, fonction, dates de contrat) sont mises à jour.
+ *   - Si l'utilisateur est un remplaçant, des informations spécifiques sont également sauvegardées.
+ * - **Sauvegarde finale** :
+ *   - Les entités `Demandes`, `HistoriqueDemande`, `User`, et `Ressources` sont persistées en base de données.
+ * - **Nettoyage et redirection** :
+ *   - Les données temporaires associées au token sont supprimées après validation.
+ *   - Une redirection est effectuée vers une page listant les demandes de l'utilisateur.
+ *
+ * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException Si les données temporaires sont introuvables.
+ * @throws \Symfony\Component\Security\Core\Exception\AccessDeniedException Si l'utilisateur connecté ne correspond pas à l'utilisateur associé à la demande.
+ *
+
+ * ```
+ */
+
+
+
     #[Route('/formulaireldap/etape3/{token}', name: 'formulaireldap_etape3')]
-    public function etape3(string $token,MonApplication $monApplication, Request $request, SessionInterface $session, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
+    public function etape3(string $token,MonApplication $monApplication, Request $request,  EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
-        $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $token]);
+         /**
+     * Récupère les données temporaires associées à l'utilisateur via le UUID.
+     * Si elles n'existent pas, une exception est levée.
+     */
+    $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $token]);
 
     if (!$temporaryData) {
         throw $this->createNotFoundException('Données temporaires introuvables.');
@@ -232,9 +375,13 @@ class FormulaireLdapController extends AbstractController
 
         $user = $this->security->getUser();
 
-        if ($temporaryData->getUser()->getUid() !== $user->getUid()) {
+          /**
+     * Récupère l'utilisateur actuellement connecté.
+     * Vérifie que les données temporaires appartiennent bien à cet utilisateur.
+     */ if ($temporaryData->getUser()->getUid() !== $user->getUid()) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
         }
+            
         $userInformation = new UserInformation();
         $infos_user = $userInformation->getUserInformation($user);
         $nom_utilisateur = $infos_user['sn'];
@@ -475,37 +622,67 @@ class FormulaireLdapController extends AbstractController
 
 
 
-    private function buildTree(array &$services, $parentId = 0) {
-        $branch = [];
-        foreach ($services as &$service) {
-            if ($service['pere'] == $parentId) {
-                $children = $this->buildTree($services, $service['id_service']);
-                if ($children) {
-                    $service['children'] = $children;
-                }
-                $branch[] = $service;
-                unset($service);
+ /**
+ * Construit une structure hiérarchique d'arbre à partir d'une liste plate de services.
+ *
+ * @param array $services Liste des services contenant des informations telles que l'ID et le parent.
+ * @param int $parentId ID du parent pour lequel construire les branches (par défaut, racine = 0).
+ * @return array Arbre hiérarchique des services.
+ */
+private function buildTree(array &$services, $parentId = 0) {
+    $branch = []; // Contiendra les branches de l'arbre pour le parent donné.
+
+    foreach ($services as &$service) {
+        // Vérifie si le service actuel est un enfant du parentId
+        if ($service['pere'] == $parentId) {
+            // Appelle récursivement buildTree pour trouver les enfants de ce service
+            $children = $this->buildTree($services, $service['id_service']);
+
+            // Si des enfants sont trouvés, ajoute-les au service actuel
+            if ($children) {
+                $service['children'] = $children;
             }
+
+            // Ajoute le service actuel  à la branche courante
+            $branch[] = $service;
+
+            // Supprime ce service de la liste des services pour éviter des doublons ou des itérations inutiles
+            unset($service);
         }
-        return $branch;
     }
+
+    return $branch; // Retourne l'ensemble des branches pour ce parent.
+}
+
     
-    private function transformServicesForDropdown(array $services, $niveau = 0): array
-    {
-        if ($niveau == 0) {
-            $servicesDropdownData = ['...' => ''];
-        } else {
-            $servicesDropdownData = [];
+  /**
+ * Transforme une structure d'arbre de services en un format adapté à un menu déroulant.
+ *
+ * @param array $services Arbre hiérarchique des services.
+ * @param int $niveau Niveau actuel de profondeur dans l'arbre (utilisé pour l'indentation).
+ * @return array Liste des services formatée pour un menu déroulant, avec indentation.
+ */
+private function transformServicesForDropdown(array $services, $niveau = 0): array
+{
+    // Initialise le tableau pour le menu déroulant
+    $servicesDropdownData = ($niveau == 0) ? ['...' => ''] : [];
+
+    foreach ($services as $service) {
+        // Ajoute un indent visuel basé sur le niveau de profondeur
+        $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $niveau);
+        
+        // Ajoute le service au menu déroulant avec son ID en valeur
+        $servicesDropdownData[html_entity_decode($indent) . $service['service']] = $service['id_service'];
+
+        // Si le service a des enfants, les traiter récursivement
+        if (isset($service['children'])) {
+            $servicesDropdownData += $this->transformServicesForDropdown($service['children'], $niveau + 1);
         }
-        foreach ($services as $service) {
-            $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $niveau);
-            $servicesDropdownData[html_entity_decode($indent) . $service['service']] = $service['id_service'];
-            if (isset($service['children'])) {
-                $servicesDropdownData += $this->transformServicesForDropdown($service['children'], $niveau + 1);
-            }
-        }
-        return $servicesDropdownData;
     }
+
+    return $servicesDropdownData; // Retourne le tableau formaté pour le menu déroulant.
+}
+
 
     
 }

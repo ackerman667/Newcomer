@@ -9,11 +9,18 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
 #[AsMessageHandler]
+ /**
+     * Exécute le processus de nettoyage de la table PasswordResetToken.
+     *
+     * @param CleanerPasswordMessage $message Le message reçu pour déclencher l'opération de nettoyage.
+     *
+     * @throws ProcessFailedException Si le processus échoue.
+     */
 final class CleanerPasswordMessageHandler
 {
     public function __invoke(CleanerPasswordMessage $message)
     {
-        // Exécution d'une commande spécifique pour CleanerPassword
+        // Crée un processus pour exécuter la commande de nettoyage.
         $process = new Process(['php', 'bin/console', 'cleanerpassword']);
         $process->run();
 

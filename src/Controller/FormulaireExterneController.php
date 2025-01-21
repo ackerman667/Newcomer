@@ -34,41 +34,48 @@ class FormulaireExterneController extends AbstractController
     }
 
 
-
+/**
+     * Étape 1 du formulaire externe.
+     *
+     * @param MonApplication $monApplication Instance de l'application.
+     * @param Request $request Requête HTTP en cours.
+     * @param EntityManagerInterface $entityManager Gestionnaire d'entités.
+     * @param string $uuid Identifiant unique de la demande temporaire.
+     * @return Response La réponse HTTP contenant le formulaire pour l'étape 1.
+     *
+     * @Route("/formulaireext/etape1/{uuid}", name="formulaireexterne_etape1")
+     */
     #[Route('/formulaireext/etape1/{uuid}', name: 'formulaireexterne_etape1')]
     public function etape1(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager,  $uuid): Response
     {
-       
+       // Récupération des données temporaires
         $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $uuid]);
         if (!$temporaryData) {
             throw $this->createNotFoundException('Données temporaires introuvables.');
             
         }
         $user = $this->getUser();
+           /**
+     * Récupère l'utilisateur actuellement connecté.
+     * Vérifie que les données temporaires appartiennent bien à cet utilisateur.
+     */
         if ($temporaryData->getUser() !== $this->getUser()) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
         }
         
-
-
-        // Récupérer l'utilisateur à partir du token
-        // try {
-        //     $info = $this->getVerif($entityManager, $token, $uuid);
-        // } catch (\Exception $e) {
-        //     return $this->redirectToRoute('session_expired');
-        // }
         
-    
+    // Initialisation des données pour le formulaire
         $data = $temporaryData->getData();
 
 
       
 
-     
+        // Création du formulaire
         $form = $this->createForm(DemandeEtape1FormType::class, $data);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Mise à jour des données temporaires
             $data = $form->getData();
         
             $temporaryData->setData($form->getData());
@@ -93,29 +100,38 @@ class FormulaireExterneController extends AbstractController
 
 
 
-
+/**
+     * Étape 2 du formulaire externe.
+     *
+     * @param MonApplication $monApplication Instance de l'application.
+     * @param Request $request Requête HTTP en cours.
+     * @param HttpClientInterface $httpClient Client HTTP pour les appels API.
+     * @param EntityManagerInterface $entityManager Gestionnaire d'entités.
+     * @param string $uuid Identifiant unique de la demande temporaire.
+     * @return Response La réponse HTTP contenant le formulaire pour l'étape 2.
+     *
+     * @Route("/formulaireext/etape2/{uuid}", name="formulaireexterne_etape2")
+     */
     #[Route('/formulaireext/etape2/{uuid}', name: 'formulaireexterne_etape2')]
     public function etape2( MonApplication $monApplication,Request $request, HttpClientInterface $httpClient, EntityManagerInterface $entityManager, $uuid
     ): Response {
        
 
-        // Récupérer les informations via getVerif
+         // Récupération des données temporaires
         $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $uuid]);
         if (!$temporaryData) {
             throw $this->createNotFoundException('Données temporaires introuvables.');
             
         }
         $user = $this->getUser();
+          /**
+     * Récupère l'utilisateur actuellement connecté.
+     * Vérifie que les données temporaires appartiennent bien à cet utilisateur.
+     */
         if ($temporaryData->getUser() !== $this->getUser()) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
         }
-        // if ($temporaryData->getUser() !== $this->getUser()) {
-        //     throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
-        // }
-        // if ($temporaryData->getUser()->getUid() !== $user->getUid()) {
-        //     throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
-        // }
-
+       
 
 
         $tmp = $temporaryData->getData();
@@ -124,66 +140,76 @@ class FormulaireExterneController extends AbstractController
 
       
         // $date = \DateTimeImmutable::createFromFormat('d/m/Y', $date_naissance);
-        $data = array_merge($tmp, [
-            'nom' => !empty($tmp['nom']) ? $tmp['nom'] : ($user->getNom() ?? ''),
+              // Récupère les données temporaires associées à l'utilisateur.
+              $tmp = $temporaryData->getData();
 
-            'prenom' => !empty($tmp['prenom']) ? $tmp['prenom'] : ($user->getPrenom() ?? ''),
-
-             'email' => $user->getEmail(),
-
-             'date_de_naissance' => isset($tmp['date_de_naissance']) && is_string($tmp['date_de_naissance'])
-             ? new \DateTime($tmp['date_de_naissance'])
-             : ($user->getDateDeNaissance() ?? null),
-
-             'fonction' => !empty($tmp['fonction']) ? $tmp['fonction'] : ($user->getFonction() ?? ''),
-
-             'statut' => !empty($tmp['statut']) ? $tmp['statut'] : ($user->getStatutPersonne() ?? ''),
-
-             'date_debut_contrat' => isset($tmp['date_debut_contrat']) && is_string($tmp['date_debut_contrat'])
-             ? new \DateTime($tmp['date_debut_contrat'])
-             : ($user->getDateDebut() ?? null),
-
-         'date_fin_contrat' => isset($tmp['date_fin_contrat']) && is_string($tmp['date_fin_contrat'])
-             ? new \DateTime($tmp['date_fin_contrat'])
-             : ($user->getDateFin() ?? null),
-     ]);
-
-// if (!empty($data['date_de_naissance'])) {
-//     if (is_array($data['date_de_naissance']) && isset($data['date_de_naissance']['date'])) {
-//         $data['date_de_naissance'] = new \DateTime($data['date_de_naissance']['date']);
-//     } elseif (is_string($data['date_de_naissance'])) {
-//         $data['date_de_naissance'] = new \DateTime($data['date_de_naissance']);
-//     }
-// }
-
-// if (!empty($data['date_debut_contrat'])) {
-//     if (is_array($data['date_debut_contrat']) && isset($data['date_debut_contrat']['date'])) {
-//         $data['date_debut_contrat'] = new \DateTime($data['date_debut_contrat']['date']);
-//     } elseif (is_string($data['date_debut_contrat'])) {
-//         $data['date_debut_contrat'] = new \DateTime($data['date_debut_contrat']);
-//     }
-// }
-
-// if (!empty($data['date_fin_contrat'])) {
-//     if (is_array($data['date_fin_contrat']) && isset($data['date_fin_contrat']['date'])) {
-//         $data['date_fin_contrat'] = new \DateTime($data['date_fin_contrat']['date']);
-//     } elseif (is_string($data['date_fin_contrat'])) {
-//         $data['date_fin_contrat'] = new \DateTime($data['date_fin_contrat']);
-//     }
-// }
-
-// Compléter les données utilisateur si elles manquent
-// $data['nom'] = $data['nom'] ?? $user->getNom();
-// $data['prenom'] = $data['prenom'] ?? $user->getPrenom();
-// $data['email'] = $data['email'] ?? $user->getEmail();
-// $data['date_de_naissance'] = $data['date_de_naissance'] ?? $user->getDateDeNaissance();
-// $data['fonction'] = $data['fonction'] ?? $user->getFonction();
-// $data['statut'] = $data['statut'] ?? $user->getStatutPersonne();
-
-// if ($user->getStatutPersonne() !== 'Titulaire') {
-//     $data['date_debut_contrat'] = $data['date_debut_contrat'] ?? $user->getDateDebut();
-//     $data['date_fin_contrat'] = $data['date_fin_contrat'] ?? $user->getDateFin();
-// }
+              // Récupère l'utilisateur actuellement connecté.
+              $user = $this->getUser();
+      
+              // Fusionne les données temporaires avec celles de l'utilisateur connecté.
+              $data = array_merge($tmp, [
+                  /**
+                   * Récupère le nom de l'utilisateur.
+                   * Si le champ 'nom' existe dans les données temporaires, il est utilisé.
+                   * Sinon, le nom de l'utilisateur connecté est utilisé comme valeur par défaut.
+                   */
+                  'nom' => $tmp['nom'] ?? $user->getNom(),
+      
+                  /**
+                   * Récupère le prénom de l'utilisateur.
+                   * Si le champ 'prenom' existe dans les données temporaires, il est utilisé.
+                   * Sinon, le prénom de l'utilisateur connecté est utilisé comme valeur par défaut.
+                   */
+                  'prenom' => $tmp['prenom'] ?? $user->getPrenom(),
+      
+                  /**
+                   * Utilise toujours l'email de l'utilisateur connecté,
+                   * car il ne doit pas être modifié.
+                   */
+                  'email' => $user->getEmail(),
+      
+                  /**
+                   * Récupère la date de naissance.
+                   * Si 'date_de_naissance' existe dans les données temporaires, elle est convertie en objet \DateTime.
+                   * Sinon, utilise la date de naissance de l'utilisateur connecté.
+                   */
+                  'date_de_naissance' => isset($tmp['date_de_naissance'])
+                      ? new \DateTime($tmp['date_de_naissance'])
+                      : $user->getDateDeNaissance(),
+      
+                  /**
+                   * Récupère la fonction de l'utilisateur.
+                   * Si le champ 'fonction' existe dans les données temporaires, il est utilisé.
+                   * Sinon, la fonction de l'utilisateur connecté est utilisée.
+                   */
+                  'fonction' => $tmp['fonction'] ?? $user->getFonction(),
+      
+                  /**
+                   * Récupère le statut de l'utilisateur (e.g., Titulaire, Contractuel).
+                   * Si 'statut' existe dans les données temporaires, il est utilisé.
+                   * Sinon, le statut de l'utilisateur connecté est utilisé.
+                   */
+                  'statut' => $tmp['statut'] ?? $user->getStatutPersonne(),
+      
+                  /**
+                   * Récupère la date de début de contrat.
+                   * Si 'date_debut_contrat' existe dans les données temporaires, elle est convertie en objet \DateTime.
+                   * Sinon, utilise la date de début du contrat de l'utilisateur connecté.
+                   */
+                  'date_debut_contrat' => isset($tmp['date_debut_contrat'])
+                      ? new \DateTime($tmp['date_debut_contrat'])
+                      : $user->getDateDebut(),
+      
+                  /**
+                   * Récupère la date de fin de contrat.
+                   * Si 'date_fin_contrat' existe dans les données temporaires, elle est convertie en objet \DateTime.
+                   * Sinon, utilise la date de fin du contrat de l'utilisateur connecté.
+                   */
+                  'date_fin_contrat' => isset($tmp['date_fin_contrat'])
+                      ? new \DateTime($tmp['date_fin_contrat'])
+                      : $user->getDateFin(),
+              ]);
+      
 
         
     
@@ -218,13 +244,22 @@ class FormulaireExterneController extends AbstractController
     
             // Identifier le service sélectionné
             $selectedServiceId = $form->get('selectedService')->getData();
+            // Parcourt la liste des services pour trouver celui sélectionné par l'utilisateur
             foreach ($services as $service) {
+                // Vérifie si l'ID du service actuel correspond à l'ID du service sélectionné dans le formulaire
                 if ($service['id_service'] == $selectedServiceId) {
+                    
+                    // Enregistre le nom du service sélectionné dans les données mises à jour
                     $updatedData['nom_service_selectionne'] = $service['service'];
+                    
+                    // Enregistre les dossiers partagés associés au service sélectionné, s'ils existent
+                    // Si le champ 'dossiers_partages' n'existe pas dans les données du service, une liste vide est utilisée par défaut
                     $updatedData['dossiers_partages'] = $service['dossiers_partages'] ?? [];
+                    
+                    // Arrête la boucle une fois que le service correspondant est trouvé pour éviter des itérations inutiles
                     break;
                 }
-            }
+                                            }
     
             //  API valideur
             $apiUrlSecond = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/valideur/' . $selectedServiceId;
@@ -265,7 +300,20 @@ class FormulaireExterneController extends AbstractController
 
 
 
-
+/**
+ * @Route("/formulaireext/etape3/{uuid}", name="formulaireexterne_etape3")
+ *
+ * Contrôle la troisième étape du formulaire, où l'utilisateur sélectionne des ressources partagées
+ * et finalise sa demande. Les données temporaires sont utilisées pour pré-remplir le formulaire.
+ *
+ * @param MonApplication $monApplication Classe personnalisée pour gérer les paramètres globaux.
+ * @param Request $request Requête HTTP contenant les données du formulaire.
+ * @param EntityManagerInterface $entityManager Gestionnaire d'entités Doctrine pour la persistance des données.
+ * @param MailerInterface $mailer Service d'envoi d'e-mails pour les notifications.
+ * @param string $uuid Identifiant unique des données temporaires associées à l'utilisateur.
+ *
+ * @return Response Rendu de la vue de l'étape 3.
+ */
     #[Route('/formulaireext/etape3/{uuid}', name: 'formulaireexterne_etape3')]
 public function etape3(
     MonApplication $monApplication,
@@ -275,21 +323,32 @@ public function etape3(
     $uuid
 ): Response {
    
-    
+      /**
+     * Récupère les données temporaires associées à l'utilisateur via le UUID.
+     * Si elles n'existent pas, une exception est levée.
+     */
     $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $uuid]);
         if (!$temporaryData) {
             throw $this->createNotFoundException('Données temporaires introuvables.');
             
         }
+
+           /**
+     * Récupère l'utilisateur actuellement connecté.
+     * Vérifie que les données temporaires appartiennent bien à cet utilisateur.
+     */
         $user = $this->getUser();
         if ($temporaryData->getUser() !== $this->getUser()) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
         }
-        // if ($temporaryData->getUser() !== $this->getUser()) {
-        //     throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
-        // }
+      
 
         $data = $temporaryData->getData();
+
+          /**
+     * Récupère les ressources partagés et les informations du service.
+     * Ces données sont utilisées pour configurer le formulaire.
+     */
 
         $dossiersPartages = $data['dossiers_partages'] ?? []; 
         $dossiersSelectionnes = []; 
