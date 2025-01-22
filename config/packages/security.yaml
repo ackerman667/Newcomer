@@ -28,6 +28,9 @@ security:
             provider: provider_userldap
             logout:
                 path: app_logout
+            # switch_user:
+            #     parameter: _switch_user
+            #     role: ROLE_USER
            
               
 
@@ -38,7 +41,10 @@ security:
             logout:
                 path: app_logout 
             custom_authenticator: App\Security\AppCustomAuthenticator
-        
+            # switch_user:
+            #     parameter: _switch_user
+            #     role: ROLE_DB_USER
+            
        
         
           

@@ -5,6 +5,7 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Entity\Demandes;
 use App\Service\UserRoleChecker;
+use App\Service\SuperUserChecker;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Classe\MonApplication;
@@ -30,12 +31,15 @@ class ActionsValideurController extends AbstractController
     private $security;
     private $roleChecker;
     private $timezone;
+    private $superUserChecker;
 
-    public function __construct(Security $security, UserRoleChecker $roleChecker)
+    public function __construct(Security $security, UserRoleChecker $roleChecker, SuperUserChecker $superUserChecker)
     {
         $this->security = $security;
         $this->roleChecker = $roleChecker;
         $this->timezone = new \DateTimeZone('America/Guadeloupe');
+        $this->superUserChecker = $superUserChecker;
+        $this->isSuperUser = $this->superUserChecker->isSuperUser();
         $this->isValideur = $this->roleChecker->isUserValideur();
     }
 
@@ -181,7 +185,11 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
         // $mailer->send($leka);
 
     
-        return $this->redirectToRoute('demandes_a_valider');
+        if ($this->superUserChecker->isSuperUser()) {
+                return $this->redirectToRoute('admin_demandes'); 
+            } else {
+                return $this->redirectToRoute('demandes_a_valider'); 
+            }
     }
 
 
@@ -317,7 +325,11 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     
         // $mailer->send($emailMessage);
     
-        return $this->redirectToRoute('demandes_a_valider');
+        if ($this->superUserChecker->isSuperUser()) {
+                return $this->redirectToRoute('admin_demandes'); 
+            } else {
+                return $this->redirectToRoute('demandes_a_valider'); 
+            }
     }
     
 
@@ -380,7 +392,11 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     
         // $mailer->send($emailMessage);
     
-        return $this->redirectToRoute('demandes_a_valider');
+        if ($this->superUserChecker->isSuperUser()) {
+                return $this->redirectToRoute('admin_demandes'); 
+            } else {
+                return $this->redirectToRoute('demandes_a_valider'); 
+            }
     }
     
     
@@ -586,6 +602,11 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
 
     private function denyAccessUnlessValideur()
     {
+        $isSuperUser  =  $this->superUserChecker->isSuperUser();
+        if ($isSuperUser) {
+            // Si l'utilisateur est un super utilisateur, on bypass la vérification.
+            return;
+        }
         if (!$this->isValideur) {
             throw $this->createAccessDeniedException('Vous devez être un valideur pour accéder à cette section.');
         }
@@ -636,7 +657,7 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
 
         // Si l'utilisateur n'existe pas, le créer
         if (!$user) {
-            $tion = new UserInformation();
+            $userInformation = new UserInformation();
             $infos_user = $userInformation->getUserInformation($currentUser);
 
             $nom_utilisateur = $infos_user['sn'];
@@ -677,6 +698,11 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
 
     private function checkUserPermissionForDemande(int $demandeId, EntityManagerInterface $entityManager): void
     {
+        $isSuperUser  =  $this->superUserChecker->isSuperUser();
+        if ($isSuperUser) {
+            // Si l'utilisateur est un super utilisateur, on bypass la vérification.
+            return;
+        }
         // Récupérer la demande
         $demande = $entityManager->getRepository(Demandes::class)->find($demandeId);
     

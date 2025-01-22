@@ -114,7 +114,7 @@ class FormulaireLdapController extends AbstractController
 
             return $this->redirectToRoute('formulaireldap_etape2', ['token' => $token]);
         }
-        $sessionData = $session->all();
+        
 
         
         // dump($sessionData);

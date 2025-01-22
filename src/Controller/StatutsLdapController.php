@@ -14,6 +14,8 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Entity\Demandes;
 use App\Service\UserRoleChecker;
+use App\Service\SuperUserChecker;
+
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Classe\MonApplication;
@@ -46,13 +48,17 @@ class StatutsLdapController extends AbstractController
     private $security;
     private $roleChecker;
     private $timezone;
+    private $superUserChecker;
 
-    public function __construct(Security $security, UserRoleChecker $roleChecker)
+    public function __construct(Security $security, UserRoleChecker $roleChecker, SuperUserChecker $superUserChecker)
     {
         $this->security = $security;
         $this->roleChecker = $roleChecker;
         $this->timezone = new \DateTimeZone('America/Guadeloupe');
+        $this->superUserChecker = $superUserChecker;
+
         $this->isValideur = $this->roleChecker->isUserValideur();
+        $this->isSuperUser = $this->superUserChecker->isSuperUser();
     }
 
    
@@ -77,6 +83,7 @@ public function mesDemandes(
 ): Response {
     $user = $this->security->getUser(); //Récupérer l'utilisateur connecté 
     $uid = $user->getUid(); // Récupération de l'UID utilisateur.
+    $isSuperUser  = $this->superUserChecker->isSuperUser();
     $isValideur = $this->roleChecker->isUserValideur();   // Vérification du rôle de valideur.
 
     
@@ -88,6 +95,7 @@ public function mesDemandes(
         'uiduser' => $uid,
         'page' => 'mesdemandes',
         'isValideur' => $isValideur,
+        'isSuperUser' => $isSuperUser,
 
     ]);
 }
@@ -111,9 +119,11 @@ public function demandesAValider(
 ): Response {
     $user = $this->security->getUser();
     $uid = $user->getUid();
+    $isSuperUser  = $this->superUserChecker->isSuperUser();
 
     // Vérifier si l'utilisateur est un valideur
     $isValideur = $this->roleChecker->isUserValideur();
+
 
     if (!$isValideur) {  // Bloquer l'accès si non valideur
         throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette page.');
@@ -129,8 +139,42 @@ public function demandesAValider(
         'uiduser' => $uid,
         'page' => 'demandeavalider',
         'isValideur' => $isValideur,
+        'isSuperUser' => $isSuperUser,
     ]);
 }
+#[Route('formulaireldap/admindemandes', name: 'admin_demandes')]
+public function superuser(
+    MonApplication $monApplication,
+    EntityManagerInterface $entityManager,
+    SuperUserChecker $superUserChecker // Injection du service pour vérifier les super utilisateurs
+): Response {
+    // Récupération de l'utilisateur connecté
+    $user = $this->security->getUser();
+    $uid = $user->getUid();
+    $isValideur = $this->roleChecker->isUserValideur();
+
+    // Vérification si l'utilisateur est un super utilisateur
+    $isSuperUser  =  $this->superUserChecker->isSuperUser();
+
+    if (!$isSuperUser) {  // Bloquer l'accès si non valideur
+        throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette page.');
+    }
+
+    // Récupération de toutes les demandes pour le super utilisateur
+    $demandesAValider = $this->getDemandesSuperValideur($entityManager);
+
+
+    return $this->render('demandes/demandes_a_valider.html.twig', [
+        'monApplication' => $monApplication,
+        'uiduser' => $uid,
+        'demandesAValider' => $demandesAValider,
+        'page' => 'admindemandes',
+        'isValideur' => $isValideur,
+        'isSuperUser' => $isSuperUser,
+
+    ]);
+}
+
 
 
 /**
@@ -226,32 +270,26 @@ private function getDemandesPourUtilisateur(EntityManagerInterface $entityManage
         ->getResult();
     
     }
+
+    private function getDemandesSuperValideur(EntityManagerInterface $entityManager): array
+{
+    $statutExclus = 'Brouillons';
+
+    return $entityManager->getRepository(Demandes::class)->createQueryBuilder('d')
+        ->where('d.statuts <> :statutExclus') // Exclure les demandes avec le statut "Brouillons"
+        ->setParameter('statutExclus', $statutExclus)
+        ->orderBy("CASE 
+            WHEN d.statuts = 'En attente' THEN 1
+            ELSE 2 
+        END", 'ASC') // Prioriser les demandes "En attente"
+        ->addOrderBy('d.date', 'DESC') // Trier par date décroissante
+        ->addOrderBy('d.heureSoumission', 'DESC') // Trier par heure décroissante
+        ->getQuery()
+        ->getResult();
+}
+
     
-
-    /**
-     * Récupère les informations de l'utilisateur à partir d'une demande.
-     */
-    private function getUserDataFromDemande(Demandes $demande): array
-    {
-        if ($demande->isAutrePersonne()) {
-            $userautre = $demande->getAutreUtilisateur();
-         
-
-            return [
-                'nom' => $userautre ? $userautre->getNom() : '',
-                'prenom' => $userautre ? $userautre->getPrenom() : '',
-                'email' => $userautre? $userautre>getEmail() : '',
-            ];
-        } else {
-            // Utiliser les informations de l'utilisateur lié à la demande
-            $userEntity = $demande->getIDutilisateur();
-            return [
-                'nom' => $userEntity ? $userEntity->getNom() : '',
-                'prenom' => $userEntity ? $userEntity->getPrenom() : '',
-                'email' => $userEntity ? $userEntity->getEmail() : '',
-            ];
-        }
-    }
+    
 
 
 
@@ -719,6 +757,10 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
      */
     private function denyAccessUnlessValideur()
     {
+        if ($superUserChecker->isSuperUser()) {
+            // Si l'utilisateur est un super utilisateur, on bypass la vérification.
+            return;
+        }
         if (!$this->isValideur) {
             throw $this->createAccessDeniedException('Vous devez être un valideur pour accéder à cette section.');
         }

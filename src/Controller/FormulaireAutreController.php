@@ -89,31 +89,39 @@ class FormulaireAutreController extends AbstractController
         
 
 
+// Vérification et conversion de la date de naissance si elle est définie.
+// Si la date est au format tableau avec une clé 'date', on la convertit en un objet DateTime.
+// Si elle est sous forme de chaîne (format string), elle est également convertie en DateTime.
+if (!empty($data['date_de_naissance'])) {
+    if (is_array($data['date_de_naissance']) && isset($data['date_de_naissance']['date'])) {
+        $data['date_de_naissance'] = new \DateTime($data['date_de_naissance']['date']);
+    } elseif (is_string($data['date_de_naissance'])) {
+        $data['date_de_naissance'] = new \DateTime($data['date_de_naissance']);
+    }
+}
 
-        if (!empty($data['date_de_naissance'])) {
-            if (is_array($data['date_de_naissance']) && isset($data['date_de_naissance']['date'])) {
-                $data['date_de_naissance'] = new \DateTime($data['date_de_naissance']['date']);
-            } elseif (is_string($data['date_de_naissance'])) {
-                $data['date_de_naissance'] = new \DateTime($data['date_de_naissance']);
-            }
-        }
-        
-        if (!empty($data['date_debut_contrat'])) {
-            if (is_array($data['date_debut_contrat']) && isset($data['date_debut_contrat']['date'])) {
-                $data['date_debut_contrat'] = new \DateTime($data['date_debut_contrat']['date']);
-            } elseif (is_string($data['date_debut_contrat'])) {
-                $data['date_debut_contrat'] = new \DateTime($data['date_debut_contrat']);
-            }
-        }
-        
-        if (!empty($data['date_fin_contrat'])) {
-            if (is_array($data['date_fin_contrat']) && isset($data['date_fin_contrat']['date'])) {
-                $data['date_fin_contrat'] = new \DateTime($data['date_fin_contrat']['date']);
-            } elseif (is_string($data['date_fin_contrat'])) {
-                $data['date_fin_contrat'] = new \DateTime($data['date_fin_contrat']);
-            }
-        }
-        
+// Vérification et conversion de la date de début du contrat si elle est définie.
+// Si la date est au format tableau avec une clé 'date', elle est transformée en un objet DateTime.
+// Si elle est au format string, elle est convertie directement en DateTime.
+if (!empty($data['date_debut_contrat'])) {
+    if (is_array($data['date_debut_contrat']) && isset($data['date_debut_contrat']['date'])) {
+        $data['date_debut_contrat'] = new \DateTime($data['date_debut_contrat']['date']);
+    } elseif (is_string($data['date_debut_contrat'])) {
+        $data['date_debut_contrat'] = new \DateTime($data['date_debut_contrat']);
+    }
+}
+
+// Vérification et conversion de la date de fin du contrat si elle est définie.
+// Comme pour les autres champs de date, la conversion est effectuée en fonction du format (tableau ou chaîne).
+if (!empty($data['date_fin_contrat'])) {
+    if (is_array($data['date_fin_contrat']) && isset($data['date_fin_contrat']['date'])) {
+        $data['date_fin_contrat'] = new \DateTime($data['date_fin_contrat']['date']);
+    } elseif (is_string($data['date_fin_contrat'])) {
+        $data['date_fin_contrat'] = new \DateTime($data['date_fin_contrat']);
+    }
+}
+
+       
 
 
         $user_ldap = $this->security->getUser();
@@ -143,15 +151,24 @@ class FormulaireAutreController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $updatedData = $form->getData();
             $temporaryData->setData($updatedData);
+            // Identifier le service sélectionné
             $selectedServiceId = $form->get('selectedService')->getData();
-
+            // Parcourt la liste des services pour trouver celui sélectionné par l'utilisateur
             foreach ($services as $service) {
+                // Vérifie si l'ID du service actuel correspond à l'ID du service sélectionné dans le formulaire
                 if ($service['id_service'] == $selectedServiceId) {
+                    
+                    // Enregistre le nom du service sélectionné dans les données mises à jour
                     $updatedData['nom_service_selectionne'] = $service['service'];
+                    
+                    // Enregistre les dossiers partagés associés au service sélectionné, s'ils existent
+                    // Si le champ 'dossiers_partages' n'existe pas dans les données du service, une liste vide est utilisée par défaut
                     $updatedData['dossiers_partages'] = $service['dossiers_partages'] ?? [];
+                    
+                    // Arrête la boucle une fois que le service correspondant est trouvé pour éviter des itérations inutiles
                     break;
                 }
-            }
+                                            }
 
             $apiUrlSecond = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/valideur/' . $selectedServiceId;
             $responseSecond = $httpClient->request('GET', $apiUrlSecond, [

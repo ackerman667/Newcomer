@@ -173,9 +173,13 @@ class FormulaireExterneController extends AbstractController
                    * Si 'date_de_naissance' existe dans les données temporaires, elle est convertie en objet \DateTime.
                    * Sinon, utilise la date de naissance de l'utilisateur connecté.
                    */
-                  'date_de_naissance' => isset($tmp['date_de_naissance'])
-                      ? new \DateTime($tmp['date_de_naissance'])
-                      : $user->getDateDeNaissance(),
+                  'date_de_naissance' => isset($tmp['date_de_naissance']) 
+    ? (is_array($tmp['date_de_naissance']) && isset($tmp['date_de_naissance']['date'])
+        ? new \DateTime($tmp['date_de_naissance']['date']) // Si c'est un tableau avec une clé 'date'
+        : new \DateTime($tmp['date_de_naissance']) // Si c'est une chaîne
+    )
+    : $user->getDateDeNaissance(),
+
       
                   /**
                    * Récupère la fonction de l'utilisateur.
@@ -196,18 +200,20 @@ class FormulaireExterneController extends AbstractController
                    * Si 'date_debut_contrat' existe dans les données temporaires, elle est convertie en objet \DateTime.
                    * Sinon, utilise la date de début du contrat de l'utilisateur connecté.
                    */
-                  'date_debut_contrat' => isset($tmp['date_debut_contrat'])
-                      ? new \DateTime($tmp['date_debut_contrat'])
-                      : $user->getDateDebut(),
-      
-                  /**
-                   * Récupère la date de fin de contrat.
-                   * Si 'date_fin_contrat' existe dans les données temporaires, elle est convertie en objet \DateTime.
-                   * Sinon, utilise la date de fin du contrat de l'utilisateur connecté.
-                   */
-                  'date_fin_contrat' => isset($tmp['date_fin_contrat'])
-                      ? new \DateTime($tmp['date_fin_contrat'])
-                      : $user->getDateFin(),
+                  'date_debut_contrat' => isset($tmp['date_debut_contrat']) 
+    ? (is_array($tmp['date_debut_contrat']) && isset($tmp['date_debut_contrat']['date'])
+        ? new \DateTime($tmp['date_debut_contrat']['date']) // Si c'est un tableau avec une clé 'date'
+        : new \DateTime($tmp['date_debut_contrat']) // Si c'est une chaîne
+    )
+    : $user->getDateDebut(),
+
+'date_fin_contrat' => isset($tmp['date_fin_contrat']) 
+    ? (is_array($tmp['date_fin_contrat']) && isset($tmp['date_fin_contrat']['date'])
+        ? new \DateTime($tmp['date_fin_contrat']['date']) // Si c'est un tableau avec une clé 'date'
+        : new \DateTime($tmp['date_fin_contrat']) // Si c'est une chaîne
+    )
+    : $user->getDateFin(),
+
               ]);
       
 

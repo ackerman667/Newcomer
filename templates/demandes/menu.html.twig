@@ -1,4 +1,5 @@
 <ul class="nav nav-tabs menu_sec">
+  <!-- Lien "Mes Demandes" -->
   <li class="nav-item">
     {% if page == "mesdemandes" %}
       <a class="nav-link active" href="{{ path('mes_demandes') }}">Mes Demandes<span class="sr-only">(current)</span></a>
@@ -6,12 +7,25 @@
       <a class="nav-link" href="{{ path('mes_demandes') }}">Mes Demandes</a>
     {% endif %}
   </li>
+
+  <!-- Lien "Demandes à Valider" si l'utilisateur est Valideur -->
   {% if isValideur %}
     <li class="nav-item">
       {% if page == "demandeavalider" %}
         <a class="nav-link active" href="{{ path('demandes_a_valider') }}">Demandes à Valider<span class="sr-only">(current)</span></a>
       {% else %}
         <a class="nav-link" href="{{ path('demandes_a_valider') }}">Demandes à Valider</a>
+      {% endif %}
+    </li>
+  {% endif %}
+
+  <!-- Lien "Admin Demandes" si l'utilisateur est SuperUser -->
+  {% if isSuperUser %}
+    <li class="nav-item">
+      {% if page == "admindemandes" %}
+        <a class="nav-link active" href="{{ path('admin_demandes') }}">Admin Demandes<span class="sr-only">(current)</span></a>
+      {% else %}
+        <a class="nav-link" href="{{ path('admin_demandes') }}">Admin Demandes</a>
       {% endif %}
     </li>
   {% endif %}

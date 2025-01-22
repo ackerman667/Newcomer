@@ -9,7 +9,3 @@ final class CleanerPasswordMessage
 {
 }
 
-final class CleanerPasswordMessage
-{
-   
-}

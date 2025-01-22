@@ -7,6 +7,7 @@ use App\Entity\TemporaryData;
 use App\Service\UserRoleChecker;
 use App\Entity\Demandes;
 use App\Entity\Ressources;
+use App\Service\SuperUserChecker;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,12 +33,15 @@ class ModificationValideurController extends AbstractController
     private $timezone;
     private $security;
     private $roleChecker;
-    public function __construct(Security $security, UserRoleChecker $roleChecker)
+    private $superUserChecker;
+    public function __construct(Security $security, UserRoleChecker $roleChecker, SuperUserChecker $superUserChecker)
     {
         $this->timezone = new \DateTimeZone('America/Guadeloupe'); 
         $this->security = $security;
         $this->roleChecker = $roleChecker;
         $this->isValideur = $this->roleChecker->isUserValideur();
+        $this->superUserChecker = $superUserChecker;
+        $this->isSuperUser = $this->superUserChecker->isSuperUser();
        
     }
 
@@ -62,10 +66,8 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
 {
 
     // Vérifie si l'utilisateur est un valideur
-    $isValideur = $this->roleChecker->isUserValideur();
-    if (!$this->isValideur) {
-        throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cette demande.');
-        return $this->redirectToRoute('mes_demandes'); 
+    if (!$this->isValideurOrSuperUser()) {
+        throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à cette page.');
     }
 
     // Vérifie si il est bien le valideur associé a la demande
@@ -164,10 +166,8 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
     #[Route('formulaireldap/modifierdemandes/etape2/{id}/{token}', name: 'modifier_demandesvalideur_etape2')]
     public function editDemandeEtape2(int $id, string $token, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, HttpClientInterface $httpClient, MonApplication $monApplication): Response
     {
-        $isValideur = $this->roleChecker->isUserValideur();
-        if (!$this->isValideur) {
-            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cette demande.');
-            return $this->redirectToRoute('mes_demandes'); // Remplacez 'homepage' par la route de votre choix
+        if (!$this->isValideurOrSuperUser()) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à cette page.');
         }
         $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
@@ -310,10 +310,8 @@ if (!empty($data['date_fin_contrat'])) {
     #[Route('formulaireldap/modifierdemandes/etape3/{id}/{token}', name: 'modifier_demandesvalideur_etape3')]
     public function editDemandeEtape3(int $id, string $token, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, MailerInterface $mailer, MonApplication $monApplication): Response
     {
-        $isValideur = $this->roleChecker->isUserValideur();
-        if (!$this->isValideur) {
-            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cette demande.');
-            return $this->redirectToRoute('mes_demandes'); 
+        if (!$this->isValideurOrSuperUser()) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à cette page.');
         }
         $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
@@ -455,7 +453,11 @@ if (!empty($data['date_fin_contrat'])) {
     
             $this->addFlash('success', 'La demande a été modifiée avec succès.');
     
-            return $this->redirectToRoute('demandes_a_valider');
+            if ($this->superUserChecker->isSuperUser()) {
+                return $this->redirectToRoute('admin_demandes'); 
+            } else {
+                return $this->redirectToRoute('demandes_a_valider'); 
+            }
         }
     
         return $this->render('valideur/modifier_etape3.html.twig', [
@@ -482,6 +484,11 @@ if (!empty($data['date_fin_contrat'])) {
  */
     private function checkUserPermissionForDemande(int $demandeId, EntityManagerInterface $entityManager): void
     {
+        $isSuperUser  =  $this->superUserChecker->isSuperUser();
+        if ($isSuperUser) {
+            // Si l'utilisateur est un super utilisateur, on bypass la vérification.
+            return;
+        }
         // Récupérer la demande
         $demande = $entityManager->getRepository(Demandes::class)->find($demandeId);
     
@@ -504,6 +511,19 @@ if (!empty($data['date_fin_contrat'])) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à cette demande.');
         }
     }
+
+
+    private function isValideurOrSuperUser(): bool
+{
+    $isSuperUser  =  $this->superUserChecker->isSuperUser();
+        if ($isSuperUser) {
+            return true;
+        }
+
+    // Sinon, vérifier s'il est valideur
+    return $this->roleChecker->isUserValideur();
+}
+
 
    
 /**
