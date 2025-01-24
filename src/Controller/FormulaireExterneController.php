@@ -371,6 +371,12 @@ public function etape3(
     $form->handleRequest($request);
 
     if ($form->isSubmitted() && $form->isValid()) {
+        if (!$this->isFormulaireComplet($data)) {
+            sleep(1);
+            $this->addFlash('error', 'Le formulaire est incomplet. Veuillez repasser par toutes les étapes pour compléter les informations manquantes.');
+            sleep(1);
+            return $this->redirectToRoute('formulaireexterne_etape1', ['uuid' => $uuid]);
+        }
         $finalData = $form->getData();
         $historique = new HistoriqueDemande();
         $action = $temporaryData->getAction();
@@ -605,52 +611,45 @@ public function etape3(
         return $servicesDropdownData;
     }
 
-//     private function getVerif(EntityManagerInterface $entityManager, string $uuid): ?array
-// {
-//     // Récupérer la ligne de TemporaryData en fonction de l'UUID
-//     $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $uuid]);
-
-//     if (!$temporaryData) {
-//         throw $this->createNotFoundException('Données temporaires introuvables.');
-//     }
-
-//     // Vérifier l'action (create ou modifier)
-//     $action = $temporaryData->getAction();
-
-//     if ($action === 'create') {
-//         // Si l'action est "create", récupérer l'utilisateur via le token
-//         $user = $this->getUser();
-
-//         if (!$user) {
-//             throw $this->createNotFoundException('Utilisateur introuvable.');
-//         }
-
-//         return [
-//             'user' => $user,
-//             'action' => 'create',
-//             'data' => $temporaryData->getData(),
-//         ];
-//     } elseif ($action === 'modifier') {
-//         // Si l'action est "modifier", récupérer la demande via le token
-//         $demande = $entityManager->getRepository(Demandes::class)->findOneBy(['token' => $token]);
-
-//         if (!$demande) {
-//             throw $this->createNotFoundException('Demande introuvable.');
-//         }
-
-//         $user = $demande->getIDutilisateur();
-
-//         return [
-//             'user' => $user,
-//             'action' => 'modifier',
-//             'data' => $temporaryData->getData(),
-//             'demande' => $demande,
-//         ];
-//     }
-
-//     throw new \LogicException('Action non valide dans TemporaryData.');
-// }
-
+    private function isFormulaireComplet(array $data): bool
+    {
+        // Liste des champs obligatoires
+        $requiredFields = [
+            'nom',                    
+            'prenom',                  
+            'email',                   
+            'date_de_naissance',     
+            'fonction',                
+            'statut',                 
+            'nom_service_selectionne', 
+            'replace_someone',
+             'selectedService' ,
+             'nom_valideur',
+             'dossiers_partages',
+             'date_debut_contrat',
+             'date_fin_contrat',
+             'nouvelle_affectation_service',
+             'telephone_avant_service',
+             'missions',
+             'parti_rectorat',
+             'remplacement_nom',
+             'remplacement_prenom',
+    
+    
+    
+        ];
+    
+       
+        foreach ($requiredFields as $field) {
+            if (!array_key_exists($field, $data)) {
+      
+                return false;
+            }
+        }
+    
+        return true;
+    }
+    
 
 
 

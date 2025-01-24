@@ -61,6 +61,11 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-10">
+        {% for message in app.flashes('error') %}
+    <div class="alert alert-danger">
+        {{ message }}
+    </div>
+{% endfor %}
             {{ form_start(form) }}
 
             
@@ -71,7 +76,6 @@
                 </div>
             </div>
 
-            <!-- Bloc Remplacement De -->
             <div id="remplacement-section" class="form-section" style="display: none;">
                 <div class="form-section-title">Remplacement de</div>
                 <div class="row">
@@ -198,5 +202,7 @@ document.addEventListener('DOMContentLoaded', function () {
     toggleRemplacementSection();
     toggleNouvelleAffectationServiceSection();
 });
+
+
 </script>
 {% endblock %}

@@ -228,6 +228,12 @@ if (!empty($data['date_fin_contrat'])) {
         $form->handleRequest($request);
     
         if ($form->isSubmitted() && $form->isValid()) {
+            if (!$this->isFormulaireComplet($data)) {
+                sleep(1);
+                $this->addFlash('error', 'Le formulaire est incomplet. Veuillez repasser par toutes les étapes pour compléter les informations manquantes.');
+                sleep(1);
+                return $this->redirectToRoute('formulaireldap-etape1', ['token' => $token]);
+            }
             $finalData = $form->getData();
             $action = $temporaryData->getAction();
            
@@ -520,4 +526,45 @@ if (!empty($data['date_fin_contrat'])) {
         }
         return $servicesDropdownData;
     }
+
+    private function isFormulaireComplet(array $data): bool
+    {
+        // Liste des champs obligatoires
+        $requiredFields = [
+            'nom',                    
+            'prenom',                  
+            'email',                   
+            'date_de_naissance',     
+            'fonction',                
+            'statut',                 
+            'nom_service_selectionne', 
+            'replace_someone',
+             'selectedService' ,
+             'nom_valideur',
+             'dossiers_partages',
+             'date_debut_contrat',
+             'date_fin_contrat',
+             'nouvelle_affectation_service',
+             'telephone_avant_service',
+             'missions',
+             'parti_rectorat',
+             'remplacement_nom',
+             'remplacement_prenom',
+    
+    
+    
+        ];
+    
+       
+        foreach ($requiredFields as $field) {
+            if (!array_key_exists($field, $data)) {
+      
+                return false;
+            }
+        }
+    
+        return true;
+    }
+
+
 }
