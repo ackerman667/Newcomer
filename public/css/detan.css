@@ -15,6 +15,7 @@ th, td {
     text-align: center;
     padding: 12px;
     border-bottom: 1px solid #ddd;
+    vertical-align: middle !important;
 }
 th {
     background-color: #f8f8f8;

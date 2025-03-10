@@ -53,8 +53,11 @@ th, td {
     text-align: center;
     padding: 12px;
     border-bottom: 1px solid #ddd;
+    vertical-align: middle !important;
+
 
 }
+
 .col-service {
 width: 15%; 
 max-width: 15%;
@@ -170,7 +173,7 @@ margin: 0;
 }
 
 .menu-container {
-margin-bottom: 80px; 
+margin-bottom: 120px; 
 margin-top: -10px; 
 text-align: left;
 padding-left: 25px; 

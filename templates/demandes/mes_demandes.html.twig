@@ -3,9 +3,11 @@
 {% block title %}<title>Mes Demandes - {{ monApplication.Appli }}</title>{% endblock %}
 
 {% block head_gene %}
- <link rel="stylesheet" href="{{ asset('css/mesdemandes.css') }}">
+ <link rel="stylesheet" href="{{ asset('css/mes-demandes.css') }}">
 {% endblock %}
-{% block body %}<body  class="page not-home">{% endblock %}
+{% block body %}
+{# <body  class="page not-home"> #}
+{% endblock %}
 {% block header %}
  
    
@@ -83,10 +85,10 @@
                                 </td>
                    <td class="col-commentaire">
     <div class="comment-container">
-        {% if demande.commentaire and demande.commentaire|length > 77 %}
+        {% if demande.commentaire and demande.commentaire|length > 50 %}
             <!-- Affichage court avec "Voir plus" -->
             <div class="short-comment">
-                {{ demande.commentaire|slice(0, 77) ~ '...' }}
+                {{ demande.commentaire|slice(0, 50) ~ '...' }}
                 <span class="toggle-link" onclick="toggleComment(this)">[Voir plus]</span>
             </div>
 

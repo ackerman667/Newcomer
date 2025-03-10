@@ -3,9 +3,11 @@
 {% block title %}<title>Demandes à Valider - {{ monApplication.Appli }}</title>{% endblock %}
 
 {% block head_gene %}
-<link rel="stylesheet" href="{{ asset('css/demandesavalider.css') }}">
+<link rel="stylesheet" href="{{ asset('css/a-valider.css') }}">
 {% endblock %}
-{% block body %}   <body  class="page not-home">       {% endblock %}
+{% block body %}  
+ {# <body  class="page not-home">   #}
+      {% endblock %}
 {% block header %}
     {# <div class="title_app" id="title">
         <h1 class="title">{{monApplication.Appli}}</h1>
@@ -85,14 +87,35 @@
                                         {{ demande.statuts }}
                                     </span>
                                 </td>
+                            
 
-                     <td>
-                                    <form class="comment-form" method="post" action="{{ path('commenter_demande', {id: demande.id}) }}">
+                   <td class="col-commentaire">
+    <div class="comment-container">
+        {% if demande.statuts != 'En attente' %}
+            {% if demande.commentaire and demande.commentaire|length > 50 %}
+                <div class="short-comment">
+                    {{ demande.commentaire|slice(0, 50) ~ '...' }}
+                    <span class="toggle-link" onclick="toggleComment(this)">[Voir +]</span>
+                </div>
+                <div class="full-comment" style="display: none;">
+                    {{ demande.commentaire }}
+                    <span class="toggle-link" onclick="toggleComment(this)">[Réduire]</span>
+                </div>
+            {% else %}
+                <span>{{ demande.commentaire ?: 'Aucun commentaire' }}</span>
+            {% endif %}
+        {% else %}
+            <form class="comment-form" method="post" action="{{ path('commenter_demande', {id: demande.id}) }}">
                                         <textarea id="commentaire-{{ demande.id }}"  name="commentaire" rows="2"  maxlength="250"  placeholder="Ajouter un commentaire en cas de refus !"  {% if demande.statuts == 'Suivi dans LEKA' or demande.statuts == 'Refusée' %}disabled{% endif %}>{{ demande.commentaire ? demande.commentaire : '' }}</textarea>
+                   
+                    {% if demande.statuts == 'Suivi dans LEKA' or demande.statuts == 'Refusée' %}disabled{% endif %}
+                    {{ demande.commentaire ? demande.commentaire : '' }}
+                </textarea>
+            </form>
+        {% endif %}
+    </div>
+</td>
 
-                                        {# <button type="submit" {% if demande.statuts is not same as('En attente') %}disabled{% endif %}>Ajouter un commentaire !</button> #}
-                                    </form>
-                                </td>
 
 
                           <td class="toolbar">
@@ -242,6 +265,18 @@ function validateRequest(demandeId) {
         textarea.style.height = 'auto'; // Réinitialise la hauteur pour recalculer
         textarea.style.height = textarea.scrollHeight + 'px'; // Ajuste la hauteur au contenu
     }
+       function toggleComment(toggleLink) {
+    const shortComment = toggleLink.closest('.comment-container').querySelector('.short-comment');
+    const fullComment = toggleLink.closest('.comment-container').querySelector('.full-comment');
+
+    if (shortComment.style.display === 'none') {
+        shortComment.style.display = 'block';
+        fullComment.style.display = 'none';
+    } else {
+        shortComment.style.display = 'none';
+        fullComment.style.display = 'block';
+    }
+}
 
 
 

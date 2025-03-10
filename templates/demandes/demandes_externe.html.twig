@@ -62,10 +62,10 @@
                                     </td>
                                                     <td class="col-commentaire">
     <div class="comment-container">
-        {% if demande.commentaire and demande.commentaire|length > 77 %}
+        {% if demande.commentaire and demande.commentaire|length > 50 %}
           
             <div class="short-comment">
-                {{ demande.commentaire|slice(0, 77) ~ '...' }}
+                {{ demande.commentaire|slice(0, 50) ~ '...' }}
                 <span class="toggle-link" onclick="toggleComment(this)">[Voir plus]</span>
             </div>
 
