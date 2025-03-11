@@ -20,7 +20,7 @@ final class MainSchedule implements ScheduleProviderInterface
     public function getSchedule(): Schedule
     {
         return (new Schedule())
-        ->add(RecurringMessage::cron('*/2 * * * *', new CleanerTdMessage())) 
-        ->add(RecurringMessage::cron('*/2 * * * *', new CleanerPasswordMessage())); 
+        ->add(RecurringMessage::cron('0 0 * * *', new CleanerTdMessage())) 
+        ->add(RecurringMessage::cron('0 0 * * *', new CleanerPasswordMessage())); 
 }
 }

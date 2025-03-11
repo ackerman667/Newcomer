@@ -171,6 +171,22 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     
         // $subject = "La demande numéro $id pour le service {$demande->getService()} a été validée";
     
+        // $subject = "La demande numéro $id pour le service {$demande->getService()} a été validée";
+        // $valideurEmail = $this->getValideurMail($demande);
+        // $testeurMail = (new Email())
+        //     ->from('noreply@ac-guadeloupe.fr')
+        //     ->to('nbarbeu@gmail.com')
+        //     ->subject($subject)
+        //     ->html('<p>Email de test envoie de leka // PDF  : </p>'. $valideurEmail)
+        //     ->attach($pdfOutput, 'demande.pdf', 'application/pdf');
+    
+        // $mailer->send($testeurMail);
+    
+    
+      
+    
+      
+    
     
     
     
@@ -253,7 +269,16 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
         // $subject = "La demande numéro $id pour le service {$demande->getService()} a été validée";
     
     
+        // $subject = "La demande numéro $id pour le service {$demande->getService()} a été validée";
+        // $valideurEmail = $this->getValideurMail($demande);
+        // $testeurMail = (new Email())
+        //     ->from('noreply@ac-guadeloupe.fr')
+        //     ->to('nbarbeu@gmail.com')
+        //     ->subject($subject)
+        //     ->html('<p>Email de test envoie de leka // PDF  : </p>'. $valideurEmail)
+        //     ->attach($pdfOutput, 'demande.pdf', 'application/pdf');
     
+        // $mailer->send($testeurMail);
     
     
         // $leka = (new Email())

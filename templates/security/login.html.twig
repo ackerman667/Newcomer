@@ -8,15 +8,18 @@
     <script type="text/javascript" src="{{ asset('js/documentation.js', 'interfaceappli') }}" defer></script>
     <style>
     .info-box {
-        background-color: #e7f3fe;
-        border: 1px solid #b3d4fc;
-        padding: 15px;
-        margin-bottom: 20px;
-        border-radius: 5px;
-        text-align: center;
-        font-size: 16px;
-        color: #31708f;
-    }
+    background-color: #e7f3fe;     /* Fond bleu clair conservé */
+    border: 1px solid #b3d4fc;     /* Bordure légère en bleu */
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 16px;               /* Taille de police conservée */
+    color: #004085;                /* Texte en bleu foncé pour améliorer la lisibilité */
+    font-weight: bold;             /* Met le texte en gras pour renforcer l'impact */
+    font-family: Arial, sans-serif; /* Police propre et lisible */
+}
+
     </style>
 
 {% endblock %}
@@ -41,7 +44,7 @@
     <div class="row justify-content-center">
         <div class="col-md-6">
           <div class="info-box">
-                <p>Cette page est destinée aux utilisateurs qui n'ont pas d'adresse email académique. Veuillez entrer votre adresse email personnelle pour procéder.</p>
+                <p>⚠️ Cette page est destinée aux utilisateurs qui n'ont pas d'adresse email académique. Veuillez entrer votre adresse email personnelle pour procéder.</p>
             </div>
             <div class="card shadow-sm">
                 <div class="card-body">

@@ -19,7 +19,11 @@ th, td {
     vertical-align: middle !important;
 }
 th {
-    background-color: #f8f8f8;
+    background-color: #004085;
+    color: #ffffff;
+    padding: 14px;
+    text-transform: uppercase;
+    border-bottom: 3px solid #002752;
 }
 tbody tr {
     vertical-align: middle;
@@ -28,14 +32,15 @@ tbody td {
     vertical-align: middle;
 }
 
-.status-leka, .status-leka-mesdemandes{
+.status-leka, .status-leka-mesdemandes {
     background-color: #28A745;
     color: white;
-    padding: 5px 10px;
-    border-radius: 20px;
+    padding: 5px 12px;
+    border-radius: 25px;
     display: inline-block;
     min-width: 100px;
     margin: 5px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 .status-en-attente {
     background-color:  #FFC107;
@@ -45,6 +50,7 @@ tbody td {
     display: inline-block;
     min-width: 100px;
     margin: 5px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 .status-en-attente-mesdemandes {
     background-color: #D3D3D3;
@@ -54,6 +60,7 @@ tbody td {
     display: inline-block;
     min-width: 100px;
     margin: 5px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .status-refuse, .status-refuse-mesdemandes{
@@ -64,6 +71,7 @@ tbody td {
     display: inline-block;
     min-width: 100px;
     margin: 5px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 .status-brouillons-mesdemandes {
     background-color: #77b5fe ; 
@@ -73,6 +81,7 @@ tbody td {
     display: inline-block;
     min-width: 100px;
     margin: 5px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 
@@ -213,10 +222,28 @@ margin: 0;
         display: none; 
     }
     
-    .toggle-link {
+    /* .toggle-link {
         color: rgb(0, 123, 255);
         cursor: pointer;
         text-decoration: underline;
+    } */
+    .toggle-link {
+        color: rgb(0, 123, 255); /* Bleu classique */
+        cursor: pointer;
+        text-decoration: none; /* Enlever le soulignement par défaut */
+        font-weight: bold; /* Accentuer le texte */
+        transition: color 0.3s ease, text-shadow 0.3s ease; /* Animation fluide */
+    }
+    
+    .toggle-link:hover {
+        color: rgb(0, 86, 179); /* Bleu plus foncé au survol */
+        text-shadow: 0 0 8px rgba(0, 123, 255, 0.7); /* Effet lumineux */
+        text-decoration: underline; /* Réintroduire le soulignement au survol */
+    }
+    
+    .toggle-link:active {
+        color: rgb(0, 60, 150); /* Encore plus foncé lors du clic */
+        transform: scale(1.05); /* Légère augmentation pour effet interactif */
     }
 
     

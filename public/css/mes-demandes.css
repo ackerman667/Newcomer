@@ -113,9 +113,22 @@ text-align: center;
 }
 
 .toggle-link {
-    color: rgb(0, 123, 255);
+    color: rgb(0, 123, 255); /* Bleu classique */
     cursor: pointer;
-    text-decoration: underline;
+    text-decoration: none; /* Enlever le soulignement par défaut */
+    font-weight: bold; /* Accentuer le texte */
+    transition: color 0.3s ease, text-shadow 0.3s ease; /* Animation fluide */
+}
+
+.toggle-link:hover {
+    color: rgb(0, 86, 179); /* Bleu plus foncé au survol */
+    text-shadow: 0 0 8px rgba(0, 123, 255, 0.7); /* Effet lumineux */
+    text-decoration: underline; /* Réintroduire le soulignement au survol */
+}
+
+.toggle-link:active {
+    color: rgb(0, 60, 150); /* Encore plus foncé lors du clic */
+    transform: scale(1.05); /* Légère augmentation pour effet interactif */
 }
 
 
@@ -127,7 +140,11 @@ overflow: hidden;
 /* white-space: nowrap;  */
 }
 th {
-    background-color: #f8f8f8;
+    background-color: #004085;
+    color: #ffffff;
+    padding: 14px;
+    text-transform: uppercase;
+    border-bottom: 3px solid #002752;
     
 }
 
@@ -140,6 +157,7 @@ th {
     display: inline-block;
     min-width: 100px;
     margin: 5px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 .service-column {
     color: #00008B;
@@ -173,7 +191,7 @@ margin: 0;
 }
 
 .menu-container {
-margin-bottom: 120px; 
+margin-bottom:30px; 
 margin-top: -10px; 
 text-align: left;
 padding-left: 25px; 
@@ -190,6 +208,7 @@ margin-top: -90px;
     display: inline-block;
     min-width: 100px;
     margin: 5px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 .status-en-attente {
     background-color:  #FFC107;
@@ -199,6 +218,7 @@ margin-top: -90px;
     display: inline-block;
     min-width: 100px;
     margin: 5px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 .status-en-attente-mesdemandes {
     background-color: #D3D3D3;
@@ -208,6 +228,7 @@ margin-top: -90px;
     display: inline-block;
     min-width: 100px;
     margin: 5px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .status-refuse, .status-refuse-mesdemandes{
@@ -218,6 +239,7 @@ margin-top: -90px;
     display: inline-block;
     min-width: 100px;
     margin: 5px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 .status-brouillons-mesdemandes {
     background-color: #77b5fe ; 
@@ -227,4 +249,31 @@ margin-top: -90px;
     display: inline-block;
     min-width: 100px;
     margin: 5px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
+
+
+.disclaimer-container {
+    background-color: rgba(220, 53, 69, 0.1);  /* Rouge léger */
+    color: #DC3545;  /* Texte rouge vif pour rester lisible */
+    border: 1px solid #DC3545; /* Bordure fine pour bien délimiter */     
+    justify-content: center;
+    align-items: center;    
+    text-align: center;
+    padding: 12px 20px;
+    border-radius: 8px;
+        
+    width: 90%;                
+    max-width: 1200px; 
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    font-weight: bold;
+    margin-bottom: 120px;  
+  
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;                 
+}
+
