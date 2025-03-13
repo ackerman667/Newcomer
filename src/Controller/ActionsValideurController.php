@@ -129,6 +129,7 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
         $this->checkStatuts($id, $entityManager);
         $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
+        
     
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
@@ -173,14 +174,14 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     
         // $subject = "La demande numéro $id pour le service {$demande->getService()} a été validée";
         // $valideurEmail = $this->getValideurMail($demande);
-        // $testeurMail = (new Email())
-        //     ->from('noreply@ac-guadeloupe.fr')
-        //     ->to('nbarbeu@gmail.com')
-        //     ->subject($subject)
-        //     ->html('<p>Email de test envoie de leka // PDF  : </p>'. $valideurEmail)
-        //     ->attach($pdfOutput, 'demande.pdf', 'application/pdf');
+        $testeurMail = (new Email())
+            ->from('noreply@ac-guadeloupe.fr')
+            ->to('nbarbeu@gmail.com')
+            ->subject($subject)
+            ->html('<p>Email de test envoie de leka // PDF  : </p>'. $valideurEmail)
+            ->attach($pdfOutput, 'demande.pdf', 'application/pdf');
     
-        // $mailer->send($testeurMail);
+        $mailer->send($testeurMail);
     
     
       
@@ -329,6 +330,14 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
         }
+        // if(empty($demande.getCommentaire())) {
+        //     $this->addFlash('error', 'Un commentaire est requis pour refuser la demande.');
+        //     return $this->redirectToRoute('demandes_a_valider');
+
+        // }
+
+
+       
     
         $demande->setStatuts('Refusée');
         $historique = new HistoriqueDemande();

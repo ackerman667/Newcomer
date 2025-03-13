@@ -53,8 +53,13 @@
                 <div class="details-section">
                     <div class="details-section-title">Détails de la Demande</div>
                     <div class="details-group">
-                        <label>Chef de service :</label>
+                         {% if demande.statuts ==  'Suivi dans LEKA' %}
+                        <label>Validé par :</label>
                         <span>{{ valideur }}</span>
+                        {% else %}
+                        <label>chef de service  : </label>
+                        <span>{{ valideur }}</span>
+                        {% endif %}
                     </div>
                     <div class="details-group">
                         <label>Titre :</label>

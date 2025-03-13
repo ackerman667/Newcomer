@@ -4,18 +4,29 @@
 }
 .table-container {
     margin: 20px auto;
-    width: 90%;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0;
 }
 table {
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
 }
-th, td {
+th {
     text-align: center;
     padding: 12px;
     border-bottom: 1px solid #ddd;
+    font-size: 14px;
     vertical-align: middle !important;
+}
+td {
+    text-align: center;
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    font-size: 16px;
+    vertical-align: middle !important;
+
 }
 th {
     background-color: #004085;
@@ -87,26 +98,47 @@ white-space: normal;
 word-wrap: break-word; 
 overflow-wrap: anywhere; 
 }
+.col-commentaire {
+    width: 15%;
+    max-width: 15%;
+    text-align: center;
+    white-space: normal; 
+    word-wrap: break-word; 
+    overflow-wrap: anywhere; 
+}
 
 .comment-container {
-width: 100%; 
-display: block;
-word-wrap: break-word; 
-white-space: normal;
+    width: 100%; 
+    display: block;
+    word-wrap: break-word; 
+    white-space: normal; 
 }
 
 .short-comment {
-display: block; 
+    display: block; 
 }
 
 .full-comment {
-display: none; 
+    display: none; 
 }
 
 .toggle-link {
-color: rgb(0, 123, 255);
-cursor: pointer;
-text-decoration: underline;
+    color: rgb(0, 123, 255); /* Bleu classique */
+    cursor: pointer;
+    text-decoration: none; /* Enlever le soulignement par défaut */
+    font-weight: bold; /* Accentuer le texte */
+    transition: color 0.3s ease, text-shadow 0.3s ease; /* Animation fluide */
+}
+
+.toggle-link:hover {
+    color: rgb(0, 86, 179); /* Bleu plus foncé au survol */
+    text-shadow: 0 0 8px rgba(0, 123, 255, 0.7); /* Effet lumineux */
+    text-decoration: underline; /* Réintroduire le soulignement au survol */
+}
+
+.toggle-link:active {
+    color: rgb(0, 60, 150); /* Encore plus foncé lors du clic */
+    transform: scale(1.05); /* Légère augmentation pour effet interactif */
 }
 
 th.demandeur-column, td.demandeur-column {
@@ -117,6 +149,8 @@ overflow: hidden;
 }
 .filter-container {
     margin-bottom: 20px;
+    display: flex; /* Remplacez 'center' par 'flex' pour un meilleur contrôle */
+    justify-content: center; /* Centre horizontalement */
 }
 .service-column {
     color: blue;
