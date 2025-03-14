@@ -32,7 +32,7 @@
         <li>Consulter les statuts de leurs demandes (En attente, Validée(Suivi dans LEKA), Refusée, etc.).</li>
         
     </ul>
-{% if isValideur %}
+{% if isValideur or isSuperUser %}
     <h2>B2 - Vue Valideur</h2>
     <p>Cette vue est réservée aux utilisateurs ayant le rôle de valideur. Elle permet de :</p>
     <ul>
