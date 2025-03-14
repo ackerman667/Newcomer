@@ -31,7 +31,7 @@ td {
 th {
     background-color: #004085;
     color: #ffffff;
-    padding: 14px;
+    padding: 12px;
     text-transform: uppercase;
     border-bottom: 3px solid #002752;
 }
@@ -191,8 +191,8 @@ text-align: center;
 }
 
 .col-historique {
-width: 7%; 
-max-width: 7%;
+width: 8%; 
+max-width: 8%;
 text-align: center; 
 }
 .col-entreruid {

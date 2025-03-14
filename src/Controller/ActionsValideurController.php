@@ -168,17 +168,17 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
         // $mailer->send($emailMessage);
     
     
-        // $valideurEmail = $this->getValideurMail($demande);
+        $valideurEmail = $this->getValideurMail($demande);
     
         // $subject = "La demande numéro $id pour le service {$demande->getService()} a été validée";
     
-        // $subject = "La demande numéro $id pour le service {$demande->getService()} a été validée";
+        $subject = "Demande d'accès à un poste informatique : La  demande numéro $id pour le service {$demande->getService()} a été validée";
         // $valideurEmail = $this->getValideurMail($demande);
         $testeurMail = (new Email())
-            ->from('noreply@ac-guadeloupe.fr')
+            ->from($valideurEmail)
             ->to('nbarbeu@gmail.com')
             ->subject($subject)
-            ->html('<p>Email de test envoie de leka // PDF  : </p>'. $valideurEmail)
+            ->html("<p> Veuillez trouver en pièce jointe le fichier PDF contenant les détails de la demande $id: </p>")
             ->attach($pdfOutput, 'demande.pdf', 'application/pdf');
     
         $mailer->send($testeurMail);

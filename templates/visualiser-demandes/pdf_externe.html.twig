@@ -4,11 +4,19 @@
 {% block head_gene %}
 <script type="text/javascript" src="{{ asset('js/inactivity.js') }}" defer></script>
     <style>
-        .details-section {
+          .details-section {
             border: 1px solid #000;
             padding: 15px;
             margin-bottom: 20px;
+              page-break-inside: avoid;  
+    break-inside: avoid;
         }
+              .details-group.commentaire span {
+    word-wrap: break-word;      /* Coupe les mots longs */
+    overflow-wrap: break-word;  /* Alternative moderne */
+    white-space: normal;        /* Permet le retour à la ligne naturel */
+    display: inline;            /* Reste en ligne sans sauter de ligne complète */
+}
         .details-section-title {
             font-weight: bold;
             margin-bottom: 10px;
@@ -177,13 +185,15 @@
 
     </span>
                     </div>
-                     <div class="details-group" >
-                            <label> Commentaire du valideur:</label>
-                            <span>{% if demande.commentaire %}
-                            {{ demande.commentaire }} {% else %}
-                            Pas de commentaire {% endif %}
-                            </span>
-                        </div>
+                    <div class="details-group commentaire">
+    <label> Commentaire du valideur:</label>
+    <span>{% if demande.commentaire %}
+        {{ demande.commentaire }} 
+        {% else %}
+        Pas de commentaire 
+        {% endif %}
+    </span>
+</div>
                 </div>
             </div>
         </div>
