@@ -13,15 +13,35 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use App\Service\UserRoleChecker;
+use App\Security\UserInformation;
+
 
 class AideController extends AbstractController
 {
-   
+    private $security;
+    private $roleChecker;
+    public function __construct(Security $security, UserRoleChecker $roleChecker)
+    {
+        $this->security = $security;
+        $this->roleChecker = $roleChecker;
+
+
+        $this->isValideur = $this->roleChecker->isUserValideur();
+ 
+    }
+
     #[Route('formulaireldap/aide', name: 'aide')]
     public function index(MonApplication $monApplication)
     {
+
+
+        $currentUser = $this->security->getUser();
+        $uid = $currentUser->getUid();
+        $isValideur = $this->roleChecker->isUserValideur();
         return $this->render('aide/index.html.twig', [
             'monApplication' => $monApplication,
+            'isValideur' => $isValideur,
         ]);
     }
 
