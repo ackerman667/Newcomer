@@ -128,9 +128,13 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
         $this->denyAccessUnlessValideur();
         $this->checkStatuts($id, $entityManager);
         $this->checkUserPermissionForDemande($id, $entityManager);
+        $user = $this->security->getUser();
+        $uid = $user->getUid();
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
-        
-    
+
+           
+        $mailValideur = $uid . '@ac-guadeloupe.fr';
+     
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
         }
@@ -175,7 +179,7 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
         $subject = "Demande d'accès à un poste informatique : La  demande numéro $id pour le service {$demande->getService()} a été validée";
         // $valideurEmail = $this->getValideurMail($demande);
         $testeurMail = (new Email())
-            ->from($valideurEmail)
+            ->from($mailValideur)
             ->to('nbarbeu@gmail.com')
             ->subject($subject)
             ->html("<p> Veuillez trouver en pièce jointe le fichier PDF contenant les détails de la demande $id: </p>")
