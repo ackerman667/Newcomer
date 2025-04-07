@@ -50,6 +50,7 @@ class DemandeEtape2FormType extends AbstractType
             ->add('selectedService', ChoiceType::class, [
                 'label' => 'Choisissez un service :',
                 'choices' => $options['services'],
+                'data' => $options['data']['selectedService'] ?? null,
                 'required' => true,
                 'choice_attr' => function ($choice, $key, $value) use ($disabledServices) {
                     

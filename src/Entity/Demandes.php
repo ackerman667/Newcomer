@@ -96,6 +96,9 @@ class Demandes
     #[ORM\Column(nullable: true)]
     private ?bool $AutrePersonne = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $id_service = null;
+
     public function __construct()
     {
         $this->historiqueDemandes = new ArrayCollection();
@@ -435,6 +438,18 @@ class Demandes
     public function setAutreUtilisateur(?UserAutre $autreUtilisateur): static
     {
         $this->autreUtilisateur = $autreUtilisateur;
+
+        return $this;
+    }
+
+    public function getIdService(): ?int
+    {
+        return $this->id_service;
+    }
+
+    public function setIdService(?int $id_service): static
+    {
+        $this->id_service = $id_service;
 
         return $this;
     }

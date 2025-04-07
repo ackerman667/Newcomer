@@ -23,6 +23,9 @@ class Ressources
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $contenu = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?array $idRessources = null;
+
 
 
     public function getId(): ?int
@@ -62,6 +65,18 @@ class Ressources
     public function setContenu(?string $contenu): static
     {
         $this->contenu = $contenu;
+
+        return $this;
+    }
+
+    public function getIdRessources(): ?array
+    {
+        return $this->idRessources;
+    }
+
+    public function setIdRessources(?array $idRessources): static
+    {
+        $this->idRessources = $idRessources;
 
         return $this;
     }

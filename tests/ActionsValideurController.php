@@ -163,13 +163,13 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     // Récupérez l'email en fonction du type de demande
     $email = $demande->isAutrePersonne() ? $demande->getAutreUtilisateur()->getEmail() : $demande->getIDutilisateur()->getEmail();
     
-        $emailMessage = (new Email())
-            ->from('noreply@ac-guadeloupe.fr')
-            ->to($email)
-            ->subject('Votre demande a été envoyée dans LEKA')
-            ->html('<p>Votre demande a été envoyée dans LEKA.</p>');
+        // $emailMessage = (new Email())
+        //     ->from('noreply@ac-guadeloupe.fr')
+        //     ->to($email)
+        //     ->subject('Votre demande a été envoyée dans LEKA')
+        //     ->html('<p>Votre demande a été envoyée dans LEKA.</p>');
     
-        $mailer->send($emailMessage);
+        // $mailer->send($emailMessage);
     
     
        
@@ -177,10 +177,28 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
         // $subject = "La demande numéro $id pour le service {$demande->getService()} a été validée";
     
         $subject = "Demande d'accès à un poste informatique : La  demande numéro $id pour le service {$demande->getService()} a été validée";
+        // $valideurEmail = $this->getValideurMail($demande);
+        $testeurMail = (new Email())
+            ->from($mailValideur)
+            ->to('nbarbeu@gmail.com')
+            ->subject($subject)
+            ->html("<p> Veuillez trouver en pièce jointe le fichier PDF contenant les détails de la demande $id: </p>")
+            ->attach($pdfOutput, 'demande.pdf', 'application/pdf');
+    
+        $mailer->send($testeurMail);
+    
+    
+      
+    
+      
+    
+    
+    
+    
     
         $leka = (new Email())
             ->from($mailValideur)
-            ->to('lekadempp@ac-guadeloupe.fr') 
+            ->to('lekadem@ac-guadeloupe.fr') 
             ->subject($subject) 
             ->html('<p>Votre demande a été envoyée dans LEKA.</p>')
             ->attach($pdfOutput, 'demande.pdf', 'application/pdf');
@@ -216,9 +234,6 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     if ($demande->getStatuts() !== 'Brouillons') {
         throw $this->createAccessDeniedException('Vous ne pouvez pas agir sur cette demande car elle est deja validée".');
     }
-    $user = $this->security->getUser();
-    $uid = $user->getUid();
-    $mailValideur = $uid . '@ac-guadeloupe.fr';
 
     
         $id_demande = $demande->getId();
@@ -242,18 +257,43 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
        $pdfResponse = $this->generatePdf($id, $entityManager);
        $pdfOutput = $pdfResponse->getContent();
     
+    // Récupérez l'email en fonction du type de demande
+    $email = $demande->isAutrePersonne() ? $demande->getAutreUtilisateur()->getEmail() : $demande->getIDutilisateur()->getEmail();
+    
+        // $emailMessage = (new Email())
+        //     ->from('noreply@ac-guadeloupe.fr')
+        //     ->to($email)
+        //     ->subject('Votre demande a été envoyée dans LEKA')
+        //     ->html('<p>Votre demande a été envoyée dans LEKA.</p>');
+    
+        // $mailer->send($emailMessage);
     
     
-    $subject = "Demande d'accès à un poste informatique : La  demande numéro $id pour le service {$demande->getService()} a été validée";
+        // $valideurEmail = $this->getValideurMail($demande);
     
-        $leka = (new Email())
-            ->from($mailValideur)
-            ->to('lekadem@ac-guadeloupe.fr') 
-            ->subject($subject) 
-            ->html('<p>Votre demande a été envoyée dans LEKA.</p>')
-            ->attach($pdfOutput, 'demande.pdf', 'application/pdf');
+        // $subject = "La demande numéro $id pour le service {$demande->getService()} a été validée";
     
-        $mailer->send($leka);
+    
+        // $subject = "La demande numéro $id pour le service {$demande->getService()} a été validée";
+        // $valideurEmail = $this->getValideurMail($demande);
+        // $testeurMail = (new Email())
+        //     ->from('noreply@ac-guadeloupe.fr')
+        //     ->to('nbarbeu@gmail.com')
+        //     ->subject($subject)
+        //     ->html('<p>Email de test envoie de leka // PDF  : </p>'. $valideurEmail)
+        //     ->attach($pdfOutput, 'demande.pdf', 'application/pdf');
+    
+        // $mailer->send($testeurMail);
+    
+    
+        // $leka = (new Email())
+        //     ->from($valideurEmail)
+        //     ->to('lekadempp@ac-guadeloupe.fr') 
+        //     ->subject($subject) 
+        //     ->html('<p>Votre demande a été envoyée dans LEKA.</p>')
+        //     ->attach($pdfOutput, 'demande.pdf', 'application/pdf');
+    
+        // $mailer->send($leka);
 
     
         return $this->redirectToRoute('mes_demandes');
@@ -315,13 +355,13 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
         
     // Récupérez l'email en fonction du type de demande
     $email = $demande->isAutrePersonne() ? $demande->getAutreUtilisateur()->getEmail() : $demande->getIDutilisateur()->getEmail();
-        $emailMessage = (new Email())
-            ->from('noreply@ac-guadeloupe.fr')
-            ->to($email)
-            ->subject('Votre demande a été refusée')
-            ->html('<p>Votre demande a été refusée.</p>');
+        // $emailMessage = (new Email())
+        //     ->from('noreply@ac-guadeloupe.fr')
+        //     ->to($email)
+        //     ->subject('Votre demande a été refusée')
+        //     ->html('<p>Votre demande a été refusée.</p>');
     
-        $mailer->send($emailMessage);
+        // $mailer->send($emailMessage);
     
         if ($this->superUserChecker->isSuperUser()) {
                 return $this->redirectToRoute('admin_demandes'); 
@@ -378,7 +418,17 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
    
     
     
-  
+    // Récupérez l'email en fonction du type de demande
+    $email = $demande->isAutrePersonne() ? $demande->getAutreUtilisateur()->getEmail() : $demande->getIDutilisateur()->getEmail();
+    
+    
+        // $emailMessage = (new Email())
+        //     ->from('noreply@ac-guadeloupe.fr')
+        //     ->to($email)
+        //     ->subject('Votre demande a reçu un commentaire')
+        //     ->html('<p>Votre demande a reçu un commentaire : ' . $commentaire . '</p>');
+    
+        // $mailer->send($emailMessage);
     
         if ($this->superUserChecker->isSuperUser()) {
                 return $this->redirectToRoute('admin_demandes'); 
@@ -409,14 +459,9 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     #[Route('formulaireldap/demande/visualiser/{id}', name: 'visualiser_demande')]
     public function visualiserDemande(MonApplication $monApplication, int $id, EntityManagerInterface $entityManager): Response
     {
-        $user1 = $this->security->getUser(); //Récupérer l'utilisateur connecté 
-        $uid = $user1->getUid(); // Récupération de l'UID utilisateur.
-        $isSuperUser  = $this->superUserChecker->isSuperUser();
-        $isValideur = $this->roleChecker->isUserValideur(); 
-
+        
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
         $this->checkUserPermissionForDemande($id, $entityManager);
-        
     
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');

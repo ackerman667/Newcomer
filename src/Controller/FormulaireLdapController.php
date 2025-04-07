@@ -173,7 +173,7 @@ class FormulaireLdapController extends AbstractController
         if (!$temporaryData) {
             throw $this->createNotFoundException('Données temporaires introuvables.');
         }
-        $temp = 
+    
 
         $user = $this->security->getUser();
           /**
@@ -247,12 +247,20 @@ $data = array_merge($tmp, [
 
         $servicesTree = $this->buildTree($services);
 
-   
-        $servicesDropdownData = $this->transformServicesForDropdown($servicesTree);
+        if($temporaryData->getAction() =='create') {
+            $servicesDropdownData = $this->transformServicesForDropdown($servicesTree, false);
+        } else {
+            $servicesDropdownData = $this->transformServicesForDropdown($servicesTree, true);
+        }
+       
 
         $form = $this->createForm(DemandeEtape2FormType::class, $data, [
             'services' => $servicesDropdownData,
         ]);
+        if (array_key_exists('selectedService', $data) && $data['selectedService']) {
+            $form->get('selectedService')->setData($data['selectedService']);
+        }
+        
 
 
         $form->handleRequest($request);
@@ -265,20 +273,16 @@ $data = array_merge($tmp, [
             $selectedServiceId = $form->get('selectedService')->getData();
     
           // Parcourt la liste des services pour trouver celui sélectionné par l'utilisateur
-                        foreach ($services as $service) {
-                            // Vérifie si l'ID du service actuel correspond à l'ID du service sélectionné dans le formulaire
-                            if ($service['id_service'] == $selectedServiceId) {
-                                
-                                // Enregistre le nom du service sélectionné dans les données mises à jour
-                                $updatedData['nom_service_selectionne'] = $service['service'];
-                                
-                                // Enregistre les dossiers partagés associés au service sélectionné, s'ils existent
-                                // Si le champ 'dossiers_partages' n'existe pas dans les données du service, une liste vide est utilisée par défaut
-                                $updatedData['dossiers_partages'] = $service['dossiers_partages'] ?? [];
-                                
-                                // Arrête la boucle une fois que le service correspondant est trouvé pour éviter des itérations inutiles
-                                break;
-                            }
+                      foreach ($services as $service) {
+    if ($service['id_service'] == $selectedServiceId) {
+        $updatedData['nom_service_selectionne'] = $service['service'];
+        $updatedData['dossiers_partages'] = $service['dossiers_partages'] ?? [];
+
+        // Enregistrer les ID des ressources dans les données temporaires
+
+
+        break;
+    }
 }
 
         $apiUrlSecond = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/valideur/' . $selectedServiceId;
@@ -288,6 +292,7 @@ $data = array_merge($tmp, [
                 'Accept' => 'application/json',
             ],
         ]);
+         $updatedData['id_service'] = $service['id_service'];
 
         $apiDataSecond = $responseSecond->toArray();
         $updatedData['nom_valideur'] = $apiDataSecond[0]['valideur'] ?? null;
@@ -393,6 +398,7 @@ $data = array_merge($tmp, [
         $datedenaissance_utilisateur = $date;
         $dossiersPartages = $data['dossiers_partages'] ?? [];
         $dossiersSelectionnes = []; 
+        $service_id = $data['id_service'];
         $nomServiceSelectionne = $data['nom_service_selectionne'] ?? '';
         $nomValideur = $data['nom_valideur'] ?? '';
        
@@ -415,7 +421,7 @@ $data = array_merge($tmp, [
    
  
         $form = $this->createForm(DemandeEtape3FormType::class, $data, [
-            'dossiers_partages' => $dossiersPartages,
+            'dossiers_partages' => $this->sortDossiersAlphabetically($dossiersPartages),
             'data_class' => null, 
             'dossiers_selectionnes' => $dossiersSelectionnes,
         ]);
@@ -580,6 +586,7 @@ $data = array_merge($tmp, [
             $demande->setUidValideur($nomValideur);
             $demande->setService($nomServiceSelectionne);
             $demande->setMissions($missions);
+            $demande->setIdService($service_id);
     
             $entityManager->persist($demande);
             $entityManager->persist($user1);
@@ -668,21 +675,43 @@ private function buildTree(array &$services, $parentId = 0) {
  * @param int $niveau Niveau actuel de profondeur dans l'arbre (utilisé pour l'indentation).
  * @return array Liste des services formatée pour un menu déroulant, avec indentation.
  */
-private function transformServicesForDropdown(array $services, $niveau = 0): array
+// private function transformServicesForDropdown(array $services, $niveau = 0): array
+// {
+//     // Initialise le tableau pour le menu déroulant
+//     $servicesDropdownData = [];
+
+
+//     foreach ($services as $service) {
+//         // Ajoute un indent visuel basé sur le niveau de profondeur
+//         $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $niveau);
+        
+//         // Ajoute le service au menu déroulant avec son ID en valeur
+//         $servicesDropdownData[html_entity_decode($indent) . $service['service']] = $service['id_service'];
+
+//         // Si le service a des enfants, les traiter récursivement
+//         if (isset($service['children'])) {
+//             $servicesDropdownData += $this->transformServicesForDropdown($service['children'], $niveau + 1);
+//         }
+//     }
+
+//     return $servicesDropdownData; // Retourne le tableau formaté pour le menu déroulant.
+// }
+
+private function transformServicesForDropdown(array $services, $isModification = false, $niveau = 0): array
 {
-    // Initialise le tableau pour le menu déroulant
-    $servicesDropdownData = ($niveau == 0) ? ['...' => ''] : [];
+    // Inclure les '...' uniquement si ce n'est PAS une modification
+    $servicesDropdownData = $isModification ? [] : ['...' => ''];
 
     foreach ($services as $service) {
         // Ajoute un indent visuel basé sur le niveau de profondeur
         $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $niveau);
-        
+
         // Ajoute le service au menu déroulant avec son ID en valeur
         $servicesDropdownData[html_entity_decode($indent) . $service['service']] = $service['id_service'];
 
         // Si le service a des enfants, les traiter récursivement
         if (isset($service['children'])) {
-            $servicesDropdownData += $this->transformServicesForDropdown($service['children'], $niveau + 1);
+            $servicesDropdownData += $this->transformServicesForDropdown($service['children'], $isModification, $niveau + 1);
         }
     }
 
@@ -726,6 +755,18 @@ private function isFormulaireComplet(array $data): bool
     }
 
     return true;
+}
+
+/**
+ * Trie les ressources partagées par ordre alphabétique.
+ *
+ * @param array $dossiers Liste des ressources à trier.
+ * @return array Liste triée.
+ */
+private function sortDossiersAlphabetically(array $dossiers): array
+{
+    sort($dossiers, SORT_STRING | SORT_FLAG_CASE); // Tri alphabétique insensible à la casse
+    return $dossiers;
 }
 
 

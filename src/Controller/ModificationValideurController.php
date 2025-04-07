@@ -95,6 +95,7 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
             'date_de_naissance' => $user_autre ? $user_autre->getDateDeNaissance() : '',
             'fonction' => $user_autre ? $user_autre->getFonction() : '',
             'replace_someone' => $demande->isRemplacant() ? 'oui' : 'non',
+            'selectedService' => $demande->getIdService(),
             'remplacement_nom' => $demande->getNomRemplacant(),
             'remplacement_prenom' => $demande->getPrenomRemplacant(),
             'telephone_avant_service' => $demande->getTelephoneRemplacant(),
@@ -113,6 +114,7 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
             'email' => $user ? $user->getEmail() : '',
             'date_de_naissance' => $user ? $user->getDateDeNaissance() : '',
             'fonction' => $user ? $user->getFonction() : '',
+            'selectedService' => $demande->getIdService(),
             'replace_someone' => $demande->isRemplacant() ? 'oui' : 'non',
             'remplacement_nom' => $demande->getNomRemplacant(),
             'remplacement_prenom' => $demande->getPrenomRemplacant(),
@@ -236,6 +238,10 @@ if (!empty($data['date_fin_contrat'])) {
         $form = $this->createForm(DemandeEtape2FormType::class, $data, [
             'services' => $servicesDropdownData,
         ]);
+        if (array_key_exists('selectedService', $data) && $data['selectedService']) {
+            $form->get('selectedService')->setData($data['selectedService']);
+        }
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -566,22 +572,21 @@ if (!empty($data['date_fin_contrat'])) {
  *
  * @return array Une liste plate des services, avec des indentations pour refléter la hiérarchie.
  */
-    private function transformServicesForDropdown(array $services, $niveau = 0): array
-    {
-        if ($niveau == 0) {
-            $servicesDropdownData = ['...' => ''];
-        } else {
-            $servicesDropdownData = [];
+private function transformServicesForDropdown(array $services, $niveau = 0): array
+{
+    $servicesDropdownData = [];
+
+    foreach ($services as $service) {
+        $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $niveau);
+        $servicesDropdownData[html_entity_decode($indent) . $service['service']] = $service['id_service'];
+
+        if (isset($service['children'])) {
+            $servicesDropdownData += $this->transformServicesForDropdown($service['children'], $niveau + 1);
         }
-        foreach ($services as $service) {
-            $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $niveau);
-            $servicesDropdownData[html_entity_decode($indent) . $service['service']] = $service['id_service'];
-            if (isset($service['children'])) {
-                $servicesDropdownData += $this->transformServicesForDropdown($service['children'], $niveau + 1);
-            }
-        }
-        return $servicesDropdownData;
     }
+
+    return $servicesDropdownData;
+}
 
     private function isFormulaireComplet(array $data): bool
 {

@@ -362,6 +362,7 @@ public function modifierDemande(MonApplication $monApplication, Request $request
         'date_de_naissance' => $user1->getDateDeNaissance(),
         'fonction' => $user1->getFonction(),
         'replace_someone' => $demande->isRemplacant() ? 'oui' : 'non',
+        'selectedService' => $demande->getIdService(),
         'remplacement_nom' => $demande->getNomRemplacant(),
         'remplacement_prenom' => $demande->getPrenomRemplacant(),
         'telephone_avant_service' => $demande->getTelephoneRemplacant(),
@@ -445,6 +446,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
             'fonction' => $user1->getFonction(),
             'replace_someone' => $demande->isRemplacant() ? 'oui' : 'non',
             'remplacement_nom' => $demande->getNomRemplacant(),
+            'selectedService' => $demande->getIdService(),
             'remplacement_prenom' => $demande->getPrenomRemplacant(),
             'telephone_avant_service' => $demande->getTelephoneRemplacant(),
             'parti_rectorat' => $demande->isDepart(),
@@ -547,6 +549,18 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
                 $entityManager->persist($historique);
         $entityManager->flush();
         $token = $demande->getToken();
+        $valideur_uid = $demande->getValideur();
+        $mailValideur = $valideur_uid.'@ac-guadeloupe.fr';
+
+        
+    
+        $emailMessage = (new Email())
+            ->from('noreply@ac-guadeloupe.fr')
+            ->to($mailValideur)
+            ->subject('Une nouvelle demande vous a été assignée dans l\'application nouveaux arrivants')
+            ->html('<p>Une nouvelle demande vous a été assignée dans l\'application nouveaux arrivants.</p>');
+    
+        $mailer->send($emailMessage);
     
 
         return $this->redirectToRoute('mes_demandes');
@@ -725,6 +739,16 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
 
         $entityManager->persist($historique);
         $entityManager->flush();
+
+        $valideur_uid = $demande->getValideur();
+        $mailValideur = $valideur_uid.'@ac-guadeloupe.fr';
+        $emailMessage = (new Email())
+            ->from('noreply@ac-guadeloupe.fr')
+            ->to($mailValideur)
+            ->subject('Une nouvelle demande vous a été assignée dans l\'application nouveaux arrivants')
+            ->html('<p>Une nouvelle demande vous a été assignée dans l\'application nouveaux arrivants.</p>');
+    
+        $mailer->send($emailMessage);
 
         return $this->redirectToRoute('mes_demandes');
     }

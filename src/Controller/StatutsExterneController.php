@@ -367,6 +367,7 @@ class StatutsExterneController extends AbstractController
             'date_de_naissance' => $user->getDateDeNaissance(),
             'fonction' => $user->getFonction(),
             'replace_someone' => $demande->isRemplacant() ? 'oui' : 'non',
+            'selectedService' => $demande->getIdService(),
             'remplacement_nom' => $demande->getNomRemplacant(),
             'remplacement_prenom' => $demande->getPrenomRemplacant(),
             'telephone_avant_service' => $demande->getTelephoneRemplacant(),
@@ -441,18 +442,21 @@ class StatutsExterneController extends AbstractController
 
                 $entityManager->persist($historique);
         $entityManager->flush();
+        $valideur_uid = $demande->getValideur();
+        $mailValideur = $valideur_uid.'@ac-guadeloupe.fr';
 
         
-        $email = (new Email())
+    
+        $emailMessage = (new Email())
             ->from('noreply@ac-guadeloupe.fr')
-            ->to($user->getEmail())
-            ->subject('Vous avez envoyé la demande.')
-            ->text('Vous avez envoyé la demande.')
-            ->html('<p>Bonjour, votre demande a bien été envoyée à votre chef de service.</p>');
+            ->to($mailValideur)
+            ->subject('Une nouvelle demande vous a été assignée dans l\'application nouveaux arrivants')
+            ->html('<p>Une nouvelle demande vous a été assignée dans l\'application nouveaux arrivants.</p>');
     
-     
-    
-            $mailer->send($email);
+        $mailer->send($emailMessage);
+
+        
+      
     
        
 

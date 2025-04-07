@@ -206,7 +206,15 @@ text-align: left;
 padding-left: 25px; 
 }
 .container.table-container {
-margin-top: -90px; 
+    margin-top: 0;  /* Valeur de base */
+}
+
+.container.table-container.with-warning {
+    margin-top: -90px; /* Décalage ajusté lorsque le message est présent */
+}
+
+.container.table-container.no-warning {
+    margin-top: -30px; /* Réduction de l'espace si le message n'est pas affiché */
 }
 
 .status-leka, .status-leka-mesdemandes{

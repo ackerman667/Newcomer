@@ -4,6 +4,17 @@
     max-width: 100% !important;
     padding: 0;
 }
+.container.table-container {
+    margin-top: 50px;  
+}
+
+.container.table-container.with-warning {
+    margin-top: -30px; 
+}
+
+.container.table-container.no-warning {
+    margin-top: 0px; 
+}
 table {
     width: 100%;
     border-collapse: collapse;

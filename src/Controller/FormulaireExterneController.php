@@ -232,12 +232,20 @@ class FormulaireExterneController extends AbstractController
     
         $services = $response->toArray();
         $servicesTree = $this->buildTree($services);
-        $servicesDropdownData = $this->transformServicesForDropdown($servicesTree);
+
+        if($temporaryData->getAction() =='create') {
+            $servicesDropdownData = $this->transformServicesForDropdown($servicesTree, false);
+        } else {
+            $servicesDropdownData = $this->transformServicesForDropdown($servicesTree, true);
+        }
     
     
         $form = $this->createForm(DemandeEtape2FormType::class, $data, [
             'services' => $servicesDropdownData,
         ]);
+        if (array_key_exists('selectedService', $data) && $data['selectedService']) {
+            $form->get('selectedService')->setData($data['selectedService']);
+        }
     
         $form->handleRequest($request);
     
@@ -275,7 +283,8 @@ class FormulaireExterneController extends AbstractController
                     'Accept' => 'application/json',
                 ],
             ]);
-    
+
+            $updatedData['id_service'] = $service['id_service'];
             $apiDataSecond = $responseSecond->toArray();
             $updatedData['nom_valideur'] = $apiDataSecond[0]['valideur'] ?? null;
     
@@ -358,7 +367,7 @@ public function etape3(
 
         $dossiersPartages = $data['dossiers_partages'] ?? []; 
         $dossiersSelectionnes = []; 
-        
+        $service_id = $data['id_service'];
     $nomServiceSelectionne = $data['nom_service_selectionne'] ?? '';
     $nomValideur = $data['nom_valideur'] ?? '';
 
@@ -508,7 +517,7 @@ public function etape3(
        $user->setDateDebut(null);
        $user->setDateFin(null);
    }
-
+   $demande->setIdService($service_id);
    $demande->setIDutilisateur($user);
    $demande->setAutrePersonne(false);
    $demande->setDate(new \DateTime('now', $this->timezone));
@@ -594,21 +603,25 @@ public function etape3(
         return $branch;
     }  
     
-    private function transformServicesForDropdown(array $services, $niveau = 0): array
+    private function transformServicesForDropdown(array $services, $isModification = false, $niveau = 0): array
     {
-        if ($niveau == 0) {
-            $servicesDropdownData = ['...' => ''];
-        } else {
-            $servicesDropdownData = [];
-        }
+        // Inclure les '...' uniquement si ce n'est PAS une modification
+        $servicesDropdownData = $isModification ? [] : ['...' => ''];
+    
         foreach ($services as $service) {
+            // Ajoute un indent visuel basé sur le niveau de profondeur
             $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $niveau);
+    
+            // Ajoute le service au menu déroulant avec son ID en valeur
             $servicesDropdownData[html_entity_decode($indent) . $service['service']] = $service['id_service'];
+    
+            // Si le service a des enfants, les traiter récursivement
             if (isset($service['children'])) {
-                $servicesDropdownData += $this->transformServicesForDropdown($service['children'], $niveau + 1);
+                $servicesDropdownData += $this->transformServicesForDropdown($service['children'], $isModification, $niveau + 1);
             }
         }
-        return $servicesDropdownData;
+    
+        return $servicesDropdownData; // Retourne le tableau formaté pour le menu déroulant.
     }
 
     private function isFormulaireComplet(array $data): bool

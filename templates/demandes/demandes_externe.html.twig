@@ -18,11 +18,25 @@
     
 {% endblock %}
 {% block main %}
-  <div class="disclaimer-container">
-        <p>
-            ⚠️ <b></b> Si vous n'avez plus d'ajustements à faire sur la demande, veuillez la valider afin qu'elle soit transmise à votre supérieur hiérarchique
-        </p>
-    </div>
+{% set hasDraft = false %}
+{% for demande in demandes %}
+    {% if demande.statuts == 'Brouillons' %}
+        {% set hasDraft = true %}
+    {% endif %}
+{% endfor %}
+
+{% if hasDraft %}
+<div class="disclaimer-container">
+    <p>
+        ⚠️ <b></b> Si vous n'avez plus d'ajustements à faire sur la demande, veuillez la valider afin qu'elle soit transmise à votre supérieur hiérarchique
+    </p>
+</div>
+<div class="container table-container with-warning">
+{% else %}
+<div class="container table-container no-warning">
+
+
+{% endif %}
    <div class="container table-container">
     <div class="row justify-content-center">
         <div class="col-12">
@@ -93,7 +107,7 @@
                                             <a href="{{ path('demande_consult', {id: demande.id}) }}" title="Consulter"><i class="fas fa-search icon-search"></i></a>
                                             <a href="{{ path('formulaireexterne_supprimer', {id: demande.id}) }}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');" title="Supprimer"><i class="fas fa-trash-alt icon-trash"></i></a>
                                             <a href="{{ path('valider_demandes', {id: demande.id}) }}" title="Valider"><i class="fas fa-thumbs-up icon-thumbs-up"></i></a>
-                                            <a href="{{ path('demande_pdf', {id: demande.id}) }}" title="Télécharger PDF"><i class="fas fa-file-pdf icon-pdf"></i></a>
+                                            {# <a href="{{ path('demande_pdf', {id: demande.id}) }}" title="Télécharger PDF"><i class="fas fa-file-pdf icon-pdf"></i></a> #}
                                         {% else %}
                                             <a href="{{ path('demande_consult', {id: demande.id}) }}" title="Consulter"><i class="fas fa-search icon-search"></i></a>
                                             <a href="{{ path('demande_pdf', {id: demande.id}) }}" title="Télécharger PDF"><i class="fas fa-file-pdf icon-pdf"></i></a>

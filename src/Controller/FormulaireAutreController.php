@@ -140,11 +140,19 @@ if (!empty($data['date_fin_contrat'])) {
         ]);
         $services = $response->toArray();
         $servicesTree = $this->buildTree($services);
-        $servicesDropdownData = $this->transformServicesForDropdown($servicesTree);
+
+        if($temporaryData->getAction() =='create') {
+            $servicesDropdownData = $this->transformServicesForDropdown($servicesTree, false);
+        } else {
+            $servicesDropdownData = $this->transformServicesForDropdown($servicesTree, true);
+        }
 
         $form = $this->createForm(DemandeEtape2FormType::class, $data, [
             'services' => $servicesDropdownData,
         ]);
+        if (array_key_exists('selectedService', $data) && $data['selectedService']) {
+            $form->get('selectedService')->setData($data['selectedService']);
+        }
 
         $form->handleRequest($request);
 
@@ -177,6 +185,7 @@ if (!empty($data['date_fin_contrat'])) {
                     'Accept' => 'application/json',
                 ],
             ]);
+            $updatedData['id_service'] = $service['id_service'];
 
             $apiDataSecond = $responseSecond->toArray();
         $updatedData['nom_valideur'] = $apiDataSecond[0]['valideur'] ?? null;
@@ -217,6 +226,7 @@ if (!empty($data['date_fin_contrat'])) {
         $dossiersPartages = $data['dossiers_partages'] ?? [];
         $dossiersSelectionnes = []; 
         $nomServiceSelectionne = $data['nom_service_selectionne'] ?? '';
+        $service_id = $data['id_service'];
         $nomValideur = $data['nom_valideur'] ?? '';
         
 
@@ -451,7 +461,7 @@ if (!empty($data['date_fin_contrat'])) {
             $ressources->setDemande($demande);
             $dossiersSelectionnes = $form->get('dossiers_partages')->getData();
             $ressources->setContenu(!empty($dossiersSelectionnes) ? json_encode($dossiersSelectionnes) : 'Pas de ressources sélectionnées / disponible pour ce Service.');
-    
+            $demande->setIdService($service_id);
             $entityManager->persist($demande);
             $entityManager->persist($historique);
             $entityManager->persist($ressources);
@@ -510,21 +520,25 @@ if (!empty($data['date_fin_contrat'])) {
         return $branch;
     }
 
-    private function transformServicesForDropdown(array $services, $niveau = 0): array
+    private function transformServicesForDropdown(array $services, $isModification = false, $niveau = 0): array
     {
-        if ($niveau == 0) {
-            $servicesDropdownData = ['...' => ''];
-        } else {
-            $servicesDropdownData = [];
-        }
+        // Inclure les '...' uniquement si ce n'est PAS une modification
+        $servicesDropdownData = $isModification ? [] : ['...' => ''];
+    
         foreach ($services as $service) {
+            // Ajoute un indent visuel basé sur le niveau de profondeur
             $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $niveau);
+    
+            // Ajoute le service au menu déroulant avec son ID en valeur
             $servicesDropdownData[html_entity_decode($indent) . $service['service']] = $service['id_service'];
+    
+            // Si le service a des enfants, les traiter récursivement
             if (isset($service['children'])) {
-                $servicesDropdownData += $this->transformServicesForDropdown($service['children'], $niveau + 1);
+                $servicesDropdownData += $this->transformServicesForDropdown($service['children'], $isModification, $niveau + 1);
             }
         }
-        return $servicesDropdownData;
+    
+        return $servicesDropdownData; // Retourne le tableau formaté pour le menu déroulant.
     }
 
     private function isFormulaireComplet(array $data): bool
