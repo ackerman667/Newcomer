@@ -451,7 +451,7 @@ $data = array_merge($tmp, [
                 $historique->setDate(new \DateTime('now', $this->timezone));
                 $historique->setStatut('Création');
                 $historique->setStatutOperation('Création');
-                $user1->setToken($token);
+              
         
                 $ressources = new Ressources();
                 $ressources->setNom('Ressources');
@@ -500,7 +500,7 @@ $data = array_merge($tmp, [
                     $historique->setDate(new \DateTime('now', $this->timezone));
                     $historique->setStatut('Création');
                     $historique->setStatutOperation('Création');
-                    $user1->setToken($token);
+                   
         
                     $ressources = new Ressources();
                     $ressources->setNom('Ressources');
@@ -523,7 +523,7 @@ $data = array_merge($tmp, [
                 $historique->setDate(new \DateTime('now', $this->timezone));
                 $historique->setStatut('Création');
                 $historique->setStatutOperation('Création');
-                $user1->setToken($token);
+               
         
                 $ressources = new Ressources();
                 $ressources->setNom('Ressources');
@@ -556,10 +556,10 @@ $data = array_merge($tmp, [
                 }
             } else {
                 $demande->setRemplacant(false);
-                $demande->setNomRemplacant('Pas de remplacant.');
-                $demande->setPrenomRemplacant('Pas de remplacant.');
-                $demande->setTelephoneRemplacant('Pas de remplacant.');
-                $demande->setAffectationRemplacant('Pas de remplacant.');
+                $demande->setNomRemplacant('Non Renseigné.');
+                $demande->setPrenomRemplacant('Non Renseigné.');
+                $demande->setTelephoneRemplacant('Non Renseigné.');
+                $demande->setAffectationRemplacant('Non Renseigné.');
                 $demande->setDepart(false);
             }
     

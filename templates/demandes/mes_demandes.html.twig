@@ -95,8 +95,14 @@
                                   {{ demande.IDutilisateur.nom }} {{ demande.IDutilisateur.prenom }}
                                 {% endif %}
                             </td>
+
+                            {% if demande.statuts != 'Brouillons' %}
                         <td>{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
                         <td>{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
+                              {% else %}
+    <td class="text-center">&nbsp;</td>
+    <td class="text-center">&nbsp;</td>
+{% endif %}
                         <td>
                                     <span class="{% if demande.statuts == 'Brouillons' %}status-brouillons-mesdemandes{% elseif demande.statuts == 'Suivi dans LEKA' %}status-leka-mesdemandes{% elseif demande.statuts == 'En attente' %}status-en-attente-mesdemandes{% elseif demande.statuts == 'Refusée' %}status-refuse-mesdemandes{% endif %}">
                                         {{ demande.statuts }}

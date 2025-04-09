@@ -423,6 +423,7 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
         }
     
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande->getId()]);
+        $ressourcesDecoded = json_decode($ressources->getContenu(), true);
     
         if ($demande->isAutrePersonne()) {
             $user = $demande->getAutreUtilisateur();
@@ -438,7 +439,9 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
             'user' => $user,
             'monApplication' => $monApplication,
             'ressources' => $ressources,
-            'valideur' => $valideur
+            'ressourcesList' => $ressourcesDecoded,
+            'valideur' => $valideur,
+            'provenance' => 'ldap'
         ]);
     }
 

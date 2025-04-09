@@ -499,10 +499,10 @@ public function etape3(
        }
    } else {
        $demande->setRemplacant(false);
-       $demande->setNomRemplacant('Pas de remplacant.');
-       $demande->setPrenomRemplacant('Pas de remplacant.');
-       $demande->setTelephoneRemplacant('Pas de remplacant.');
-       $demande->setAffectationRemplacant('Pas de remplacant.');
+       $demande->setNomRemplacant('Non Renseigné.');
+       $demande->setPrenomRemplacant('Non Renseigné.');
+       $demande->setTelephoneRemplacant('Non Renseigné.');
+       $demande->setAffectationRemplacant('Non Renseigné.');
        $demande->setDepart(false);
    }
 

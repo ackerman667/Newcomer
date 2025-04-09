@@ -14,7 +14,7 @@ class DemandeEtape1FormType extends AbstractType
     {
         $builder
             ->add('replace_someone', ChoiceType::class, [
-                'label' => 'Remplacez-vous quelqu\'un ?',
+                'label' => 'Est-ce un remplaçant ?',
                 'choices' => [
                     'Oui' => 'oui',
                     'Non' => 'non',

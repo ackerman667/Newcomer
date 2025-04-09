@@ -76,9 +76,14 @@
                             {% for demande in demandes %}
                                 <tr>
                                     <td style="text-align: center; padding: 8px; color: #00008B; font-weight: bold;">{{ demande.service }}</td>
-                                 
-                                    <td class="text-center">{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
+                                 {% if demande.statuts != 'Brouillons' %}
+                      <td class="text-center">{{ demande.date ? demande.date|date('d/m/Y') : '' }}</td>
                                     <td class="text-center">{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</td>
+                        {% else %}
+    <td class="text-center">&nbsp;</td>
+    <td class="text-center">&nbsp;</td>
+{% endif %}
+                                    
                                     <td class="text-center">
                                         <span class="{% if demande.statuts == 'Brouillons' %}status-brouillons{% elseif demande.statuts == 'Suivi dans LEKA' %}status-leka{% elseif demande.statuts == 'En attente' %}status-en-attente{% elseif demande.statuts == 'Refusée' %}status-refuse{% endif %}">{{ demande.statuts }}</span>
                                     </td>

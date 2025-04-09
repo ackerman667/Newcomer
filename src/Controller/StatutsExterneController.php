@@ -60,6 +60,7 @@ class StatutsExterneController extends AbstractController
     #[Route('formulaireext/statuts', name: 'demande_externe')]
     public function index( Request $request , SessionInterface $session, MonApplication $monApplication, EntityManagerInterface $entityManager): Response
     {
+        $this->denyAccessUnlessUserIsActive();
          $user = $this->getUser();
         $demandes = $this->getDemandesPourUtilisateur($entityManager, $user);
 
@@ -106,13 +107,16 @@ class StatutsExterneController extends AbstractController
 
         $user = $demande->getIDutilisateur();
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
+        $ressourcesDecoded = json_decode($ressources->getContenu(), true);
 
         return $this->render('visualiser-demandes/visualiser.html.twig', [
             'demande' => $demande,
             'user' => $user,
             'monApplication' => $monApplication,
             'ressources' => $ressources,
-            'valideur' => $valideur
+            'ressourcesList' => $ressourcesDecoded,
+            'valideur' => $valideur,
+            'provenance' => 'externe'
 
         ]);
     }
@@ -442,7 +446,7 @@ class StatutsExterneController extends AbstractController
 
                 $entityManager->persist($historique);
         $entityManager->flush();
-        $valideur_uid = $demande->getValideur();
+        $valideur_uid = $demande->getUidValideur();
         $mailValideur = $valideur_uid.'@ac-guadeloupe.fr';
 
         
@@ -519,6 +523,20 @@ private function checkStatuts(int $demandeId, EntityManagerInterface $entityMana
         throw $this->createAccessDeniedException('Vous ne pouvez pas agir sur cette demande car elle est deja validée".');
     }
 }
+
+private function denyAccessUnlessUserIsActive(): void
+{
+    $user = $this->getUser();
+
+    if (!$user || !$user instanceof User) {
+        throw $this->createAccessDeniedException('Vous devez être connecté pour accéder à cette ressource.');
+    }
+
+    if (!$user->isCompteActif()) {
+        throw $this->createAccessDeniedException('Votre compte n\'est pas encore activé. Veuillez vérifier votre boîte mail pour l\'activer.');
+    }
+}
+
 
 
 

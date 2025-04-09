@@ -40,8 +40,16 @@
 {% endblock %}
 
 {% block main %}
+
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                    {{ message }}
+                </div>
+            {% endfor %}
 <div class="container mt-5">
     <div class="row justify-content-center">
+    
+
         <div class="col-md-6">
           <div class="info-box">
                 <p>⚠️ Cette page est destinée aux utilisateurs qui n'ont pas d'adresse email académique. Veuillez entrer votre adresse email personnelle pour procéder.</p>

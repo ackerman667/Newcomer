@@ -29,19 +29,20 @@
         }
     </style>
 {% endblock %}
-{% block body %}<body class="page not-home">{% endblock %}
+{% block body %}{% endblock %}
 {% block header %}
-    <div class="title_app" id="title">
-        <h1 class="title">{{ monApplication.Appli }}</h1>
-        <h2 class="desc">{{ monApplication.LibAppli }}</h2>
-    </div>
-    <div class="title_image">
-        <span>Rectorat</span>
-    </div>
+  
+  
+  
 {% endblock %}
 {% block main %}
   <div class="back-button">
+    
+    {% if provenance == 'externe' %}
+            <a href="{{ path('demande_externe') }}" class="btn btn-primary">Retour aux demandes</a>
+            {% elseif provenance == 'ldap' %}
             <a href="{{ path('mes_demandes') }}" class="btn btn-primary">Retour aux demandes</a>
+            {% endif %}
         </div>
     <div class="container">
         <div class="row justify-content-center">
@@ -73,13 +74,23 @@
                         <label>Titre :</label>
                         <span>{{ demande.titre }}</span>
                     </div>
+
                     <div class="details-group">
+
                         <label>Date de Soumission :</label>
+                         {% if demande.statuts != 'Brouillons' %}
                         <span>{{ demande.date ? demande.date|date('d/m/Y') : '' }}</span>
+                         {% else %}
+    <span>&nbsp;</span>
+      {% endif %}
                     </div>
                     <div class="details-group">
                         <label>Heure de Soumission :</label>
+                         {% if demande.statuts != 'Brouillons' %}
                         <span>{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</span>
+                          {% else %}
+    <span>&nbsp;</span>
+      {% endif %}
                     </div>
                     {% if demande.statuts == 'Suivi dans LEKA' %}
                     <div class="details-group" style="color: green;">
@@ -89,19 +100,19 @@
                 {% endif %}
                    
                     <div class="details-group">
-                        <label>Nom Remplaçant :</label>
+                        <label>Nom Prédécesseur :</label>
                         <span>{{ demande.nomRemplacant }}</span>
                     </div>
                     <div class="details-group">
-                        <label>Prénom Remplaçant :</label>
+                        <label>Prénom Prédécesseur :</label>
                         <span>{{ demande.prenomRemplacant }}</span>
                     </div>
                     <div class="details-group">
-                        <label>Téléphone Remplaçant :</label>
+                        <label>Téléphone Prédécesseur :</label>
                         <span>{{ demande.telephoneRemplacant }}</span>
                     </div>
                     <div class="details-group">
-                        <label>Affectation Remplaçant :</label>
+                        <label>Affectation Prédécesseur :</label>
                         <span>{{ demande.affectationRemplacant }}</span>
                     </div>
                 </div>
@@ -185,7 +196,12 @@
                     
                     <div class="details-group">
                         <label>{{ ressources.nom }} :</label>
-                        <span>{{ ressources.contenu }}</span>
+                        <span>
+        {% for item in ressourcesList %}
+            {{ item }}{% if not loop.last %}, {% endif %}
+        {% endfor %}
+    </span>
+
                     </div>
                     <div class="details-group">
                         <label>Service :</label>

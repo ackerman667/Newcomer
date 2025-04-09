@@ -526,7 +526,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
 
 
     #[Route('/formulaireldap/valider/{id}', name: 'valider_demandesldap')]
-    public function changerStatut(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id): Response
+    public function changerStatut(MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, $id, MailerInterface $mailer): Response
     {
         $this->checkUserPermissionForDemande($id, $entityManager);
         $this->checkStatuts($id, $entityManager);
@@ -549,7 +549,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
                 $entityManager->persist($historique);
         $entityManager->flush();
         $token = $demande->getToken();
-        $valideur_uid = $demande->getValideur();
+        $valideur_uid = $demande->getUidValideur();
         $mailValideur = $valideur_uid.'@ac-guadeloupe.fr';
 
         
@@ -579,6 +579,8 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
         }
     
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
+        $ressourcesDecoded = json_decode($ressources->getContenu(), true); // true = tableau associatif
+
     
         // Faire la distinction si la demande est pour une autre personne ou non
         if ($demande->isAutrePersonne()) {
@@ -595,7 +597,10 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
             'user' => $user,
             'monApplication' => $monApplication,
             'ressources' => $ressources,
-            'valideur' => $valideur
+            'ressourcesList' => $ressourcesDecoded,
+            'valideur' => $valideur,
+            'provenance' => 'ldap'
+
         ]);
     }
 
@@ -740,7 +745,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
         $entityManager->persist($historique);
         $entityManager->flush();
 
-        $valideur_uid = $demande->getValideur();
+        $valideur_uid = $demande->getUidValideur();
         $mailValideur = $valideur_uid.'@ac-guadeloupe.fr';
         $emailMessage = (new Email())
             ->from('noreply@ac-guadeloupe.fr')

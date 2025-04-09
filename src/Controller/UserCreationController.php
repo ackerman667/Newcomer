@@ -137,11 +137,23 @@ $confirmPassword = $form->get('confirm_password')->getData();
             $entityManager->persist($user);
             $entityManager->flush();
 
-            $this->security->login($user);
+            $activationUrl = $this->generateUrl('user_activation', [
+                'token' => $user->getToken(),
+            ], UrlGeneratorInterface::ABSOLUTE_URL);
+            
+            $emailMessage = (new Email())
+                ->from('noreply@ac-guadeloupe.fr')
+                ->to($user->getEmail())
+                ->subject('Activez votre compte')
+                ->html("<p>Bienvenue, veuillez activer votre compte en cliquant sur le lien suivant :</p><p><a href=\"$activationUrl\">Activer mon compte</a></p>");
+            
+            $mailer->send($emailMessage);
+
+     
 
             // $this->addFlash('success', 'Votre compte a bien été créé. Veuillez l\'activer par mail.');
 
-            return $this->redirectToRoute('demande_externe');
+            return $this->redirectToRoute('user_creation_confirmation');
         }
 
         return $this->render('user_creation/index.html.twig', [
@@ -150,6 +162,35 @@ $confirmPassword = $form->get('confirm_password')->getData();
 
         ]);
     }
+
+
+    #[Route('/activation/{token}', name: 'user_activation')]
+public function activateUser(string $token, EntityManagerInterface $entityManager): Response
+{
+    $user = $entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+
+    if (!$user) {
+        throw $this->createNotFoundException('Lien invalide ou utilisateur introuvable.');
+    }
+
+   
+    $user->setCompteActif(true);
+    $user->setToken(null); 
+    $user->setTokenExpiration(null);
+    $entityManager->flush();
+
+    $this->addFlash('success', 'Votre compte a été activé ! Vous pouvez maintenant vous connecter.');
+
+    return $this->redirectToRoute('app_login');
+}
+
+
+
+
+
+
+
+
     #[Route('/create-user/confirmation', name: 'user_creation_confirmation')]
     public function userCreationConfirmation(MonApplication $monApplication): Response
     {
