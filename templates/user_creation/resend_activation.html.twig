@@ -1,0 +1,83 @@
+{% extends 'layout_ag.html.twig' %}
+
+{% block title %}
+    <title>Renvoyer l'e-mail dactivation - {{ monApplication.Appli }}</title>
+{% endblock %}
+
+{% block body %}
+<body class="page not-home">
+{% endblock %}
+
+{% block header %}
+    <h1 class="page-title">Renvoyer l'e-mail d'activation</h1>
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger">{{ message }}</div>
+            {% endfor %}
+
+            <div class="resend-activation-container">
+                <p>Entrez votre adresse e-mail. Si un compte inactif existe, nous vous enverrons un lien pour activer votre compte.</p>
+
+                <form method="post" class="resend-activation-form">
+                    <div class="form-group">
+                        <label for="email">Adresse e-mail</label>
+                        <input type="email" id="email" name="email" class="form-control" placeholder="Votre adresse e-mail" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Renvoyer l’e-mail d’activation</button>
+                </form>
+
+                <div class="back-to-login">
+                    <p><a href="{{ path('app_login') }}">Retour à la page de connexion</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .resend-activation-container {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .resend-activation-form .form-group {
+        margin-bottom: 15px;
+    }
+    .resend-activation-form .btn-primary {
+        width: 100%;
+    }
+    .back-to-login {
+        text-align: center;
+        margin-top: 10px;
+    }
+    .alert {
+        padding: 10px 15px;
+        margin-bottom: 15px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+    }
+    .alert-success {
+        color: #3c763d;
+        background-color: #dff0d8;
+        border-color: #d6e9c6;
+    }
+    .alert-danger {
+        color: #a94442;
+        background-color: #f2dede;
+        border-color: #ebccd1;
+    }
+</style>
+{% endblock %}

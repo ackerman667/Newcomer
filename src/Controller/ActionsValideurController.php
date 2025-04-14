@@ -67,8 +67,9 @@ class ActionsValideurController extends AbstractController
  */
 
     #[Route('/formulaireldap/modifierdemandes/{id}', name: 'preparer_modification_valideur')]
-public function preparerModificationValideur(int $id, EntityManagerInterface $entityManager): Response
+public function preparerModificationValideur(int $id, EntityManagerInterface $entityManager, Request $request): Response
 {
+    $referer = $request->headers->get('referer');
     $this->checkUserPermissionForDemande($id, $entityManager);
     $this->checkStatuts($id, $entityManager);
     $this->denyAccessUnlessValideur();
@@ -95,6 +96,7 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     return $this->redirectToRoute('modifier_demandesvalideur_etape1', [
         'id' => $id,
         'token' => $temporaryData->getToken(),
+        'referer' => $referer,
     ]);
 }
 

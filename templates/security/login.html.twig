@@ -8,16 +8,16 @@
     <script type="text/javascript" src="{{ asset('js/documentation.js', 'interfaceappli') }}" defer></script>
     <style>
     .info-box {
-    background-color: #e7f3fe;     /* Fond bleu clair conservé */
-    border: 1px solid #b3d4fc;     /* Bordure légère en bleu */
+    background-color: #e7f3fe;     
+    border: 1px solid #b3d4fc;    
     padding: 15px;
     margin-bottom: 20px;
     border-radius: 5px;
     text-align: center;
-    font-size: 16px;               /* Taille de police conservée */
-    color: #004085;                /* Texte en bleu foncé pour améliorer la lisibilité */
-    font-weight: bold;             /* Met le texte en gras pour renforcer l'impact */
-    font-family: Arial, sans-serif; /* Police propre et lisible */
+    font-size: 16px;               
+    color: #004085;               
+    font-weight: bold;            
+    font-family: Arial, sans-serif; 
 }
 
     </style>
@@ -94,6 +94,7 @@
                     </form>
 
                     <div class="mt-4 text-center">
+                        <p>Renvoyer l'email d'activation <a href="{{ path('resend_activation') }}">cliquez ici</a>.</p>
                         <p>Vous n'avez pas de compte ? <a href="{{ path('user_creation') }}">Inscrivez-vous ici</a>.</p>
                         <p>Si vous disposez d'un compte académique, <a href="{{ path('mes_demandes') }}">cliquez ici</a>.</p>
                         <p>MDP oublié <a href="{{ path('forgot_password') }}">cliquez ici</a>.</p>

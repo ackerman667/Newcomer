@@ -173,6 +173,11 @@ public function activateUser(string $token, EntityManagerInterface $entityManage
         throw $this->createNotFoundException('Lien invalide ou utilisateur introuvable.');
     }
 
+    if($user && $user->isCompteActif()) {
+        throw $this->createNotFoundException('Votre compte à deja été activé.');
+
+    }
+
    
     $user->setCompteActif(true);
     $user->setToken(null); 
@@ -185,6 +190,41 @@ public function activateUser(string $token, EntityManagerInterface $entityManage
 }
 
 
+#[Route('/resend-activation', name: 'resend_activation')]
+public function resendActivation( MonApplication $monApplication, Request $request, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
+{
+    $email = $request->request->get('email');
+
+    if ($request->isMethod('POST') && $email) {
+        $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+
+        if ($user && !$user->isCompteActif()) {
+            $token = $user->getToken();
+            $activationUrl = $this->generateUrl('user_activation', [
+                'token' => $token,
+            ], UrlGeneratorInterface::ABSOLUTE_URL);
+
+            $emailMessage = (new Email())
+                ->from('noreply@ac-guadeloupe.fr')
+                ->to($user->getEmail())
+                ->subject('Activation de votre compte')
+                ->html("<p>Voici votre lien d'activation :</p><p><a href=\"$activationUrl\">Activer mon compte</a></p>");
+
+            $mailer->send($emailMessage);
+
+            $this->addFlash('success', 'Un e-mail d\'activation vous a été renvoyé.');
+        } else {
+            $this->addFlash('error', 'Aucun compte inactif trouvé avec cet e-mail.');
+        }
+    }
+    return $this->render('user_creation/resend_activation.html.twig', [
+       
+        'monApplication' => $monApplication,
+
+    ]);
+
+    return $this->render('user_creation/resend_activation.html.twig');
+}
 
 
 

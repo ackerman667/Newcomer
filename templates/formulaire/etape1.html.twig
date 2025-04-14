@@ -37,7 +37,15 @@
         }
         .page-counter {
             font-weight: bold;
+            text-align: right;
+            
         }
+        .retour-container {
+    text-align: left;
+    margin-bottom: 1rem;
+}
+
+        
         .inline-container {
             display: flex;
             align-items: center;
@@ -47,6 +55,11 @@
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
 {% block header %}
+  <div class="retour-container">
+    <a href="{{ path('demande_externe') }}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left"></i> Retour à l'accueil
+    </a>
+</div>
     <div class="title_app" id="title">
         <h1 class="title">{{ monApplication.Appli }}</h1>
         <h2 class="desc">{{ monApplication.LibAppli }}</h2>

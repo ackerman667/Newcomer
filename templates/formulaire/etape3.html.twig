@@ -38,6 +38,11 @@
         .service-dossier-container .service, .service-dossier-container .dossiers {
             width: 48%;
         }
+        .page-counter {
+            font-weight: bold;
+            text-align: right;
+            
+        }
     </style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
@@ -79,6 +84,9 @@
 
                 <button class="btn btn-primary">Soumettre</button>
             </div>
+             <div class="page-counter">
+                    {{ current_step }} / {{ total_steps }}
+                </div>
             {{ form_end(form) }}
         </div>
     </div>

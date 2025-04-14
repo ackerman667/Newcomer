@@ -14,6 +14,11 @@
             margin-bottom: 10px;
             text-align: center;
         }
+         .page-counter {
+            font-weight: bold;
+            text-align: right;
+            
+        }
         .form-group {
             margin-bottom: 15px;
         }
@@ -32,15 +37,9 @@
         }
     </style>
 {% endblock %}
-{% block body %}<body class="page not-home">{% endblock %}
+{% block body %}{% endblock %}
 {% block header %}
-    <div class="title_app" id="title">
-        <h1 class="title">{{ monApplication.Appli }}</h1>
-        <h2 class="desc">{{ monApplication.LibAppli }}</h2>
-    </div>
-    <div class="title_image">
-        <span>Rectorat</span>
-    </div>
+  
 {% endblock %}
 {% block main %}
 <div class="container">
@@ -112,6 +111,9 @@
 
                 <button class="btn btn-primary">Suivant</button>
             </div>
+                <div class="page-counter">
+                    {{ current_step }} / {{ total_steps }}
+                </div>
             {{ form_end(form) }}
         </div>
     </div>

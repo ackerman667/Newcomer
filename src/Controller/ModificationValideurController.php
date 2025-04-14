@@ -64,7 +64,7 @@ class ModificationValideurController extends AbstractController
 #[Route('formulaireldap/modifierdemandes/etape1/{id}/{token}', name: 'modifier_demandesvalideur_etape1')]
 public function editDemandeEtape1(int $id, string $token, Request $request, EntityManagerInterface $entityManager,  MonApplication $monApplication): Response
 {
-
+    $referer = $request->query->get('referer');
     // Vérifie si l'utilisateur est un valideur
     if (!$this->isValideurOrSuperUser()) {
         throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à cette page.');
@@ -147,6 +147,7 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
         'monApplication' => $monApplication,
         'demande' => $demande,
         'token' => $token,
+        'referer' => $referer,
         
     ]);
 }

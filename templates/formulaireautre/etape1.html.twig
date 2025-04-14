@@ -16,6 +16,11 @@
         .form-group {
             margin-bottom: 15px;
         }
+        .page-counter {
+            font-weight: bold;
+            text-align: right;
+            
+        }
         .form-group label {
             font-weight: bold;
         }
@@ -34,18 +39,26 @@
             font-style: italic;
             color: #04A0DB;
         }
-        .page-counter {
-            font-weight: bold;
-        }
+       
         .inline-container {
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
+        .retour-container {
+    text-align: left;
+    margin-bottom: 1rem;
+}
+
     </style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
 {% block header %}
+  <div class="retour-container">
+    <a href="{{ path('mes_demandes') }}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left"></i> Retour à l'accueil
+    </a>
+</div>
     <div class="title_app" id="title">
         <h1 class="title">{{ monApplication.Appli }}</h1>
         <h2 class="desc">{{ monApplication.LibAppli }}</h2>

@@ -13,6 +13,10 @@
             margin-bottom: 10px;
             text-align: center;
         }
+         .page-counter {
+            font-weight: bold;
+            text-align: right;
+        }
         .form-group {
             margin-bottom: 15px;
         }
@@ -78,6 +82,9 @@
                 <a href="{{ path('formulaireldap_etape2', { token: token }) }}" class="btn btn-secondary">Précédent</a>
                 <button class="btn btn-primary">Soumettre</button>
             </div>
+             <div class="page-counter">
+                    {{ current_step }} / {{ total_steps }}
+                </div>
             {{ form_end(form) }}
         </div>
     </div>

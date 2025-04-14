@@ -42,10 +42,21 @@
             align-items: center;
             justify-content: space-between;
         }
+        .retour-container {
+    text-align: left;
+    margin-bottom: 1rem;
+}
+
     </style>
 {% endblock %}
+
 {% block body %}<body class="page not-home">{% endblock %}
 {% block header %}
+  <div class="retour-container">
+    <a href="{{ path('mes_demandes') }}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left"></i> Retour à l'accueil
+    </a>
+</div>
     <div class="title_app" id="title">
         <h1 class="title">{{ monApplication.Appli }}</h1>
         <h2 class="desc">{{ monApplication.LibAppli }}</h2>

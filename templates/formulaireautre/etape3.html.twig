@@ -8,6 +8,11 @@
             padding: 15px;
             margin-bottom: 20px;
         }
+        .page-counter {
+            font-weight: bold;
+            text-align: right;
+            
+        }
         .form-section-title {
             font-weight: bold;
             margin-bottom: 10px;
@@ -78,6 +83,9 @@
 
                 <button class="btn btn-primary">Soumettre</button>
             </div>
+                <div class="page-counter">
+                    {{ current_step }} / {{ total_steps }}
+                </div>
             {{ form_end(form) }}
         </div>
     </div>
