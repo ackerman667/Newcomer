@@ -36,14 +36,11 @@
   
 {% endblock %}
 {% block main %}
-  <div class="back-button">
-    
-    {% if provenance == 'externe' %}
-            <a href="{{ path('demande_externe') }}" class="btn btn-primary">Retour aux demandes</a>
-            {% elseif provenance == 'ldap' %}
-            <a href="{{ path('mes_demandes') }}" class="btn btn-primary">Retour aux demandes</a>
-            {% endif %}
-        </div>
+{% if referer %}
+    <a href="{{ referer }}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left"></i> Retour
+    </a>
+{% endif %}
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-10">
@@ -66,9 +63,10 @@
                 <div class="details-section">
                     <div class="details-section-title">Détails de la Demande</div>
                     <div class="details-group">
-                        <label>Chef de service :</label>
-                        <span>{{ valideur }}</span>
-                    </div>
+              <label>Chef de service :</label>
+                        <span>{{ valideurInfos.givenname }} {{ valideurInfos.sn }}</span>
+</div>
+
                     
                     <div class="details-group">
                         <label>Titre :</label>

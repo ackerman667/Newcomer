@@ -5,6 +5,7 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Entity\Demandes;
 use App\Service\UserRoleChecker;
+use App\Security\LdapUserFetcher;
 use App\Service\SuperUserChecker;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -162,6 +163,17 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     
     // Récupérez l'email en fonction du type de demande
     $email = $demande->isAutrePersonne() ? $demande->getAutreUtilisateur()->getEmail() : $demande->getIDutilisateur()->getEmail();
+    if ($demande->isAutrePersonne()) {
+        $nom = $demande->getAutreUtilisateur()->getNom();
+        $prenom = $demande->getAutreUtilisateur()->getPrenom();
+
+    } else {
+        $nom = $demande->getIDutilisateur()->getNom();
+        $prenom = $demande->getIDutilisateur()->getPrenom();
+
+    }
+
+
     
         $emailMessage = (new Email())
             ->from('noreply@ac-guadeloupe.fr')
@@ -173,14 +185,14 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     
     
        
+   
     
-        // $subject = "La demande numéro $id pour le service {$demande->getService()} a été validée";
-    
-        $subject = "Demande d'accès à un poste informatique : La  demande numéro $id pour le service {$demande->getService()} a été validée";
+        $subject = "Demande d'accès à un poste informatique : La  demande numéro $id pour $nom $prenom du service {$demande->getService()} a été validée";
     
         $leka = (new Email())
             ->from($mailValideur)
             ->to('lekadempp@ac-guadeloupe.fr') 
+            ->cc('nbarbeu@gmail.com')
             ->subject($subject) 
             ->html('<p>Votre demande a été envoyée dans LEKA.</p>')
             ->attach($pdfOutput, 'demande.pdf', 'application/pdf');
@@ -241,14 +253,26 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
        
        $pdfResponse = $this->generatePdf($id, $entityManager);
        $pdfOutput = $pdfResponse->getContent();
+
+
+       if ($demande->isAutrePersonne()) {
+        $nom = $demande->getAutreUtilisateur()->getNom();
+        $prenom = $demande->getAutreUtilisateur()->getPrenom();
+
+    } else {
+        $nom = $demande->getIDutilisateur()->getNom();
+        $prenom = $demande->getIDutilisateur()->getPrenom();
+
+    }
+
     
     
     
-    $subject = "Demande d'accès à un poste informatique : La  demande numéro $id pour le service {$demande->getService()} a été validée";
-    
+    $subject = "Demande d'accès à un poste informatique : La  demande numéro $id pour $nom $prenom du service {$demande->getService()} a été validée";
         $leka = (new Email())
             ->from($mailValideur)
             ->to('lekadem@ac-guadeloupe.fr') 
+            ->cc('nbarbeu@gmail.com')
             ->subject($subject) 
             ->html('<p>Votre demande a été envoyée dans LEKA.</p>')
             ->attach($pdfOutput, 'demande.pdf', 'application/pdf');
@@ -407,10 +431,11 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
  */
 
     #[Route('formulaireldap/demande/visualiser/{id}', name: 'visualiser_demande')]
-    public function visualiserDemande(MonApplication $monApplication, int $id, EntityManagerInterface $entityManager): Response
+    public function visualiserDemande(MonApplication $monApplication, int $id, EntityManagerInterface $entityManager,  LdapUserFetcher $ldapUserFetcher,  Request $request): Response
     {
-        $user1 = $this->security->getUser(); //Récupérer l'utilisateur connecté 
-        $uid = $user1->getUid(); // Récupération de l'UID utilisateur.
+        $referer = $request->headers->get('referer');
+        $user1 = $this->security->getUser(); 
+        $uid = $user1->getUid();
         $isSuperUser  = $this->superUserChecker->isSuperUser();
         $isValideur = $this->roleChecker->isUserValideur(); 
 
@@ -433,15 +458,18 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
             $user = $demande->getIDutilisateur();
         }
         $valideur = $demande->getUidValideur();
+        $valideurInfos = $ldapUserFetcher->getUserInfoByUid($valideur);
     
         return $this->render('visualiser-demandes/visualiser.html.twig', [
             'demande' => $demande,
             'user' => $user,
             'monApplication' => $monApplication,
             'ressources' => $ressources,
+            'valideurInfos' => $valideurInfos,
+            'referer' => $referer,
             'ressourcesList' => $ressourcesDecoded,
             'valideur' => $valideur,
-            'provenance' => 'ldap'
+            
         ]);
     }
 
@@ -463,7 +491,7 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
  */
 
     #[Route('formulaireldap/demandepdf/{id}', name: 'demande_pdf_valideur')]
-    public function generatePdf($id, EntityManagerInterface $entityManager): Response
+    public function generatePdf($id, EntityManagerInterface $entityManager,  LdapUserFetcher $ldapUserFetcher): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
         $this->checkUserPermissionForDemande($id, $entityManager);
@@ -518,6 +546,7 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
     
     
         $valideur = $demande->getUidValideur();
+        $valideurInfos = $ldapUserFetcher->getUserInfoByUid($valideur);
         
     
       $imagePath = $this->getParameter('kernel.project_dir') . '/public/interfaceappli/css/images/10_logoAC_GUADELOUPE_web.png';
@@ -530,11 +559,12 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
         $dompdf = new Dompdf($options);
     
       
-        $html = $this->renderView('valideur/pdf_valideur.html.twig', [
+        $html = $this->renderView('visualiser-demandes/pdf_valideur.html.twig', [
             'demande' => $demande,
             'user' => $userInfos,
             'ressources' => $ressources,
             'imageSrc' => $imageSrc,
+            'valideurInfos' => $valideurInfos,
             'valideur' => $valideur,
             // 'autreUtilisateur'  => $autreUtilisateur,
         ]);
@@ -746,7 +776,28 @@ private function checkStatuts(int $demandeId, EntityManagerInterface $entityMana
         throw $this->createAccessDeniedException('Vous ne pouvez pas agir sur cette demande');
     }
 }
+public function infosDepuisDemande(int $id, LdapUserFetcher $ldapUserFetcher, EntityManagerInterface $em): Response
+{
+    // On récupère l'entité Demande
+    $demande = $em->getRepository(Demandes::class)->find($id);
+    
+    if (!$demande) {
+        throw $this->createNotFoundException("Demande non trouvée.");
+    }
 
+    // Récupération dynamique de l'UID
+    $uid = $demande->getUidValideur(); // ou $demande->getIDutilisateur()->getUid() selon ton besoin
+
+    // Appel du service LDAP
+    $infos = $ldapUserFetcher->getUserInfoByUid($uid);
+
+    if ($infos) {
+        // Traitement des infos
+        return new Response('<pre>' . print_r($infos, true) . '</pre>');
+    } else {
+        return new Response('Utilisateur LDAP non trouvé.');
+    }
+}
 
 
 

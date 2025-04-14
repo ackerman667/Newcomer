@@ -15,7 +15,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Entity\Demandes;
 use App\Service\UserRoleChecker;
 use App\Service\SuperUserChecker;
-
+use App\Security\LdapUserFetcher;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Classe\MonApplication;
@@ -569,8 +569,9 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
 
 
     #[Route('formulaireldap/demande/consult/{id}', name: 'demande_consult_ldap')]
-    public function consult(MonApplication $monApplication, $id, EntityManagerInterface $entityManager): Response
+    public function consult(MonApplication $monApplication, $id, EntityManagerInterface $entityManager,  Request $request, LdapUserFetcher $ldapUserFetcher ): Response
     {
+        $referer = $request->headers->get('referer');
         $this->checkUserPermissionForDemande($id, $entityManager);
        $demande = $entityManager->getRepository(Demandes::class)->find($id);
     
@@ -591,6 +592,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
             $user = $demande->getIDutilisateur();
         }
         $valideur = $demande->getUidValideur();
+        $valideurInfos = $ldapUserFetcher->getUserInfoByUid($valideur);
     
         return $this->render('visualiser-demandes/visualiser.html.twig', [
             'demande' => $demande,
@@ -599,7 +601,9 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
             'ressources' => $ressources,
             'ressourcesList' => $ressourcesDecoded,
             'valideur' => $valideur,
-            'provenance' => 'ldap'
+            'valideurInfos' => $valideurInfos,
+            'referer' => $referer,
+            
 
         ]);
     }
@@ -614,7 +618,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
      * @return Response
      */
         #[Route('formulaireldap/demande/pdf/{id}', name: 'demande_pdf_ldap')]
-    public function generatePdfldap($id, EntityManagerInterface $entityManager): Response
+    public function generatePdfldap($id, EntityManagerInterface $entityManager,  LdapUserFetcher $ldapUserFetcher): Response
     {
         $this->checkUserPermissionForDemande($id, $entityManager);
        $demande = $entityManager->getRepository(Demandes::class)->find($id);
@@ -655,6 +659,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
             ];
         }
         $valideur = $demande->getUidValideur();
+        $valideurInfos = $ldapUserFetcher->getUserInfoByUid($valideur);
     
 
       $imagePath = $this->getParameter('kernel.project_dir') . '/public/interfaceappli/css/images/10_logoAC_GUADELOUPE_web.png';
@@ -666,10 +671,11 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
         $dompdf = new Dompdf($options);
     
        
-        $html = $this->renderView('visualiser-demandes/pdf.html.twig', [
+        $html = $this->renderView('visualiser-demandes/pdf_ldap.html.twig', [
             'demande' => $demande,
             'user' => $userInfos,
             'ressources' => $ressources,
+            'valideurInfos' => $valideurInfos,
             'imageSrc' => $imageSrc,
             'valideur' => $valideur
         ]);
@@ -904,6 +910,30 @@ private function checkStatuts(int $demandeId, EntityManagerInterface $entityMana
         throw $this->createAccessDeniedException('Vous ne pouvez pas agir sur cette demande car elle est deja validée".');
     }
 }
+
+public function infosDepuisDemande(int $id, LdapUserFetcher $ldapUserFetcher, EntityManagerInterface $em): Response
+{
+    // On récupère l'entité Demande
+    $demande = $em->getRepository(Demandes::class)->find($id);
+    
+    if (!$demande) {
+        throw $this->createNotFoundException("Demande non trouvée.");
+    }
+
+    // Récupération dynamique de l'UID
+    $uid = $demande->getUidValideur(); // ou $demande->getIDutilisateur()->getUid() selon ton besoin
+
+    // Appel du service LDAP
+    $infos = $ldapUserFetcher->getUserInfoByUid($uid);
+
+    if ($infos) {
+        // Traitement des infos
+        return new Response('<pre>' . print_r($infos, true) . '</pre>');
+    } else {
+        return new Response('Utilisateur LDAP non trouvé.');
+    }
+}
+
 
 }
 

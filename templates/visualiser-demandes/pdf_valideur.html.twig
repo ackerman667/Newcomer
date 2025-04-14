@@ -3,19 +3,13 @@
 {% endblock %}
 {% block head_gene %}
     <style>
-           .details-section {
+        .details-section {
             border: 1px solid #000;
             padding: 15px;
             margin-bottom: 20px;
               page-break-inside: avoid;  
     break-inside: avoid;
         }
-              .details-group.commentaire span {
-    word-wrap: break-word;      /* Coupe les mots longs */
-    overflow-wrap: break-word;  /* Alternative moderne */
-    white-space: normal;        /* Permet le retour à la ligne naturel */
-    display: inline;            /* Reste en ligne sans sauter de ligne complète */
-}
         .details-section-title {
             font-weight: bold;
             margin-bottom: 10px;
@@ -53,6 +47,13 @@
         h2 {
             font-size: 20px; 
         }
+        .details-group.commentaire span {
+    word-wrap: break-word;      
+    overflow-wrap: break-word;  
+    white-space: normal;        
+    display: inline;            
+}
+
     </style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
@@ -86,14 +87,22 @@
         {{ user.nom }} {{ user.prenom }}
     </span>
 </p>
+
 {% endif %}
                 <div class="details-section">
                 
                     <div class="details-section-title">Détails de la Demande</div>
                       <div class="details-group">
-                      
-                        <label>Chef de service :</label>
+                       {% if demande.statuts ==  'Suivi dans LEKA' %}
+                        <label>Validé par :</label>
+                        <span>{{ valideurInfos.givenname }} {{ valideurInfos.sn }}</span>
+                        {% else %}
+                        <label>chef de service  : </label>
                         <span>{{ valideur }}</span>
+                        {% endif %}
+
+
+
                     </div>
                     
                     <div class="details-group">
@@ -108,12 +117,13 @@
                         <label>Heure de Soumission :</label>
                         <span>{{ demande.heureSoumission ? demande.heureSoumission|date('H:i') : '' }}</span>
                     </div>
-                    {% if demande.statuts == 'Suivi dans LEKA' %}
+                   {% if demande.statuts == 'Suivi dans LEKA' %}
                     <div class="details-group" style="color: green;">
                         <label>Date de Validation de la demande :</label>
                         <span>{{ demande.dateValidation ? demande.dateValidation|date('d/m/Y') : '' }}</span>
                     </div>
                 {% endif %}
+
                  
                     <div class="details-group">
                         <label>Nom Prédécesseur :</label>
@@ -146,7 +156,7 @@
                             <label>Prénom :</label>
                             <span>{{ user.prenom }}</span>
                         </div>
-                        <div class="details-group">
+                         <div class="details-group">
                             <label>Date de Naissance :</label>
                             <span>{{ user.date_de_naissance ? user.date_de_naissance|date('d/m/Y') : '' }}</span>
                         </div>
@@ -161,8 +171,7 @@
                         <div class="details-group">
                             <label>Statut :</label>
                             <span>{{ user.statut }}</span>
-                        </div>
-                         <div class="details-group" {% if user.statut == 'Titulaire' %} style="display:none" {% endif %}>
+                             <div class="details-group" {% if user.statut == 'Titulaire' %} style="display:none" {% endif %}>
                             <label>Date de Début de Contrat :</label>
                             <span>{{ user.date_debut ? user.date_debut|date('d/m/Y') : '' }}</span>
                         </div>
@@ -170,7 +179,8 @@
                             <label>Date de Fin de Contrat :</label>
                             <span>{{ user.date_fin ? user.date_fin|date('d/m/Y') : '' }}</span>
                         </div>
-                        
+                        </div>
+                       
                     {% else %}
                         <!-- Affichage des informations pour soi-même -->
                         <div class="details-group">
@@ -181,7 +191,7 @@
                             <label>Prénom :</label>
                             <span>{{ user.prenom }}</span>
                         </div>
-                        <div class="details-group">
+                         <div class="details-group">
                             <label>Date de Naissance :</label>
                             <span>{{ user.date_de_naissance ? user.date_de_naissance|date('d/m/Y') : '' }}</span>
                         </div>
@@ -198,7 +208,6 @@
                             <span>{{ user.statut }}</span>
                         </div>
                         
-                       
                         <div class="details-group" {% if user.statut == 'Titulaire' %} style="display:none" {% endif %}>
                             <label>Date de Début de Contrat :</label>
                             <span>{{ user.date_debut ? user.date_debut|date('d/m/Y') : '' }}</span>
@@ -220,7 +229,7 @@
                         <label>Service :</label>
                         <span>{{ demande.service }}</span>
                     </div>
-                     <div class="details-group">
+                    <div class="details-group">
                         <label> Avez vous besoin d'un numéro de Téléphone Bureau ? :</label>
                          <span>
         {% if 'Num Tel' in ressources.contenu %}
@@ -240,8 +249,12 @@
         {% endif %}
     </span>
 </div>
+
+                   
                     
                 </div>
+                 
+            
                 
             </div>
            

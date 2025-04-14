@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use App\Entity\User;
+use App\Security\LdapUserFetcher;
 use App\Entity\TemporaryData;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use App\Entity\Ressources;
@@ -93,11 +94,14 @@ class StatutsExterneController extends AbstractController
 
 
     #[Route('formulaireext/demande/consult/{id}', name: 'demande_consult')]
-    public function consult(MonApplication $monApplication, $id, EntityManagerInterface $entityManager): Response
+    public function consult( Request $request, MonApplication $monApplication, $id, EntityManagerInterface $entityManager,  LdapUserFetcher $ldapUserFetcher): Response
     {
+        $referer = $request->headers->get('referer');
         $this->checkUserPermissionForDemande($id, $entityManager);
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
         $valideur = $demande->getUidValideur();
+        $valideurInfos = $ldapUserFetcher->getUserInfoByUid($valideur);
+
 
 
         
@@ -116,7 +120,9 @@ class StatutsExterneController extends AbstractController
             'ressources' => $ressources,
             'ressourcesList' => $ressourcesDecoded,
             'valideur' => $valideur,
-            'provenance' => 'externe'
+            'valideurInfos' => $valideurInfos,
+            'referer' => $referer,
+            
 
         ]);
     }
@@ -186,7 +192,7 @@ class StatutsExterneController extends AbstractController
 
 
     #[Route('formulaireext/demande/pdf/{id}', name: 'demande_pdf')]
-    public function generatePdf(/*Demandes $demande , */MonApplication $monApplication, $id, EntityManagerInterface $entityManager): Response
+    public function generatePdf(/*Demandes $demande , */MonApplication $monApplication, $id, EntityManagerInterface $entityManager,  LdapUserFetcher $ldapUserFetcher): Response
     {
         $this->checkUserPermissionForDemande($id, $entityManager);
         
@@ -197,6 +203,7 @@ class StatutsExterneController extends AbstractController
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
     
         $valideur = $demande->getUidValideur();
+        $valideurInfos = $ldapUserFetcher->getUserInfoByUid($valideur);
     
         // Encoder l'image en base64
         $imagePath = $this->getParameter('kernel.project_dir') . '/public/interfaceappli/css/images/10_logoAC_GUADELOUPE_web.png';
@@ -218,6 +225,7 @@ class StatutsExterneController extends AbstractController
             'ressources' => $ressources,
             'monApplication' => $monApplication,
             'imageSrc' => $imageSrc,
+            'valideurInfos' => $valideurInfos,
             'valideur' => $valideur, 
     
         ]);
@@ -538,7 +546,28 @@ private function denyAccessUnlessUserIsActive(): void
 }
 
 
+public function infosDepuisDemande(int $id, LdapUserFetcher $ldapUserFetcher, EntityManagerInterface $em): Response
+{
+    // On récupère l'entité Demande
+    $demande = $em->getRepository(Demandes::class)->find($id);
+    
+    if (!$demande) {
+        throw $this->createNotFoundException("Demande non trouvée.");
+    }
 
+    // Récupération dynamique de l'UID
+    $uid = $demande->getUidValideur(); // ou $demande->getIDutilisateur()->getUid() selon ton besoin
+
+    // Appel du service LDAP
+    $infos = $ldapUserFetcher->getUserInfoByUid($uid);
+
+    if ($infos) {
+        // Traitement des infos
+        return new Response('<pre>' . print_r($infos, true) . '</pre>');
+    } else {
+        return new Response('Utilisateur LDAP non trouvé.');
+    }
+}
 
     
 

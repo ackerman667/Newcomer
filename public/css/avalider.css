@@ -152,6 +152,9 @@ margin: 0;
 }
 .filter-container {
     margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    
 }
 .service-column {
     color: #00008B;

@@ -1,9 +1,9 @@
-{% extends 'layout_ag.html.twig' %}
+{% block title %}
 
-{% block title %}<title>Consultation de la Demande - {{ monApplication.Appli }}</title>{% endblock %}
+{% endblock %}
 {% block head_gene %}
     <style>
-          .details-section {
+           .details-section {
             border: 1px solid #000;
             padding: 15px;
             margin-bottom: 20px;
@@ -27,23 +27,52 @@
         .details-group label {
             font-weight: bold;
         }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .header .left {
+            text-align: left;
+        }
+        .header .right {
+            text-align: right;
+            text-align: center;
+        }
+        .header img {
+            height: 80px; 
+        }
+        .header h1 {
+            font-size: 20px; 
+        }
+        .header .subtitle {
+            font-size: 18px;
+            font-weight: normal;
+        }
+        h2 {
+            font-size: 20px; 
+        }
     </style>
 {% endblock %}
 {% block body %}<body class="page not-home">{% endblock %}
 {% block header %}
-    <div class="title_app" id="title">
-        <h1 class="title">{{ monApplication.Appli }}</h1>
-        <h2 class="desc">{{ monApplication.LibAppli }}</h2>
-    </div>
-    <div class="title_image">
-        <span>Rectorat</span>
+    <div class="header">
+        <div class="left">
+            <img src="{{ imageSrc }}" alt="Logo">
+        </div>
+        <div class="right">
+            <h1>Demande d'accès à un poste de travail informatique</h1>
+            <p class="subtitle">Région Académique Guadeloupe</p>
+        </div>
     </div>
 {% endblock %}
 {% block main %}
     <div class="container">
         <div class="row justify-content-center">
+            <h2 class="text-center mb-5">Récapitulatif de votre demande</h2>
+            
             <div class="col-md-10">
-             
             {% if demande.isAutrePersonne %}
     <p style="font-size: 18px; line-height: 1.6; margin-bottom: 30px;">
     La demande a été effectuée par : 
@@ -59,16 +88,14 @@
 </p>
 {% endif %}
                 <div class="details-section">
+                
                     <div class="details-section-title">Détails de la Demande</div>
-                    <div class="details-group">
-                         {% if demande.statuts ==  'Suivi dans LEKA' %}
-                        <label>Validé par :</label>
-                        <span>{{ valideur }}</span>
-                        {% else %}
-                        <label>chef de service  : </label>
-                        <span>{{ valideur }}</span>
-                        {% endif %}
+                      <div class="details-group">
+                      
+                        <label>Chef de service :</label>
+                        <span>{{ valideurInfos.givenname }} {{ valideurInfos.sn }}</span>
                     </div>
+                    
                     <div class="details-group">
                         <label>Titre :</label>
                         <span>{{ demande.titre }}</span>
@@ -87,7 +114,7 @@
                         <span>{{ demande.dateValidation ? demande.dateValidation|date('d/m/Y') : '' }}</span>
                     </div>
                 {% endif %}
-                
+                 
                     <div class="details-group">
                         <label>Nom Prédécesseur :</label>
                         <span>{{ demande.nomRemplacant }}</span>
@@ -105,10 +132,12 @@
                         <span>{{ demande.affectationRemplacant }}</span>
                     </div>
                 </div>
+
                 <div class="details-section">
                     <div class="details-section-title">Détails du demandeur</div>
-                    {% if demande.AutrePersonne %}
-                        <!-- Affichage des informations à partir du champ JSON -->
+                    
+                    {% if demande.isAutrePersonne %}
+                        <!-- Affichage des informations pour une autre personne -->
                         <div class="details-group">
                             <label>Nom :</label>
                             <span>{{ user.nom }}</span>
@@ -117,9 +146,9 @@
                             <label>Prénom :</label>
                             <span>{{ user.prenom }}</span>
                         </div>
-                         <div class="details-group">
+                        <div class="details-group">
                             <label>Date de Naissance :</label>
-                             <span>{{ user.date_de_naissance.date ? (user.date_de_naissance.date|date('d/m/Y')) : '' }}</span>
+                            <span>{{ user.date_de_naissance ? user.date_de_naissance|date('d/m/Y') : '' }}</span>
                         </div>
                         <div class="details-group">
                             <label>Email :</label>
@@ -133,9 +162,17 @@
                             <label>Statut :</label>
                             <span>{{ user.statut }}</span>
                         </div>
-                       
+                         <div class="details-group" {% if user.statut == 'Titulaire' %} style="display:none" {% endif %}>
+                            <label>Date de Début de Contrat :</label>
+                            <span>{{ user.date_debut ? user.date_debut|date('d/m/Y') : '' }}</span>
+                        </div>
+                        <div class="details-group" {% if user.statut == 'Titulaire' %} style="display:none" {% endif %}>
+                            <label>Date de Fin de Contrat :</label>
+                            <span>{{ user.date_fin ? user.date_fin|date('d/m/Y') : '' }}</span>
+                        </div>
+                        
                     {% else %}
-                        <!-- Affichage des informations à partir de l'objet user -->
+                        <!-- Affichage des informations pour soi-même -->
                         <div class="details-group">
                             <label>Nom :</label>
                             <span>{{ user.nom }}</span>
@@ -144,9 +181,9 @@
                             <label>Prénom :</label>
                             <span>{{ user.prenom }}</span>
                         </div>
-                         <div class="details-group">
+                        <div class="details-group">
                             <label>Date de Naissance :</label>
-                            <span>{{ user.dateDeNaissance ? user.dateDeNaissance|date('d/m/Y') : '' }}</span>
+                            <span>{{ user.date_de_naissance ? user.date_de_naissance|date('d/m/Y') : '' }}</span>
                         </div>
                         <div class="details-group">
                             <label>Email :</label>
@@ -158,26 +195,28 @@
                         </div>
                         <div class="details-group">
                             <label>Statut :</label>
-                            <span>{{ user.statutPersonne }}</span>
+                            <span>{{ user.statut }}</span>
                         </div>
+                        
                        
-                        <div class="details-group" {% if user.statutPersonne == 'Titulaire' %} style="display:none" {% endif %}>
+                        <div class="details-group" {% if user.statut == 'Titulaire' %} style="display:none" {% endif %}>
                             <label>Date de Début de Contrat :</label>
-                            <span>{{ user.dateDebut ? user.dateDebut|date('d/m/Y') : '' }}</span>
+                            <span>{{ user.date_debut ? user.date_debut|date('d/m/Y') : '' }}</span>
                         </div>
-                        <div class="details-group" {% if user.statutPersonne == 'Titulaire' %} style="display:none" {% endif %}>
+                        <div class="details-group" {% if user.statut == 'Titulaire' %} style="display:none" {% endif %}>
                             <label>Date de Fin de Contrat :</label>
-                            <span>{{ user.dateFin ? user.dateFin|date('d/m/Y') : '' }}</span>
+                            <span>{{ user.date_fin ? user.date_fin|date('d/m/Y') : '' }}</span>
                         </div>
                     {% endif %}
                 </div>
+
                 <div class="details-section">
                     <div class="details-section-title">Ressources Associées</div>
                     <div class="details-group">
                         <label>{{ ressources.nom }} :</label>
                         <span>{{ ressources.contenu }}</span>
                     </div>
-                     <div class="details-group">
+                    <div class="details-group">
                         <label>Service :</label>
                         <span>{{ demande.service }}</span>
                     </div>
@@ -201,8 +240,11 @@
         {% endif %}
     </span>
 </div>
+                    
                 </div>
+                
             </div>
+           
         </div>
     </div>
 {% endblock %}
