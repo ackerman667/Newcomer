@@ -76,6 +76,7 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
 
     $demande = $entityManager->getRepository(Demandes::class)->find($id);
     $temporaryData = $entityManager->getRepository(TemporaryData::class)->findOneBy(['token' => $token]);
+
     $userLdap = $this->security->getUser();
 
     if (!$demande) {
@@ -85,6 +86,20 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
         throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cette demande.');
     }
 
+    
+    $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
+
+// Si on a des ressources enregistrées, on les injecte dans le tableau $data
+        $dossiersSelectionnes = [];
+        if ($ressources) {
+            $contenu = $ressources->getContenu();
+            // On vérifie si c'est bien un JSON et le décode
+            $decoded = json_decode($contenu, true);
+            if (is_array($decoded)) {
+                $dossiersSelectionnes = $decoded;
+            }
+        }
+
     if ($demande->isAutrePersonne()) {
         
         $user_autre= $demande->getAutreUtilisateur();
@@ -92,6 +107,7 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
             'nom' => $user_autre ? $user_autre->getNom() : '',
             'prenom' => $user_autre ? $user_autre->getPrenom() : '',
             'email' => $user_autre ? $user_autre->getEmail() : '',
+            'test123' => $dossiersSelectionnes,
             'date_de_naissance' => $user_autre ? $user_autre->getDateDeNaissance() : '',
             'fonction' => $user_autre ? $user_autre->getFonction() : '',
             'replace_someone' => $demande->isRemplacant() ? 'oui' : 'non',
@@ -112,6 +128,7 @@ public function editDemandeEtape1(int $id, string $token, Request $request, Enti
             'nom' => $user ? $user->getNom() : '',
             'prenom' => $user ? $user->getPrenom() : '',
             'email' => $user ? $user->getEmail() : '',
+            'test123' => $dossiersSelectionnes,
             'date_de_naissance' => $user ? $user->getDateDeNaissance() : '',
             'fonction' => $user ? $user->getFonction() : '',
             'selectedService' => $demande->getIdService(),
@@ -349,7 +366,7 @@ if (!empty($data['date_fin_contrat'])) {
         $form = $this->createForm(DemandeEtape3FormType::class, $data, [
             'dossiers_partages' => $dossiersPartages,
             'data_class' => null,
-            'dossiers_selectionnes' => $dossiersSelectionnes,
+            'dossiers_selectionnes' => $data['test123'] ?? [],
         ]);
         $form->handleRequest($request);
     

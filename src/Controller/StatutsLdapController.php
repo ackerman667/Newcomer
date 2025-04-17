@@ -352,6 +352,20 @@ public function modifierDemande(MonApplication $monApplication, Request $request
     $infos_user = $userInformation->getUserInformation($user);
     $email_utilisateur= $infos_user['mail'];
     $user1 = $entityManager->getRepository(User::class)->findOneBy(['email' => $email_utilisateur]);
+
+    $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
+
+// Si on a des ressources enregistrées, on les injecte dans le tableau $data
+        $dossiersSelectionnes = [];
+        if ($ressources) {
+            $contenu = $ressources->getContenu();
+            // On vérifie si c'est bien un JSON et le décode
+            $decoded = json_decode($contenu, true);
+            if (is_array($decoded)) {
+                $dossiersSelectionnes = $decoded;
+            }
+        }
+
    
     // Pré-remplir les données pour le formulaire
     $data = [
@@ -360,6 +374,7 @@ public function modifierDemande(MonApplication $monApplication, Request $request
         'prenom' => $user1->getPrenom(),
         'email' => $user1->getEmail(),
         'date_de_naissance' => $user1->getDateDeNaissance(),
+        'test123' => $dossiersSelectionnes,
         'fonction' => $user1->getFonction(),
         'replace_someone' => $demande->isRemplacant() ? 'oui' : 'non',
         'selectedService' => $demande->getIdService(),
@@ -430,6 +445,19 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
             throw $this->createNotFoundException('Demande non trouvée.');
         }
         $user1 = $demande->getAutreUtilisateur();
+        
+    $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
+
+    // Si on a des ressources enregistrées, on les injecte dans le tableau $data
+            $dossiersSelectionnes = [];
+            if ($ressources) {
+                $contenu = $ressources->getContenu();
+                // On vérifie si c'est bien un JSON et le décode
+                $decoded = json_decode($contenu, true);
+                if (is_array($decoded)) {
+                    $dossiersSelectionnes = $decoded;
+                }
+            }
 
         // $data = $demande->getInfosPersonne();
         // if (isset($data['date_de_naissance']) && is_array($data['date_de_naissance'])) {
@@ -444,6 +472,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
             'email' => $user1->getEmail(),
             'date_de_naissance' => $user1->getDateDeNaissance() ? $user1->getDateDeNaissance()->format('Y-m-d') : null,
             'fonction' => $user1->getFonction(),
+            'test123' => $dossiersSelectionnes,
             'replace_someone' => $demande->isRemplacant() ? 'oui' : 'non',
             'remplacement_nom' => $demande->getNomRemplacant(),
             'selectedService' => $demande->getIdService(),
@@ -728,7 +757,7 @@ public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInt
     }
 
     #[Route('/formulaireldap/a/valider/{id}', name: 'valider_demandespourautre')]
-    public function validerDemandePourAutre(MonApplication $monApplication, EntityManagerInterface $entityManager, $id): Response
+    public function validerDemandePourAutre(MonApplication $monApplication, MailerInterface $mailer , EntityManagerInterface $entityManager, $id): Response
     {
         $this->checkUserPermissionForDemande($id, $entityManager);
         $this->checkStatuts($id, $entityManager);

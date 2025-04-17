@@ -367,6 +367,19 @@ class StatutsExterneController extends AbstractController
         if (!$demande) {
             throw $this->createNotFoundException('Demande non trouvée.');
         }
+        
+    $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
+
+    // Si on a des ressources enregistrées, on les injecte dans le tableau $data
+            $dossiersSelectionnes = [];
+            if ($ressources) {
+                $contenu = $ressources->getContenu();
+                // On vérifie si c'est bien un JSON et le décode
+                $decoded = json_decode($contenu, true);
+                if (is_array($decoded)) {
+                    $dossiersSelectionnes = $decoded;
+                }
+            }
 
         $user = $demande->getIDutilisateur();
         $token = $demande->getToken();
@@ -377,6 +390,7 @@ class StatutsExterneController extends AbstractController
             'prenom' => $user->getPrenom(),
             'email' => $user->getEmail(),
             'date_de_naissance' => $user->getDateDeNaissance(),
+            'test123' => $dossiersSelectionnes,
             'fonction' => $user->getFonction(),
             'replace_someone' => $demande->isRemplacant() ? 'oui' : 'non',
             'selectedService' => $demande->getIdService(),

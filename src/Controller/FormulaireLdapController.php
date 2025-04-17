@@ -377,6 +377,7 @@ $data = array_merge($tmp, [
     }
 
     $data = $temporaryData->getData();
+    
 
         $user = $this->security->getUser();
 
@@ -423,7 +424,7 @@ $data = array_merge($tmp, [
         $form = $this->createForm(DemandeEtape3FormType::class, $data, [
             'dossiers_partages' => $this->sortDossiersAlphabetically($dossiersPartages),
             'data_class' => null, 
-            'dossiers_selectionnes' => $dossiersSelectionnes,
+            'dossiers_selectionnes' => $data['test123'] ?? [],
         ]);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {

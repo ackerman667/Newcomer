@@ -233,7 +233,7 @@ if (!empty($data['date_fin_contrat'])) {
         $form = $this->createForm(DemandeEtape3FormType::class, $data, [
             'dossiers_partages' => $dossiersPartages,
             'data_class' => null,
-            'dossiers_selectionnes' => $dossiersSelectionnes,
+            'dossiers_selectionnes' => $data['test123'] ?? [],
         ]);
         $form->handleRequest($request);
     

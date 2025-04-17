@@ -33,8 +33,9 @@ class ActionsValideurController extends AbstractController
     private $roleChecker;
     private $timezone;
     private $superUserChecker;
+    private $ldapUserFetcher;
 
-    public function __construct(Security $security, UserRoleChecker $roleChecker, SuperUserChecker $superUserChecker)
+    public function __construct(Security $security, UserRoleChecker $roleChecker, SuperUserChecker $superUserChecker, LdapUserFetcher $ldapUserFetcher)
     {
         $this->security = $security;
         $this->roleChecker = $roleChecker;
@@ -42,6 +43,7 @@ class ActionsValideurController extends AbstractController
         $this->superUserChecker = $superUserChecker;
         $this->isSuperUser = $this->superUserChecker->isSuperUser();
         $this->isValideur = $this->roleChecker->isUserValideur();
+        $this->ldapUserFetcher = $ldapUserFetcher;
     }
 
 
@@ -77,9 +79,11 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
 
     $demande = $entityManager->getRepository(Demandes::class)->find($id);
 
+
     if (!$demande) {
         throw $this->createNotFoundException('Demande non trouvée.');
     }
+    
 
    
     $userBdd = $this->findOrCreateLdapUser($entityManager);
@@ -160,7 +164,8 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
         $entityManager->flush();
     
        
-       $pdfResponse = $this->generatePdf($id, $entityManager);
+        $pdfResponse = $this->generatePdf($id, $entityManager, $this->ldapUserFetcher);
+
        $pdfOutput = $pdfResponse->getContent();
     
     // Récupérez l'email en fonction du type de demande
@@ -189,17 +194,21 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
        
    
     
-        $subject = "Demande d'accès à un poste informatique : La  demande numéro $id pour $nom $prenom du service {$demande->getService()} a été validée";
+        $subject = "Demande d'accès à un poste informatique :   $id  $nom $prenom  {$demande->getService()} ";
     
         $leka = (new Email())
             ->from($mailValideur)
-            ->to('lekadempp@ac-guadeloupe.fr') 
+            ->to('lekadem@ac-guadeloupe.fr') 
             ->cc('nbarbeu@gmail.com')
             ->subject($subject) 
             ->html('<p>Votre demande a été envoyée dans LEKA.</p>')
             ->attach($pdfOutput, 'demande.pdf', 'application/pdf');
     
         $mailer->send($leka);
+
+
+      
+
 
     
         if ($this->superUserChecker->isSuperUser()) {
@@ -253,7 +262,7 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
         $entityManager->flush();
     
        
-       $pdfResponse = $this->generatePdf($id, $entityManager);
+        $pdfResponse = $this->generatePdf($id, $entityManager, $this->ldapUserFetcher);
        $pdfOutput = $pdfResponse->getContent();
 
 
@@ -493,7 +502,7 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
  */
 
     #[Route('formulaireldap/demandepdf/{id}', name: 'demande_pdf_valideur')]
-    public function generatePdf($id, EntityManagerInterface $entityManager,  LdapUserFetcher $ldapUserFetcher): Response
+    public function generatePdf($id, EntityManagerInterface $entityManager, LdapUserFetcher $ldapUserFetcher): Response
     {
         $demande = $entityManager->getRepository(Demandes::class)->find($id);
         $this->checkUserPermissionForDemande($id, $entityManager);
