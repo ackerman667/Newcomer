@@ -131,7 +131,7 @@ if (!empty($data['date_fin_contrat'])) {
         }
 
         $apiUrl = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/services';
-        $apiToken = 'b97b055g210125afb4c5f507dc823958ff18dfa56a12c7n12agch8db58e21767';
+        $apiToken = $_ENV['API_Token'];
         $response = $httpClient->request('GET', $apiUrl, [
             'headers' => [
                 'x-auth-token' => $apiToken,

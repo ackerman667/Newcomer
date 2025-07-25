@@ -85,8 +85,18 @@ public function mesDemandes(
     $uid = $user->getUid(); // Récupération de l'UID utilisateur.
     $isSuperUser  = $this->superUserChecker->isSuperUser();
     $isValideur = $this->roleChecker->isUserValideur();   // Vérification du rôle de valideur.
+    $userBdd = $this->findOrCreateLdapUser($entityManager);
+    $demandePersoEnCours = $entityManager->getRepository(TemporaryData::class)->findOneBy([
+    'user' => $userBdd,
+    'action' => 'create',
+    'type' => 'perso',
+    ]);
 
-    
+$demandeAutreEnCours = $entityManager->getRepository(TemporaryData::class)->findOneBy([
+    'user' => $userBdd,
+    'action' => 'create',
+    'type' => 'autre',
+]);
     $userDemandes = $this->getDemandesPourUtilisateur($entityManager, $uid); // Récupération des demandes de l'utilisateur.
 
     return $this->render('demandes/mes_demandes.html.twig', [
@@ -96,6 +106,8 @@ public function mesDemandes(
         'page' => 'mesdemandes',
         'isValideur' => $isValideur,
         'isSuperUser' => $isSuperUser,
+        'demandePersoEnCours' => $demandePersoEnCours !== null ,
+    'demandeAutreEnCours' => $demandeAutreEnCours !== null,
 
     ]);
 }
@@ -306,19 +318,39 @@ private function getDemandesPourUtilisateur(EntityManagerInterface $entityManage
      * @return Response
      */
 #[Route('/formulaireldap/nouvelle_demande', name: 'nouvelle_demande_ldap')]
-public function nouvelleDemande(SessionInterface $session, EntityManagerInterface $entityManager): Response
+public function nouvelleDemande(Request $request, SessionInterface $session, EntityManagerInterface $entityManager): Response
 {
     $userBdd = $this->findOrCreateLdapUser($entityManager);
-    $temporaryData = new TemporaryData();
-    $temporaryData->setUser($userBdd);
-    $temporaryData->setAction('create'); 
-    $temporaryData->setData([]); 
-    $temporaryData->setExpiration((new \DateTime())->modify('+24 hours'));
-    $entityManager->persist($temporaryData);
-    $entityManager->flush();
+  $demandeEnCours = $entityManager->getRepository(TemporaryData::class)->findOneBy([
+        'user' => $userBdd,
+        'action' => 'create',
+        'type' => 'perso',
+    ]);
 
-    
-    return $this->redirectToRoute('formulaireldap_etape1', ['token' => $temporaryData->getToken()]);
+    // Récupère le choix de l'utilisateur (via formulaire JS)
+    $choix = $request->request->get('choix_demande');
+
+    // Si l'utilisateur a choisi de réinitialiser, on supprime l'ancienne
+    if ($choix === 'reinitialiser' && $demandeEnCours) {
+        $entityManager->remove($demandeEnCours);
+        $entityManager->flush();
+        $demandeEnCours = null;
+    }
+
+    // Si aucune demande temporaire n'existe, on en crée une nouvelle
+    if (!$demandeEnCours) {
+        $demandeEnCours = new TemporaryData();
+        $demandeEnCours->setUser($userBdd);
+        $demandeEnCours->setAction('create');
+        $demandeEnCours->setData([]);
+        $demandeEnCours->setExpiration((new \DateTime())->modify('+24 hours'));
+        $demandeEnCours->setType('perso');
+
+        $entityManager->persist($demandeEnCours);
+        $entityManager->flush();
+    }
+
+    return $this->redirectToRoute('formulaireldap_etape1', ['token' => $demandeEnCours->getToken()]);
 
 }
 
@@ -409,24 +441,44 @@ public function modifierDemande(MonApplication $monApplication, Request $request
     return $this->redirectToRoute('formulaireldap_etape1', ['token' => $temporaryData->getToken()]);
 }
 #[Route('/formulaireldap/a/nouvelle_demande', name: 'nouvelle-demande-ldap')]
-public function nouvelleDemandeAutre(SessionInterface $session, EntityManagerInterface $entityManager): Response
+public function nouvelleDemandeAutre(Request $request ,SessionInterface $session, EntityManagerInterface $entityManager): Response
 {
   
   
 
     $userBdd = $this->findOrCreateLdapUser($entityManager);
-    $temporaryData = new TemporaryData();
-    $temporaryData->setUser($userBdd);
-    $temporaryData->setAction('create'); 
-    $temporaryData->setData([]); 
-    $temporaryData->setExpiration((new \DateTime())->modify('+24 hours'));
+    $demandeEnCours = $entityManager->getRepository(TemporaryData::class)->findOneBy([
+        'user' => $userBdd,
+        'action' => 'create',
+        'type' =>'autre',
+    ]);
 
-    
-    $entityManager->persist($temporaryData);
-    $entityManager->flush();
+    // Récupère le choix de l'utilisateur (via formulaire JS)
+    $choix = $request->request->get('choix_demande');
+
+    // Si l'utilisateur a choisi de réinitialiser, on supprime l'ancienne
+    if ($choix === 'reinitialiser' && $demandeEnCours) {
+        $entityManager->remove($demandeEnCours);
+        $entityManager->flush();
+        $demandeEnCours = null;
+    }
+
+    // Si aucune demande temporaire n'existe, on en crée une nouvelle
+    if (!$demandeEnCours) {
+        $demandeEnCours = new TemporaryData();
+        $demandeEnCours->setUser($userBdd);
+        $demandeEnCours->setAction('create');
+        $demandeEnCours->setData([]);
+        $demandeEnCours->setExpiration((new \DateTime())->modify('+24 hours'));
+        $demandeEnCours->setType('autre');
+
+        $entityManager->persist($demandeEnCours);
+        $entityManager->flush();
+    }
+
 
  
-    return $this->redirectToRoute('formulaireldap-etape1', ['token' => $temporaryData->getToken()]);
+    return $this->redirectToRoute('formulaireldap-etape1', ['token' => $demandeEnCours->getToken()]);
 }
 
 

@@ -106,13 +106,18 @@ class AppCustomAuthenticator extends AbstractLoginFormAuthenticator
  */
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
-    {
-        // if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
-        //     return new RedirectResponse($targetPath);
-        // }
+{
+    // Récupération de l'utilisateur connecté
+    /** @var \App\Entity\User $user */
+    $user = $token->getUser();
 
-        return new RedirectResponse($this->urlGenerator->generate('demande_externe'));
+    // Redirection conditionnelle
+    if (!empty($user->getUid())) {
+        return new RedirectResponse($this->urlGenerator->generate('mes_demandes'));
     }
+
+    return new RedirectResponse($this->urlGenerator->generate('demande_externe'));
+}
 
     protected function getLoginUrl(Request $request): string
     {

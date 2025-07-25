@@ -64,12 +64,17 @@ class StatutsExterneController extends AbstractController
         $this->denyAccessUnlessUserIsActive();
          $user = $this->getUser();
         $demandes = $this->getDemandesPourUtilisateur($entityManager, $user);
+    $demandeEnCours = $entityManager->getRepository(TemporaryData::class)->findOneBy([
+        'user' => $user,
+        'action' => 'create',
+    ]);
 
 
         return $this->render('demandes/demandes_externe.html.twig', [
             'demandes' => $demandes,
             'monApplication' => $monApplication,
             'user' => $user,
+            'demandeEnCours' => $demandeEnCours !== null,
         ]);
     }
 
@@ -261,31 +266,44 @@ class StatutsExterneController extends AbstractController
  */
 
     #[Route('formulaireext/nouvelle_demande', name: 'nouvelle_demande')]
-    public function nouvelleDemande(EntityManagerInterface $entityManager ): Response
-    {
+public function nouvelleDemande(Request $request, EntityManagerInterface $entityManager): Response
+{
+    $user = $this->getUser();
 
-    
+    // Vérifie s'il existe une demande temporaire en cours
+    $demandeEnCours = $entityManager->getRepository(TemporaryData::class)->findOneBy([
+        'user' => $user,
+        'action' => 'create',
+    ]);
 
-         $user = $this->getUser();
-        
-        $temporaryData = new TemporaryData();
-        $temporaryData->setUser($user);
-        // $temporaryData->setData($data);
-        $temporaryData->setAction('create'); 
-        $temporaryData->setData([]); 
-        $temporaryData->setExpiration((new \DateTime())->modify('+24 hours'));
-        $entityManager->persist($temporaryData);
+    // Récupère le choix de l'utilisateur (via formulaire JS)
+    $choix = $request->request->get('choix_demande');
+
+    // Si l'utilisateur a choisi de réinitialiser, on supprime l'ancienne
+    if ($choix === 'reinitialiser' && $demandeEnCours) {
+        $entityManager->remove($demandeEnCours);
         $entityManager->flush();
-
-
-
-    
-        
-        return $this->redirectToRoute('formulaireexterne_etape1', [
-            'uuid' => $temporaryData->getToken(),
-        ]);
-        
+        $demandeEnCours = null;
     }
+
+    // Si aucune demande temporaire n'existe, on en crée une nouvelle
+    if (!$demandeEnCours) {
+        $demandeEnCours = new TemporaryData();
+        $demandeEnCours->setUser($user);
+        $demandeEnCours->setAction('create');
+        $demandeEnCours->setData([]);
+        $demandeEnCours->setExpiration((new \DateTime())->modify('+24 hours'));
+
+        $entityManager->persist($demandeEnCours);
+        $entityManager->flush();
+    }
+
+    // Redirection vers l'étape 1 du formulaire
+    return $this->redirectToRoute('formulaireexterne_etape1', [
+        'uuid' => $demandeEnCours->getToken(),
+    ]);
+}
+
     
 /**
  * @brief Supprime une demande spécifique.

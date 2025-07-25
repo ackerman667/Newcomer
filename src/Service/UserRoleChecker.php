@@ -5,17 +5,20 @@ namespace App\Service;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 
+
 class UserRoleChecker
 {
     private $httpClient;
     private $security;
-    private $apiToken = 'b97b055g210125afb4c5f507dc823958ff18dfa56a12c7n12agch8db58e21767';
+    private $apiToken;
     private $apiUrl = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/valideur/';
 
     public function __construct(HttpClientInterface $httpClient, Security $security)
     {
         $this->httpClient = $httpClient;
         $this->security = $security;
+        $this->apiToken = $_ENV['API_Token'];
+
     }
 
    /**

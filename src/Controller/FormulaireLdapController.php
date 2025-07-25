@@ -179,7 +179,11 @@ class FormulaireLdapController extends AbstractController
           /**
      * Récupère l'utilisateur actuellement connecté.
      * Vérifie que les données temporaires appartiennent bien à cet utilisateur.
-     */ if ($temporaryData->getUser()->getUid() !== $user->getUid()) {
+     * 
+     */
+    
+     if ($temporaryData->getUser()->getUid() !== $user->getUid()) 
+        {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ces données.');
         }
          
@@ -236,7 +240,8 @@ $data = array_merge($tmp, [
     
 
         $apiUrl = 'http://import-data.in.ac-guadeloupe.fr/Febex_API/api/services';
-        $apiToken = 'b97b055g210125afb4c5f507dc823958ff18dfa56a12c7n12agch8db58e21767';
+        $apiToken = $_ENV['API_Token'];
+        
         $response = $httpClient->request('GET', $apiUrl, [
             'headers' => [
                 'x-auth-token' => $apiToken,

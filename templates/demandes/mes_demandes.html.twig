@@ -3,6 +3,7 @@
 {% block title %}<title>Mes Demandes - {{ monApplication.Appli }}</title>{% endblock %}
 
 {% block head_gene %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
  <link rel="stylesheet" href="{{ asset('css/mes-demandes.css') }}">
 {% endblock %}
 {% block body %}
@@ -52,14 +53,16 @@
 
 
  <div class="btn-container">
-    <a href="{{ path('nouvelle-demande-ldap') }}" class="custom-link">
-        <i class="fas fa-plus-circle fa-lg"></i>
-        <b>Faire une demande pour quelqu'un d'autre</b>
-    </a>
-    <a href="{{ path('nouvelle_demande_ldap') }}" class="custom-link">
-        <i class="fas fa-plus-circle fa-lg"></i>
-        <b>Nouvelle demande personnelle</b>
-    </a>
+  <a href="#" onclick="handleDemandePerso(event, '{{ path('nouvelle_demande_ldap') }}', {{ demandePersoEnCours ? 'true' : 'false' }})" class="custom-link">
+    <i class="fas fa-plus-circle fa-lg"></i>
+    <b>Nouvelle demande personnelle</b>
+</a>
+
+<a href="#" onclick="handleDemandeAutre(event, '{{ path('nouvelle-demande-ldap') }}', {{ demandeAutreEnCours ? 'true' : 'false' }})" class="custom-link">
+    <i class="fas fa-plus-circle fa-lg"></i>
+    <b>Faire une demande pour quelqu'un d'autre</b>
+</a>
+
 </div>
   </div>
 
@@ -202,7 +205,53 @@
         </tbody>
     </table>
 </div>
+
   </div>
+
+  {# Modal pour la demande personnelle #}
+<div class="modal fade" id="modalDemandePerso" tabindex="-1" aria-labelledby="modalDemandePersoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{{ path('nouvelle_demande_ldap') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalDemandePersoLabel">Demande personnelle en cours</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Vous avez déjà une demande personnelle en cours non finalisée.</p>
+                    <p>Souhaitez-vous la reprendre ou recommencer depuis zéro ?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" name="choix_demande" value="reinitialiser" class="btn btn-danger">Réinitialiser</button>
+                    <a href="{{ path('nouvelle_demande_ldap') }}" class="btn btn-primary">Reprendre</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# Modal pour la demande pour quelqu’un d’autre #}
+<div class="modal fade" id="modalDemandeAutre" tabindex="-1" aria-labelledby="modalDemandeAutreLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{{ path('nouvelle-demande-ldap') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalDemandeAutreLabel">Demande en cours pour une autre personne</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Vous avez déjà une demande en cours pour quelqu’un d’autre non finalisée.</p>
+                    <p>Souhaitez-vous la reprendre ou recommencer depuis zéro ?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" name="choix_demande" value="reinitialiser" class="btn btn-danger">Réinitialiser</button>
+                    <a href="{{ path('nouvelle-demande-ldap') }}" class="btn btn-primary">Reprendre</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   
@@ -234,7 +283,27 @@ function toggleComment(toggleLink) {
         fullComment.style.display = 'block';
     }
 }
+function handleDemandePerso(event, url, demandePersoEnCours) {
+    event.preventDefault();
 
+    if (demandePersoEnCours) {
+        const modal = new bootstrap.Modal(document.getElementById('modalDemandePerso'));
+        modal.show();
+    } else {
+        window.location.href = url;
+    }
+}
+
+function handleDemandeAutre(event, url, demandeAutreEnCours) {
+    event.preventDefault();
+
+    if (demandeAutreEnCours) {
+        const modal = new bootstrap.Modal(document.getElementById('modalDemandeAutre'));
+        modal.show();
+    } else {
+        window.location.href = url;
+    }
+}
  
 </script>
 {% endblock %}
