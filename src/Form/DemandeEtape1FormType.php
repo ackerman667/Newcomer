@@ -56,7 +56,10 @@ class DemandeEtape1FormType extends AbstractType
             ->add('nouvelle_affectation_service', TextType::class, [
                 'label' => 'Si non, dans quel service est la nouvelle affectation :',
                 'required' => false,
-                'attr' => ['class' => 'form-control'],
+                'attr' => ['class' => 'form-control',
+                'maxlength' => 100],
+                
+            
             
     
             ]);
