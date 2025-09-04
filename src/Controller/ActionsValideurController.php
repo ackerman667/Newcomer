@@ -513,6 +513,7 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
         }
     
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande->getId()]);
+        $ressourcesDecoded = json_decode($ressources->getContenu(), true); // true = tableau associatif
     
         
         if ($demande->isAutrePersonne()) {
@@ -574,6 +575,7 @@ public function preparerModificationValideur(int $id, EntityManagerInterface $en
             'demande' => $demande,
             'user' => $userInfos,
             'ressources' => $ressources,
+            'ressourcesList' => $ressourcesDecoded,
             'imageSrc' => $imageSrc,
             'valideurInfos' => $valideurInfos,
             'valideur' => $valideur,

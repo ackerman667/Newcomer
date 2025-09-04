@@ -431,6 +431,7 @@ public function modifierDemande(MonApplication $monApplication, Request $request
     $temporaryData->setUser($userBdd);
     $temporaryData->setAction('modifier'); // Marque comme une modification
     $temporaryData->setData($data); // Stocker les données pré-remplies
+    
     $temporaryData->setExpiration((new \DateTime())->modify('+24 hours'));
 
     // Sauvegarder dans la base de données
@@ -710,6 +711,7 @@ public function nouvelleDemandeAutre(Request $request ,SessionInterface $session
         }
     
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
+        $ressourcesDecoded = json_decode($ressources->getContenu(), true); // true = tableau associatif
     
        
         if ($demande->isAutrePersonne()) {
@@ -756,6 +758,7 @@ public function nouvelleDemandeAutre(Request $request ,SessionInterface $session
             'demande' => $demande,
             'user' => $userInfos,
             'ressources' => $ressources,
+            'ressourcesList' => $ressourcesDecoded,
             'valideurInfos' => $valideurInfos,
             'imageSrc' => $imageSrc,
             'valideur' => $valideur

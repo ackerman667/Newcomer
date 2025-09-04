@@ -206,6 +206,7 @@ class StatutsExterneController extends AbstractController
     
         $user = $demande->getIDutilisateur();
         $ressources = $entityManager->getRepository(Ressources::class)->findOneBy(['demande' => $demande]);
+        $ressourcesDecoded = json_decode($ressources->getContenu(), true); // true = tableau associatif
     
         $valideur = $demande->getUidValideur();
         $valideurInfos = $ldapUserFetcher->getUserInfoByUid($valideur);
@@ -228,6 +229,7 @@ class StatutsExterneController extends AbstractController
             'demande' => $demande,
             'user' => $user,
             'ressources' => $ressources,
+            'ressourcesList' => $ressourcesDecoded,
             'monApplication' => $monApplication,
             'imageSrc' => $imageSrc,
             'valideurInfos' => $valideurInfos,

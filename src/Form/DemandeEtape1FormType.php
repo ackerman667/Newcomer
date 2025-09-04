@@ -26,17 +26,20 @@ class DemandeEtape1FormType extends AbstractType
             ->add('remplacement_nom', TextType::class, [
                 'label' => 'Nom :',
                 'required' => false,
-                'attr' => ['class' => 'form-control'],
+                'attr' => ['class' => 'form-control',
+                'maxlength' => 100],
             ])
             ->add('remplacement_prenom', TextType::class, [
                 'label' => 'Prénom :',
                 'required' => false,
-                'attr' => ['class' => 'form-control'],
+                'attr' => ['class' => 'form-control',
+                'maxlength' => 100],
             ])
             ->add('telephone_avant_service', TextType::class, [
                 'label' => 'Numéro de téléphone avant de quitter le service :',
                 'required' => false,
-                'attr' => ['class' => 'form-control'],
+                'attr' => ['class' => 'form-control',
+            'maxlength' => 40],
             ])
             ->add('parti_rectorat', ChoiceType::class, [
                 'label' => 'Parti du Rectorat :',

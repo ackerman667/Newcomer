@@ -87,8 +87,9 @@ class Demandes
     #[ORM\Column(type: Types::BLOB, nullable: true)]
     private $infos_complementaires = null;
 
-    #[ORM\Column(length: 500, nullable: true)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $missions = null;
+
 
     #[ORM\Column(nullable: true)]
     private ?array $infos_personne = null;

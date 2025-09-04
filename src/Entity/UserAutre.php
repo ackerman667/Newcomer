@@ -37,7 +37,7 @@ class UserAutre
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $date_fin = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $fonction = null;
 
     #[ORM\OneToMany(mappedBy: 'autreUtilisateur', targetEntity: Demandes::class)]

@@ -32,15 +32,20 @@ class DemandeEtape2FormType extends AbstractType
         $builder
             ->add('nom', TextType::class, [
                 'label' => 'Nom :',
-                'attr' => ['class' => 'form-control'],
+                'attr' => ['class' => 'form-control', 
+                'maxlength' => 100],
             ])
             ->add('prenom', TextType::class, [
                 'label' => 'Prénom :',
-                'attr' => ['class' => 'form-control'],
+                'attr' => ['class' => 'form-control',
+                'maxlength' => 100],
             ])
             ->add('fonction', TextType::class, [
                 'label' => 'Fonction :',
-                'attr' => ['class' => 'form-control'],
+                'attr' => ['class' => 'form-control',
+                'placeholder' => 'Max 100 caractères',
+                'rows' => 6,
+                'maxlength' => 100,],
             ])
             ->add('date_de_naissance', BirthdayType::class, [
                 'label' => 'Date de naissance :',
@@ -72,11 +77,23 @@ class DemandeEtape2FormType extends AbstractType
                 'placeholder' => 'Sélectionner un statut',
                 'attr' => ['class' => 'form-control'],
             ])
-            ->add('missions', TextareaType::class, [
+           ->add('missions', TextareaType::class, [
                 'label' => 'Mission(s) :',
-                'attr' => ['class' => 'form-control'],
                 'required' => true,
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Max 1000 caractères',
+                    'rows' => 6,
+                    'maxlength' => 1000,
+                ],
+                'constraints' => [
+                    new Assert\Length([
+                        'max' => 1000,
+                        'maxMessage' => 'Les missions ne peuvent pas dépasser {{ limit }} caractères.',
+                    ]),
+                ],
             ])
+
             ->add('date_debut_contrat', DateType::class, [
                 'label' => 'Date de début de contrat :',
                 'widget' => 'single_text',
@@ -94,7 +111,8 @@ class DemandeEtape2FormType extends AbstractType
             ])
             ->add('email', EmailType::class, [
                 'label' => 'Email :',
-                'attr' => ['class' => 'form-control'],
+                'attr' => ['class' => 'form-control',
+                'maxlength' => 255],
             ]);
     }
 

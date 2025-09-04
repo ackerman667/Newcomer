@@ -24,6 +24,16 @@
         .details-group {
             margin-bottom: 15px;
         }
+         .details-group.fonction span,
+.details-group.missions span {
+     display: inline-block;
+    vertical-align: top;
+    white-space: normal;        /* Permet le retour à la ligne si trop long */
+    word-wrap: break-word;      /* Coupe les mots très longs */
+    overflow-wrap: break-word;  /* Standard moderne */
+    max-width: calc(100% - 150px);
+}
+
         .details-group label {
             font-weight: bold;
         }
@@ -135,10 +145,15 @@
                             <label>Email :</label>
                             <span>{{ user.email }}</span>
                         </div>
-                        <div class="details-group">
+                      <div class="details-group fonction">
                             <label>Fonction :</label>
                             <span>{{ user.fonction }}</span>
                         </div>
+                        <div class="details-group missions">
+                            <label>Missions :</label>
+                            <span>{{ demande.missions }}</span>
+                        </div>
+
                         <div class="details-group">
                             <label>Statut :</label>
                             <span>{{ user.statutPersonne }}</span>
@@ -170,10 +185,15 @@
                             <label>Email :</label>
                             <span>{{ user.email }}</span>
                         </div>
-                        <div class="details-group">
+                        <div class="details-group fonction">
                             <label>Fonction :</label>
                             <span>{{ user.fonction }}</span>
                         </div>
+                        <div class="details-group missions">
+                            <label>Missions :</label>
+                            <span>{{ demande.missions }}</span>
+                        </div>
+
                         <div class="details-group">
                             <label>Statut :</label>
                             <span>{{ user.statutPersonne }}</span>
@@ -194,11 +214,15 @@
                     
                     <div class="details-group">
                         <label>{{ ressources.nom }} :</label>
-                        <span>
-        {% for item in ressourcesList %}
-            {{ item }}{% if not loop.last %}, {% endif %}
-        {% endfor %}
-    </span>
+                      <span>
+                    {% if ressourcesList is not empty %}
+                        {% for item in ressourcesList %}
+                            {{ item }}{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        {{ ressources.contenu }}
+                    {% endif %}
+                </span>
 
                     </div>
                     <div class="details-group">
