@@ -1,0 +1,27 @@
+-- Désactiver temporairement les contraintes de clé étrangère si nécessaire (optionnel, selon la base de données)
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- Supprimer toutes les entrées de la table `ressources`
+DELETE FROM ressources;
+
+-- Supprimer toutes les entrées de la table `historique_demande`
+DELETE FROM historique_demande;
+
+-- Supprimer toutes les entrées de la table `demandes`
+DELETE FROM demandes;
+DELETE FROM temporary_data;
+DELETE FROM password_reset_token;
+-- Supprimer toutes les entrées de la table `user`
+DELETE FROM user;
+
+-- Supprimer toutes les entrées de la table `user_autre`
+DELETE FROM user_autre;
+
+-- Réactiver les contraintes de clé étrangère (si elles ont été désactivées)
+SET FOREIGN_KEY_CHECKS = 1;
+
+
+
+
+
+

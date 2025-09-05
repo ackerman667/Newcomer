@@ -1,0 +1,3 @@
+Creer le repertoire
+Terminal -> git clone lien_du_projet
+dans le dossier du projet Ctrl + maj + p -> git add remote 
