@@ -4,7 +4,7 @@ Login as : root
 
 cd /var/www/html/
 ls
-cd newcomer
+cd nouveauxarrivants
 ls -lrt (voir les dossiers)
 ls -lrat (voir les dossiers en detail )
 less.  (voir l'interrieur du fichier) 
